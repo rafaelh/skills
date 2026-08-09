@@ -18,7 +18,13 @@ import subprocess
 import sys
 from typing import cast
 
-VALIDATOR = Path(__file__).resolve().parent.parent / "scripts" / "validate_agent_def.py"
+VALIDATOR = (
+    Path(__file__).resolve().parent.parent.parent
+    / "skills"
+    / "create-agents-for-repo"
+    / "scripts"
+    / "validate_agent_def.py"
+)
 
 Json = dict[str, object]
 

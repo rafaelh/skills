@@ -1,0 +1,21 @@
+[project]
+name = "widgetly"
+version = "0.3.1"
+requires-python = ">=3.11"
+dependencies = ["tomli>=2.0", "svgwrite>=1.4"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "S", "UP"]
+
+[tool.mypy]
+strict = true
+packages = ["widgetly"]
+mypy_path = "src"

@@ -1,0 +1,24 @@
+[project]
+name = "formwork"
+version = "1.2.0"
+requires-python = ">=3.12"
+dependencies = ["polars>=1.0", "pyyaml>=6.0", "psycopg[binary]>=3.1"]
+
+[project.scripts]
+formwork = "formwork.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--tb=short -q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "S", "UP", "PERF", "TRY"]
+
+[tool.pyright]
+pythonVersion = "3.12"
+typeCheckingMode = "strict"
+include = ["src"]

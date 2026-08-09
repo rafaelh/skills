@@ -2,7 +2,7 @@
 
 A dated record of what this skill scored, so a future round can be compared against it rather than
 read in isolation. Append rounds; don't rewrite them. The harness that produces these numbers lives
-in [skills/create-agents-for-repo/evals/](../skills/create-agents-for-repo/evals/) — read its
+in [evals/create-agents-for-repo/](../evals/create-agents-for-repo/) — read its
 README before re-measuring.
 
 Three evals, two arms each (`with_skill`, `without_skill`), one run per cell. One run per cell means

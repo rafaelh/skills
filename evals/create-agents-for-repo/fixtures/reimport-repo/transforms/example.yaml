@@ -1,0 +1,10 @@
+source: data/input.csv
+
+transforms:
+  - type: filter
+    column: amount
+    threshold: 0
+
+sink:
+  type: parquet
+  path: output/clean.parquet
