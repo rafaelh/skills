@@ -93,7 +93,9 @@ subagents **in the same turn** and let them run in parallel. Hand each one the i
 1 rather than making it rediscover the repo. When Lens A has more than about four skills to walk,
 split it further — one agent per skill — since each reads a different file and nothing is shared.
 
-Use `Explore`, or a general-purpose subagent where the hunter needs to run commands.
+Both lenses want a general-purpose subagent: Lens A reads a file end to end and the built-in
+`Explore` samples excerpts, which loses the step order the walk depends on; Lens B has to run
+commands.
 
 > **Lens A prompt — one per skill (or one for a few small ones):**
 > Read `<skill-path>/SKILL.md` and walk its workflow step by step. For each step decide whether the
@@ -137,8 +139,9 @@ commands whose output needs measuring.
 
 ## 3. Challenge the candidates
 
-Hand the combined candidate table to a fresh subagent whose only job is to argue against it. This
-is separate from the hunt on purpose: an agent that just produced a list is invested in it, and the
+Hand the combined candidate table to a fresh subagent whose only job is to argue against it. Give
+it the Phase 1 toolchain list too, so it can check a tool's `--help` for a quieter flag instead of
+guessing one exists. This is separate from the hunt on purpose: an agent that just produced a list is invested in it, and the
 failure this phase prevents — a tidy set of agents that nobody needed — is the expensive one.
 
 > **Reviewer prompt:**
@@ -207,12 +210,14 @@ the user approves the batch before any of it lands.
 ```markdown
 | Agent | Model | Replaces | Called from | Why this tier | What it saves |
 |---|---|---|---|---|---|
-| test-runner | haiku | `uv run pytest` inline | CLAUDE.md routing; tdd SKILL.md step 3 | exit code decides pass/fail; nothing to judge | ~600 lines/run, ~3 runs/session |
+| test-runner | haiku | `uv run pytest` inline | CLAUDE.md routing; tdd SKILL.md step 3 | exit code decides pass/fail; nothing to judge | ~3,700 lines/run, ~3 runs/session |
 ```
 
 Below the table, four things:
 
-- **Rejected candidates and why.** One line each. This is what shows the bar was applied.
+- **Rejected candidates and why**, one line each — including the ones the reviewer replaced with
+  something simpler, stated as the concrete change (`add -q to the pytest line in CLAUDE.md`)
+  rather than a non-event. This is what shows the bar was applied.
 - **Opus candidates as a question**, if any (see above).
 - **Any skill you propose editing whose origin is `plugin` or `symlink`** — name the tradeoff and
   let the user pick between editing it, routing through CLAUDE.md only, or copying the skill into

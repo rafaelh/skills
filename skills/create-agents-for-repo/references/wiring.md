@@ -114,8 +114,9 @@ Phrasing that doesn't:
 
 ## What not to do
 
-**Don't wire an agent that doesn't exist yet.** Write the definitions first, then the call sites,
-then run the validator. A reference to a missing agent is a dead end at the worst moment.
+**Don't wire an agent that doesn't exist yet.** Within a pair, the definition lands before its call
+site — a reference to a missing agent is a dead end at the worst moment. Across pairs, finish one
+before starting the next rather than batching all the definitions and then all the wiring.
 
 **Don't wire the user-facing step.** Interviews, approvals, presenting options — the subagent
 cannot see the user and the user cannot see it.
