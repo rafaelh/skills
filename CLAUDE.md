@@ -9,8 +9,8 @@ A Claude Code plugin marketplace of Agent Skills that comply with (and enforce) 
 `skills/` is the single source for every skill; each one is a published plugin listed in
 `.claude-plugin/marketplace.json`. `.claude/skills/` symlinks the subset active while working *in*
 this repo. `.gitignore` excludes `.claude/*` but re-includes `.claude/skills/`, so those symlinks
-are tracked source and local settings are not. The one non-symlink there is `run-skills/`, the
-repo's own smoke driver — repo-local tooling, deliberately not a published plugin.
+are tracked source and local settings are not. The one non-symlink is `run-skills/`, the repo's own
+smoke driver — deliberately not a published plugin.
 
 Script-bearing skills — held to the contracts below:
 
@@ -26,7 +26,8 @@ The rest (`architecture`, `plan`, `refactor`, `tdd`) are prose-only — `SKILL.m
 
 `create-agents-for-repo` is the one skill that operates on a *consuming* repo rather than on skills
 themselves. Skills travel between repos; the subagents it writes deliberately do not, because they
-hardcode the local toolchain. Test its scripts against a real target checkout, not against this one.
+hardcode the local toolchain. Test against a real target checkout — `evals/` holds three fixture
+repos, a grader and a staging script; see `evals/README.md` before re-measuring.
 
 ## Commands
 
@@ -142,5 +143,6 @@ editing. Anything larger is a `refactor` pass.
 vendor quirk, a non-obvious constraint. Drop what the line already says and never narrate the change
 ("renamed from", "was previously", "new in v2"); git holds that. Strip such detail when you find it.
 
-There is no `docs/` tree. `README.md`, `SKILL.md` bodies, and this file are the whole doc surface —
-update whatever your change makes wrong, in the same change. Keep this file under 8 KB.
+`README.md`, `SKILL.md` bodies, and this file are the doc surface; `docs/` holds only dated eval
+benchmark records. Update whatever your change makes wrong, in the same change. Keep this file
+under 8 KB.

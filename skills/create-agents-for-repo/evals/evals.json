@@ -1,0 +1,79 @@
+{
+  "skill_name": "create-agents-for-repo",
+  "evals": [
+    {
+      "id": 0,
+      "name": "rich-repo-unreferenced-agents",
+      "fixture": "rich-repo",
+      "prompt": "I've just pulled my skills into this repo and I'm burning through context way too fast - every session compacts before I get anything real done. Have a look around and set things up so the cheap mechanical stuff stops running on the expensive model.",
+      "expected_output": "Agents written to .claude/agents/ fitted to this repo's uv/pytest/ruff/pyright toolchain, wired into CLAUDE.md routing; notices the four existing agents are referenced from nowhere; proposes before writing; rejects weak candidates.",
+      "assertions": [
+        "Wrote at least one new agent definition to .claude/agents/",
+        "Every agent passes frontmatter validation (no FAIL findings)",
+        "Every agent on disk is referenced from CLAUDE.md or a skill (none orphaned)",
+        "At least one agent is assigned model: haiku",
+        "Every agent declares a tool allowlist (or disallowedTools)",
+        "Every agent body states a return contract (Report/Output section)",
+        "Agent commands match this repo's real toolchain (pyright/pytest/ruff) and avoid mypy",
+        "CLAUDE.md carries a routing entry naming at least one agent",
+        "Changes confined to .claude/ and CLAUDE.md (no source files touched)",
+        "Wrote a proposal that names candidates it rejected and why",
+        "No judgment-shaped agent (audit/review/analyse) is assigned model: haiku",
+        "Every haiku agent it wrote caps its work (maxTurns or effort)",
+        "Proposal justifies at least one candidate with a measured line/token count",
+        "Proposal names a concrete simpler alternative for at least one rejected candidate",
+        "Every Bash-holding agent it wrote spells out its exact command line in backticks"
+      ]
+    },
+    {
+      "id": 1,
+      "name": "bare-repo-no-skills",
+      "fixture": "bare-repo",
+      "prompt": "no skills installed in here, just the codebase. can you work out what a haiku model could safely handle in this repo and wire it up so it actually gets used? i dont want to have to remember to ask for it every time",
+      "expected_output": "Lens B only - agents derived from CLAUDE.md's documented commands (pytest, ruff, mypy src/). Creates .claude/agents/, adds CLAUDE.md routing. Uses mypy not pyright. Does not invent skill call sites that cannot exist.",
+      "assertions": [
+        "Wrote at least one new agent definition to .claude/agents/",
+        "Every agent passes frontmatter validation (no FAIL findings)",
+        "Every agent on disk is referenced from CLAUDE.md or a skill (none orphaned)",
+        "At least one agent is assigned model: haiku",
+        "Every agent declares a tool allowlist (or disallowedTools)",
+        "Every agent body states a return contract (Report/Output section)",
+        "Agent commands match this repo's real toolchain (mypy/pytest/ruff) and avoid pyright/uv run",
+        "CLAUDE.md carries a routing entry naming at least one agent",
+        "Changes confined to .claude/ and CLAUDE.md (no source files touched)",
+        "Wrote a proposal that names candidates it rejected and why",
+        "No judgment-shaped agent (audit/review/analyse) is assigned model: haiku",
+        "Every haiku agent it wrote caps its work (maxTurns or effort)",
+        "Proposal justifies at least one candidate with a measured line/token count",
+        "Proposal names a concrete simpler alternative for at least one rejected candidate",
+        "Every Bash-holding agent it wrote spells out its exact command line in backticks"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "rerun-after-skill-reimport",
+      "fixture": "reimport-repo",
+      "prompt": "I re-imported my skills into this repo after updating them upstream. I already had some agents set up here - can you check the delegation setup is still intact and fix whatever the re-import broke?",
+      "expected_output": "Recognises the existing ## Delegation table and the four existing agents; does not duplicate them; identifies content-audit and test-scaffold as still unreferenced and the skills as having no call sites; extends rather than replaces.",
+      "assertions": [
+        "Added a new agent, or justified adding none",
+        "Every agent passes frontmatter validation (no FAIL findings)",
+        "Every agent on disk is referenced from CLAUDE.md or a skill (none orphaned)",
+        "At least one agent is assigned model: haiku",
+        "Every agent declares a tool allowlist (or disallowedTools)",
+        "Every agent body states a return contract (Report/Output section)",
+        "Agent commands match this repo's real toolchain (pyright/pytest/ruff) and avoid mypy",
+        "CLAUDE.md carries a routing entry naming at least one agent",
+        "Changes confined to .claude/ and CLAUDE.md (no source files touched)",
+        "Wrote a proposal that names candidates it rejected and why",
+        "No judgment-shaped agent (audit/review/analyse) is assigned model: haiku",
+        "Every haiku agent it wrote caps its work (maxTurns or effort)",
+        "Proposal justifies at least one candidate with a measured line/token count",
+        "Proposal names a concrete simpler alternative for at least one rejected candidate",
+        "Every Bash-holding agent it wrote spells out its exact command line in backticks",
+        "Preserved all four pre-existing agents without duplicating them",
+        "Kept the pre-existing build-green / docs-drift routing rows in CLAUDE.md"
+      ]
+    }
+  ]
+}

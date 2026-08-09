@@ -137,9 +137,9 @@ Scripts live in `skills/agent-tool-builder/scripts/` and accept `--json` for mac
   <summary>create-agents-for-repo</summary>
 
 ### create-agents-for-repo
-Audits a repo for work that should not run on the main thread's model in the main thread's context window, writes the subagent definitions, and wires them in so they actually get called.
+Audits a repo for work that should not run on the main thread's model in the main thread's context window, writes the subagent definitions, and wires them in so they actually get called. This keeps verbose output out of the main context window and assigns work to cheaper models where possible.
 
-Run this **in a consuming repo**, not here. Skills are portable and travel between repos; the subagents this writes deliberately don't, because a subagent only earns its keep by hardcoding the local toolchain — `uv run pytest -n0`, the strict pyright paths, which trees hold generated code. Fitting that to the repo is the product.
+Run this **in another repo**, not here. Skills are portable and travel between repos; the subagents this writes deliberately don't, because subagents are tailored to the repo, hardcoding the local toolchain (`uv run pytest -n0`, which trees hold generated code, etc) and wiring them into the repo's skills and CLAUDE.md.
 
 **What it looks for**
 - Work a cheaper model does correctly because something external — an exit code, a schema, a diff — decides whether it succeeded
@@ -161,6 +161,10 @@ It then proposes the whole batch and stops for approval before writing anything,
 |---|---|
 | `scan_delegation_targets.py` | One-call inventory: skills and their origin, existing agents, commands, toolchain, gitignore state |
 | `validate_agent_def.py` | Frontmatter validation against the subagent spec, plus `--check-references` to fail agents nothing invokes |
+
+Measured rather than asserted: `evals/` holds three target-repo fixtures and a grader, and
+[docs/eval-benchmark-create-agents-for-repo.md](docs/eval-benchmark-create-agents-for-repo.md)
+records what it scored against an unaided baseline.
 
 </details>
 

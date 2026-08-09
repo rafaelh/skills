@@ -1,3 +1,8 @@
+# Eval fixtures are snapshots of a target repo, held byte-identical so results stay
+# comparable between rounds. Whitespace fixers would silently rewrite what the skill
+# is measured on.
+exclude: ^skills/[^/]+/evals/fixtures/
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
