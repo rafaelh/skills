@@ -19,9 +19,14 @@ Script-bearing skills — held to the contracts below:
 | `skills/skill-optimizer` | Python | Audit / eval SKILL.md files whose bundled scripts are Python |
 | `skills/skill-optimizer-ts` | TypeScript | Same workflow, for skills whose scripts are TypeScript |
 | `skills/agent-tool-builder` | Python | Build & audit Python scripts that agents call as tools |
+| `skills/create-agents-for-repo` | Python | Fit `.claude/agents/*.md` subagents to a *target* repo and wire their call sites |
 
 The rest (`architecture`, `plan`, `refactor`, `tdd`) are prose-only — `SKILL.md` plus optional
 `references/`, no `scripts/` — so the agent-tool contract does not apply to them.
+
+`create-agents-for-repo` is the one skill that operates on a *consuming* repo rather than on skills
+themselves. Skills travel between repos; the subagents it writes deliberately do not, because they
+hardcode the local toolchain. Test its scripts against a real target checkout, not against this one.
 
 ## Commands
 

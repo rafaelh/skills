@@ -134,6 +134,38 @@ Scripts live in `skills/agent-tool-builder/scripts/` and accept `--json` for mac
 
 
 <details>
+  <summary>create-agents-for-repo</summary>
+
+### create-agents-for-repo
+Audits a repo for work that should not run on the main thread's model in the main thread's context window, writes the subagent definitions, and wires them in so they actually get called.
+
+Run this **in a consuming repo**, not here. Skills are portable and travel between repos; the subagents this writes deliberately don't, because a subagent only earns its keep by hardcoding the local toolchain — `uv run pytest -n0`, the strict pyright paths, which trees hold generated code. Fitting that to the repo is the product.
+
+**What it looks for**
+- Work a cheaper model does correctly because something external — an exit code, a schema, a diff — decides whether it succeeded
+- Work that needs judgment but produces bulky, disposable evidence the main context shouldn't keep
+- Existing agents that are miscast, unrestricted, or that nothing ever invokes
+
+**What it writes**
+- `.claude/agents/*.md` with a narrowed tool grant, an explicit model, and a return contract that caps what comes back
+- A `## Delegation` routing table in CLAUDE.md — the durable backbone, since it survives skill re-imports
+- Call sites inside repo-local SKILL.md workflows, skipped for plugin-installed or symlinked skills where an edit would be reverted or would leak upstream
+
+**How it runs**
+
+The candidate hunt and the review of that hunt are themselves delegated to parallel subagents — reading whole skill bodies and measuring how much each command prints is exactly the bulky, disposable work the skill tells everyone else to hand off. The reviewer is adversarial and separate from the hunters, and asks two questions of every candidate: would a subagent actually be *good* at this, and is it cheaper than the simplest thing that would work? A `-q` flag, a pre-commit hook, a Makefile target, or the built-in `Explore` agent all beat a bespoke agent when they suffice, and "SIMPLER: add `-q`" is a legitimate verdict.
+
+It then proposes the whole batch and stops for approval before writing anything, lists the candidates it rejected so the bar is visible, and asks separately about Opus agents — those buy context isolation but no cost saving, so it's your call.
+
+| Script | Purpose |
+|---|---|
+| `scan_delegation_targets.py` | One-call inventory: skills and their origin, existing agents, commands, toolchain, gitignore state |
+| `validate_agent_def.py` | Frontmatter validation against the subagent spec, plus `--check-references` to fail agents nothing invokes |
+
+</details>
+
+
+<details>
   <summary>architecture, plan, tdd, refactor</summary>
 
 ## These skills are designed to be used together
@@ -148,14 +180,6 @@ The cycle for use should be:
 3. `/tdd` test driven development, for building stuff (with a workhorse model like Sonnet)
 4. `/refactor` to simplify and refactor the work that has been done
 5. Optionally, `/architecture` to review an existing codebase for ADR violations, or look for deepening opportunities.
-
-### Architecture
-
-### Plan
-
-### TDD
-
-### Refactor
 
 
 </details>

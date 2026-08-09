@@ -24,6 +24,12 @@
       "category": "development"
     },
     {
+      "name": "create-agents-for-repo",
+      "description": "Audit a repo for work that should run on a cheaper model or in an isolated context, write the subagent definitions, and wire them into CLAUDE.md and the repo's skills",
+      "source": "./skills/create-agents-for-repo",
+      "category": "development"
+    },
+    {
       "name": "architecture",
       "description": "Audit code against ADRs and layer separation, find deepening opportunities, write ADRs and CONTEXT.md domain docs, and design module interfaces",
       "source": "./skills/architecture",

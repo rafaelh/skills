@@ -1,0 +1,6 @@
+{
+  "name": "create-agents-for-repo",
+  "description": "Audit a repo for work that should run on a cheaper model or in an isolated context, write the subagent definitions, and wire them into CLAUDE.md and the repo's skills",
+  "version": "0.1.0",
+  "author": { "name": "Rafe Hart" }
+}

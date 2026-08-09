@@ -25,7 +25,7 @@ TS_DIR = REPO / "skills" / "skill-optimizer-ts"
 TSX = TS_DIR / "node_modules" / ".bin" / "tsx"
 
 # Not agent tools: shared library modules and test helpers the validators skip.
-NOT_TOOLS = {"skill_lib.py", "skill_lib.ts", "test-helpers.ts"}
+NOT_TOOLS = {"agents_lib.py", "skill_lib.py", "skill_lib.ts", "test-helpers.ts"}
 
 TIMEOUT = 120
 

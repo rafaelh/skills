@@ -81,11 +81,20 @@ ignore = [
     "S603",    # subprocess calls in tests use controlled, trusted input
     "PLE2502", # BiDi chars in test strings are the inputs being tested
 ]
+"skills/create-agents-for-repo/scripts/scan_delegation_targets.py" = [
+    "S603",    # subprocess argv is a fixed git invocation over a resolved path, never user text
+    "S607",    # `git` is resolved from PATH by design — the tool runs wherever the user's git is
+]
 "skills/agent-tool-builder/scripts/perf_check.py" = [
     "ERA001",  # noqa comments are intentional
     "RUF001",  # × in user-facing messages is intentional (multiplication sign)
     "N802",    # visit_* method names are required by ast.NodeVisitor API
     "TRY300",  # return before except is intentional — matches skill-optimizer pattern
+]
+"skills/create-agents-for-repo/tests/*.py" = [
+    "S101",    # assert is correct in tests
+    "S603",    # subprocess calls in tests use controlled, trusted input
+    "S607",    # `git init` is resolved from PATH, matching the tool under test
 ]
 "skills/agent-tool-builder/tests/*.py" = [
     "S101",    # assert is correct in tests
