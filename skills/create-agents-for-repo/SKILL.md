@@ -228,6 +228,8 @@ Below the table, four things:
 
 ## 6. Write, wire, verify
 
+**Scope: touch only `.claude/`, its contents, and `CLAUDE.md`.**
+
 ### Write the agents
 
 One file per agent at `.claude/agents/<name>.md`. Required frontmatter is `name` and `description`;
@@ -274,6 +276,10 @@ the command itself, a verification checklist, a gotchas note — and fixing only
 `- [ ] mypy passes` sitting three lines below a repo that runs pyright. A half-corrected file is
 worse than an uncorrected one, because it now looks fitted.
 
+**The same grep applies to agent bodies you author.** Before finishing any agent, confirm it names
+only tools from Phase 1's toolchain list — not tools from other repos you have seen. An agent that
+says `mypy` in a pyright repo was written from memory instead of from the inventory.
+
 ### Verify
 
 ```bash
@@ -287,6 +293,8 @@ non-zero on it rather than letting it pass quietly.
 
 Then smoke-test at least one new agent for real: invoke it on an actual task and confirm what comes
 back is the size the return contract promised. A contract that reads well and returns 400 lines is
-the failure worth catching, and only a live call catches it.
+the failure worth catching, and only a live call catches it. If the smoke-test writes or fixes
+source files, revert those changes — this skill's deliverable is the agents and their wiring, not
+application-code edits that happened to occur during verification.
 
 Report what landed: agents written, call sites wired, and the ones you rejected.

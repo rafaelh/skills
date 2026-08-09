@@ -1,7 +1,7 @@
 # Eval harness for `create-agents-for-repo`
 
 Everything needed to re-measure this skill after editing it. Results from past rounds live in
-[docs/eval-benchmark-create-agents-for-repo.md](../../docs/eval-benchmark-create-agents-for-repo.md) —
+[eval-benchmark-create-agents-for-repo.md](../eval-benchmark-create-agents-for-repo.md) —
 compare against those rather than reading a new score in isolation.
 
 This is a developer harness. Nothing here ships as an agent tool; `grade.py` and `prepare.py` are

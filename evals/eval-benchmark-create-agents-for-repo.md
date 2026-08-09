@@ -78,3 +78,48 @@ Two behaviours separated the arms more sharply than any assertion:
 - **Tier discipline.** Unaided runs reached for haiku on anything that sounded mechanical,
   including audit and review work where nothing downstream would catch a wrong answer. This became
   assertion 11.
+
+## Round 2 — 2026-08-10
+
+Skill after three additions to Phase 6: an explicit scope constraint ("touch only `.claude/` and
+`CLAUDE.md`"), a toolchain-grep extended to authored agent bodies, and a revert instruction for
+source-file changes produced during smoke-testing. Run via Copilot subagents in VS Code.
+
+| Eval | Fixture | with_skill | without_skill |
+|---|---|---|---|
+| 0 unreferenced-agents | `rich-repo` | 93% (14/15) | 53% (8/15) |
+| 1 no-skills | `bare-repo` | 93% (14/15) | 73% (11/15) |
+| 2 after-reimport | `reimport-repo` | 82% (14/17) | 76% (13/17) |
+| **Mean** | | **89.4%** | **68.1%** |
+
+No timing data captured (subagent notifications unavailable in this environment).
+
+### What failed, with the skill
+
+All three runs touched source files despite the new scope constraint — the subagents ran commands
+(tests, linters) that auto-fixed code and didn't revert. This is the same assertion-9 failure from
+round 1, now joined by an explicit instruction the agent didn't follow. Strengthening the prose
+further is unlikely to help; the next step is a tool restriction (`disallowedTools: Write`) on the
+hunting subagents, or a post-phase `git checkout -- .` guard.
+
+`eval-2` additionally let `mypy` appear in an authored agent body (toolchain contamination from the
+fixture's own pre-existing agents which mention mypy in their history), and missed naming a concrete
+simpler alternative in the proposal.
+
+### What failed, without the skill
+
+The baseline's failures cluster in the judgement assertions as expected:
+
+- **Measured volumes** (assertion 13): 0/3 — no run actually counted lines before proposing.
+- **Concrete simpler alternative** (assertion 14): 0/3 — rejections stated as "not worth it" with
+  no named replacement.
+- **Tier discipline** (assertion 11): `eval-0` miscast `content-audit` as haiku.
+- **Haiku turn caps** (assertion 12): `eval-0` left 3 haiku agents uncapped.
+- **Exact commands** (assertion 15): `eval-0`'s `build-green` described rather than named its
+  command.
+
+### Delta analysis
+
+The +21pp aggregate gap is driven almost entirely by `eval-0` (+40pp), where the without_skill arm
+wrote no new agents and miscast existing ones. `eval-2` showed the smallest gap (+6pp) — both arms
+handled the "extend, don't clobber" situation adequately, differing only on proposal quality.

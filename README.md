@@ -137,9 +137,9 @@ Scripts live in `skills/agent-tool-builder/scripts/` and accept `--json` for mac
   <summary>create-agents-for-repo</summary>
 
 ### create-agents-for-repo
-Audits a repo for work that should not run on the main thread's model in the main thread's context window, writes the subagent definitions, and wires them in so they actually get called. This keeps verbose output out of the main context window and assigns work to cheaper models where possible.
+This skill adds custom agents to the repository it is run on, and where appropriate wires them into the repo's skills and `CLAUDE.md` so that they run. This keeps verbose output out of the main context window and assigns work to cheaper models where possible. It requires Python `>=3.14` to run its integrated scripts, but will work regardless of the language of the target repo.
 
-Run this **in another repo**, not here. Skills are portable and travel between repos; the subagents this writes deliberately don't, because subagents are tailored to the repo, hardcoding the local toolchain (`uv run pytest -n0`, which trees hold generated code, etc) and wiring them into the repo's skills and CLAUDE.md.
+Don't run `/create-agents-for-repo` in this repo. The skills here are intended to be portable and travel between repos; the subagents this writes don't. The subagents are tailored to the target repo, hardcoding the local toolchain (what linters to run, which trees hold specific, etc), so they don't travel well.
 
 **What it looks for**
 - Work a cheaper model does correctly because something external — an exit code, a schema, a diff — decides whether it succeeded
@@ -157,14 +157,6 @@ The candidate hunt and the review of that hunt are themselves delegated to paral
 
 It then proposes the whole batch and stops for approval before writing anything, lists the candidates it rejected so the bar is visible, and asks separately about Opus agents — those buy context isolation but no cost saving, so it's your call.
 
-| Script | Purpose |
-|---|---|
-| `scan_delegation_targets.py` | One-call inventory: skills and their origin, existing agents, commands, toolchain, gitignore state |
-| `validate_agent_def.py` | Frontmatter validation against the subagent spec, plus `--check-references` to fail agents nothing invokes |
-
-Measured rather than asserted: `evals/` holds three target-repo fixtures and a grader, and
-[docs/eval-benchmark-create-agents-for-repo.md](docs/eval-benchmark-create-agents-for-repo.md)
-records what it scored against an unaided baseline.
 
 </details>
 
@@ -185,17 +177,20 @@ The cycle for use should be:
 4. `/refactor` to simplify and refactor the work that has been done
 5. Optionally, `/architecture` to review an existing codebase for ADR violations, or look for deepening opportunities.
 
-
 </details>
 ---
 
 ## Installing
 <details>
   <summary>Install Details</summary>
+### Option 1
+Use a recent version of the **GitHub CLI** and run `gh skill install rafaelh/skills <skillname>`. This will copy the skill into your target repo, or global directory (you'll be prompted for your choice). At a later date running `gh skill update rafaelh/skills <skillname>` will pull an updated version of this skill.
+
+### Option 2
 This repo is a Claude Code plugin marketplace. From inside Claude Code, add the marketplace and install whichever skills you need:
 
 ```
-/plugin marketplace add rafaelh/skill-optimizer
+/plugin marketplace add rafaelh/skills
 /plugin install skill-optimizer@rafaelh
 /plugin install skill-optimizer-ts@rafaelh
 /plugin install agent-tool-builder@rafaelh
