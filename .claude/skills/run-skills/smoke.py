@@ -21,7 +21,7 @@ import sys
 import time
 
 REPO = Path(__file__).resolve().parents[3]
-TS_DIR = REPO / "skills" / "skill-optimizer-ts"
+TS_DIR = REPO / "skills" / "skill-audit-ts"
 TSX = TS_DIR / "node_modules" / ".bin" / "tsx"
 
 # Not agent tools: shared library modules and test helpers the validators skip.
@@ -153,7 +153,7 @@ def check_self_audit(res: Result, runner: list[str], validator: Path, label: str
 
 def check_parity(res: Result) -> None:
     """CLAUDE.md requires the Python and TypeScript twins to behave identically."""
-    py = REPO / "skills" / "skill-optimizer" / "scripts" / "validate_skill.py"
+    py = REPO / "skills" / "skill-audit" / "scripts" / "validate_skill.py"
     ts = TS_DIR / "scripts" / "validate_skill.ts"
     for skill in skill_dirs():
         _, a, _ = run([sys.executable, str(py), str(skill), "--json", "--quiet"])
@@ -290,7 +290,7 @@ def main() -> int:
     groups = {args.only} if args.only else {"python", "ts", "parity", "manifests"}
     py_runner = [sys.executable]
     ts_runner = [str(TSX)]
-    py_validator = REPO / "skills" / "skill-optimizer" / "scripts" / "validate_skill.py"
+    py_validator = REPO / "skills" / "skill-audit" / "scripts" / "validate_skill.py"
 
     if "python" in groups:
         code = check_language(
@@ -306,7 +306,7 @@ def main() -> int:
             ts_runner,
             TS_DIR / "scripts" / "validate_skill.ts",
             "TypeScript",
-            "skills/skill-optimizer-ts/scripts/",
+            "skills/skill-audit-ts/scripts/",
         )
         if code is not None:
             return code

@@ -157,7 +157,7 @@ Thumbs.db
 .claude/*
 !.claude/skills/
 
-# Node.js / npm (skill-optimizer-ts)
+# Node.js / npm (skill-audit-ts)
 node_modules/
 npm-debug.log*
 yarn-debug.log*

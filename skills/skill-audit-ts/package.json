@@ -1,8 +1,8 @@
 {
-  "name": "skill-optimizer-ts",
+  "name": "skill-audit-ts",
   "version": "1.0.0",
   "private": true,
-  "description": "TypeScript scripts for the skill-optimizer-ts Claude Code skill",
+  "description": "TypeScript scripts for the skill-audit-ts Claude Code skill",
   "type": "module",
   "engines": {
     "node": ">=20"

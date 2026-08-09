@@ -21,9 +21,9 @@ Most of these tools use python scripts, though there are some that use typescrip
 ## Skills
 
 <details>
-  <summary>skill-optimizer</summary>
+  <summary>skill-audit</summary>
 
-### skill-optimizer
+### skill-audit
 Audits, optimizes, validates, and trigger-evals Claude Agent Skills (SKILL.md files).
 
 **Validation and analysis**
@@ -46,7 +46,7 @@ Audits, optimizes, validates, and trigger-evals Claude Agent Skills (SKILL.md fi
 - Audits a skill against the [OWASP Agentic Skills Top 10](https://owasp.org/www-project-agentic-skills-top-10/): over-privileged `allowed-tools`, hardcoded secrets, unsafe deserialization, shell injection, supply-chain (fetch-and-run, unpinned deps), hidden-unicode instructions, and prompt injection in prose (instruction-override, replacement system prompts, concealment from the user, exfiltration of credentials). No guarantee it'll work, but better than nothing!
 - Security checks cover SKILL.md and reference files regardless of language; Python-specific checks (unsafe deserialization, shell injection, dependency pinning) apply only to `.py` scripts
 
-Scripts live in `skills/skill-optimizer/scripts/` and accept `--json` for machine-readable output.
+Scripts live in `skills/skill-audit/scripts/` and accept `--json` for machine-readable output.
 
 | Script | Purpose |
 |---|---|
@@ -65,19 +65,19 @@ Scripts live in `skills/skill-optimizer/scripts/` and accept `--json` for machin
 ---
 
 <details>
-  <summary>skill-optimizer-ts</summary>
+  <summary>skill-audit-ts</summary>
 
-### skill-optimizer-ts
+### skill-audit-ts
 
-The TypeScript twin of `skill-optimizer` — same audit/eval workflow, for skills whose bundled scripts are TypeScript (run via `npx tsx`) instead of Python. For teams without Python available, most commonly Windows machines.
+The TypeScript twin of `skill-audit` — same audit/eval workflow, for skills whose bundled scripts are TypeScript (run via `npx tsx`) instead of Python. For teams without Python available, most commonly Windows machines.
 
-**Validation, analysis, and description optimization** — same feature set as `skill-optimizer` above, retargeted at TypeScript.
+**Validation, analysis, and description optimization** — same feature set as `skill-audit` above, retargeted at TypeScript.
 
 **Script quality** *(TypeScript only)* — `validate_agent_tool.ts` and `perf_check.ts` are folded directly into this skill (no dependency on `agent-tool-builder`, which is Python-only). Performance checks target JS/TS anti-patterns: string `+=` in a loop, `new RegExp(literal)` recompiled per iteration, array `.includes()`/`.indexOf()` membership tests, `readFileSync` in a loop, `.sort()`/`.reverse()` in a loop.
 
 **Security** — same OWASP Agentic Skills Top 10 coverage, with the script-construct checks retargeted: `eval()`/`new Function()`/`vm.runInThisContext` (unsafe deserialization), `child_process.exec`/`{shell: true}` (shell injection), `fs.rmSync(..., {recursive: true})` (dangerous fs), and `package.json` dependency pinning (supply chain) in place of PEP 723 checks.
 
-Scripts live in `skills/skill-optimizer-ts/scripts/` and accept `--format json|text` for machine-readable output.
+Scripts live in `skills/skill-audit-ts/scripts/` and accept `--format json|text` for machine-readable output.
 
 | Script | Purpose |
 |---|---|
@@ -191,8 +191,8 @@ This repo is a Claude Code plugin marketplace. From inside Claude Code, add the 
 
 ```
 /plugin marketplace add rafaelh/skills
-/plugin install skill-optimizer@rafaelh
-/plugin install skill-optimizer-ts@rafaelh
+/plugin install skill-audit@rafaelh
+/plugin install skill-audit-ts@rafaelh
 /plugin install agent-tool-builder@rafaelh
 /plugin install architecture@rafaelh
 /plugin install plan@rafaelh
@@ -201,17 +201,17 @@ This repo is a Claude Code plugin marketplace. From inside Claude Code, add the 
 /reload-plugins
 ```
 
-Once installed, skills activate automatically based on context — `skill-optimizer` or `skill-optimizer-ts` when you ask Claude to audit a SKILL.md (pick based on whether your bundled scripts are Python or TypeScript); `agent-tool-builder` when you ask Claude to write or improve a Python script an agent will call. `skill-optimizer` and `skill-optimizer-ts` cover overlapping ground by design — their descriptions each carry an explicit "NOT for X — see Y" disambiguator so only one activates per request.
+Once installed, skills activate automatically based on context — `skill-audit` or `skill-audit-ts` when you ask Claude to audit a SKILL.md (pick based on whether your bundled scripts are Python or TypeScript); `agent-tool-builder` when you ask Claude to write or improve a Python script an agent will call. `skill-audit` and `skill-audit-ts` cover overlapping ground by design — their descriptions each carry an explicit "NOT for X — see Y" disambiguator so only one activates per request.
 
-After installing `skill-optimizer-ts`, run `npm ci` once inside `skills/skill-optimizer-ts/` to resolve `tsx`/`typescript`/`vitest` from the committed lockfile.
+After installing `skill-audit-ts`, run `npm ci` once inside `skills/skill-audit-ts/` to resolve `tsx`/`typescript`/`vitest` from the committed lockfile.
 
 ## Requirements
 
-**skill-optimizer / agent-tool-builder (Python):**
+**skill-audit / agent-tool-builder (Python):**
 - Python 3.14+ (all bundled scripts are stdlib-only except where PEP 723 metadata declares third-party deps)
 - `ANTHROPIC_API_KEY` in environment (optional — enables exact token counts via the SDK)
 
-**skill-optimizer-ts (TypeScript):**
+**skill-audit-ts (TypeScript):**
 - Node.js 18.3+ (20+ recommended), plus a one-time `npm ci` in the skill directory
 - `ANTHROPIC_API_KEY` in environment (optional — enables exact token counts via `@anthropic-ai/sdk`)
 

@@ -11,7 +11,7 @@ const OVERLAPPING_DESCRIPTION =
   "Use this skill when the user wants to audit or optimize an agent skill SKILL.md file.";
 
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), "skill-optimizer-ts-"));
+  root = mkdtempSync(join(tmpdir(), "skill-audit-ts-"));
 });
 
 afterEach(() => {

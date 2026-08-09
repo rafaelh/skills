@@ -1,4 +1,4 @@
-"""Shared helpers for skill-optimizer scripts.
+"""Shared helpers for skill-audit scripts.
 
 Imported by validate_skill.py, analyze_skill.py, and recommend_scripts.py.
 Stdlib only.

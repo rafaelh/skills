@@ -16,8 +16,8 @@ Script-bearing skills — held to the contracts below:
 
 | Skill | Language | Role |
 |---|---|---|
-| `skills/skill-optimizer` | Python | Audit / eval SKILL.md files whose bundled scripts are Python |
-| `skills/skill-optimizer-ts` | TypeScript | Same workflow, for skills whose scripts are TypeScript |
+| `skills/skill-audit` | Python | Audit / eval SKILL.md files whose bundled scripts are Python |
+| `skills/skill-audit-ts` | TypeScript | Same workflow, for skills whose scripts are TypeScript |
 | `skills/agent-tool-builder` | Python | Build & audit Python scripts that agents call as tools |
 | `skills/create-agents-for-repo` | Python | Fit `.claude/agents/*.md` subagents to a *target* repo and wire their call sites |
 
@@ -36,13 +36,13 @@ Python (repo root, uv-managed venv at `.venv`):
 ```bash
 uv sync                                   # dev deps: pytest, ruff, pyright
 uv run pytest
-uv run pytest skills/skill-optimizer/scripts/tests/test_validate_skill.py::TestCli::test_format_json_flag
+uv run pytest skills/skill-audit/scripts/tests/test_validate_skill.py::TestCli::test_format_json_flag
 uv run ruff check . --fix && uv run ruff format .
 uv run pyright                            # strict over skills/
 uv run pre-commit run --all-files         # ruff + ruff-format + pyright + hygiene hooks
 ```
 
-TypeScript (`skills/skill-optimizer-ts/`, one-time `npm ci`):
+TypeScript (`skills/skill-audit-ts/`, one-time `npm ci`):
 
 ```bash
 npm test                                  # vitest run
@@ -90,15 +90,15 @@ When writing a new script, this repo's own tooling is the spec: run `validate_ag
 
 ### Cross-skill dependency
 
-`skill-optimizer`'s SKILL.md invokes `../agent-tool-builder/scripts/validate_agent_tool.py` and
+`skill-audit`'s SKILL.md invokes `../agent-tool-builder/scripts/validate_agent_tool.py` and
 `perf_check.py` by relative path and links to `agent-tool-builder/references/perf-findings.md`.
-Moving or renaming those breaks the Python audit workflow. `skill-optimizer-ts` deliberately has
+Moving or renaming those breaks the Python audit workflow. `skill-audit-ts` deliberately has
 **no** such dependency — it folds in its own `validate_agent_tool.ts` and `perf_check.ts` so it runs
 on machines without Python.
 
 ### Python/TypeScript parity
 
-`skill-optimizer` and `skill-optimizer-ts` are twins: same script names, same modes (Audit / Eval),
+`skill-audit` and `skill-audit-ts` are twins: same script names, same modes (Audit / Eval),
 same OWASP AST## finding codes, parallel `references/`. Mirror behavioral changes across both.
 Legitimate divergence: perf checks (Python AST vs TypeScript compiler API, different anti-pattern
 sets), security script-construct checks (`pickle`/`shell=True` vs `eval()`/`{shell: true}`), and
@@ -106,15 +106,15 @@ dependency pinning (PEP 723 vs `package.json`).
 
 Python scripts import siblings flatly (`from skill_lib import ...`) because they run as
 `python3 path/to/script.py`; tests bootstrap `sys.path` via
-`skills/skill-optimizer/scripts/tests/conftest.py`. Test placement differs per skill —
-`skill-optimizer` in `scripts/tests/`, `agent-tool-builder` in a top-level `tests/`, TypeScript
+`skills/skill-audit/scripts/tests/conftest.py`. Test placement differs per skill —
+`skill-audit` in `scripts/tests/`, `agent-tool-builder` in a top-level `tests/`, TypeScript
 co-located `*.test.ts`. Python tests are black-box: invoke the script under `subprocess`, assert on
 JSON stdout + exit code, don't import functions.
 
 ### Descriptions are tuned artifacts
 
 The script-bearing skills overlap by design, so each `description` ends with an explicit
-disambiguator (`NOT for skills whose bundled scripts are TypeScript — use skill-optimizer-ts for
+disambiguator (`NOT for skills whose bundled scripts are TypeScript — use skill-audit-ts for
 that`). `detect_skill_overlap.py` flags sibling pairs at cosine ≥ 0.5 without one. When editing a
 description, preserve the disambiguator and the concrete trigger phrases — they were measured by
 `eval_triggers.py`, not written for prose.

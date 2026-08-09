@@ -1,5 +1,5 @@
 [project]
-name = "skill-optimizer"
+name = "skill-audit"
 version = "2.0"
 requires-python = ">=3.14"
 
@@ -65,21 +65,21 @@ ignore = [
 ".claude/skills/run-skills/smoke.py" = [
     "S603",    # subprocess argv is built from repo-relative paths, never user input
 ]
-"skills/skill-optimizer/scripts/perf_check.py" = [
+"skills/skill-audit/scripts/perf_check.py" = [
     "ERA001",  # noqa comments are intentional
     "RUF001",  # × in user-facing messages is intentional (multiplication sign)
     "N802",    # visit_* method names are required by ast.NodeVisitor API
 ]
-"skills/skill-optimizer/scripts/skill_lib.py" = [
+"skills/skill-audit/scripts/skill_lib.py" = [
     "PLE2502", # intentional BiDi chars — this IS the blocklist being defined
 ]
-"skills/skill-optimizer/scripts/eval_triggers.py" = [
+"skills/skill-audit/scripts/eval_triggers.py" = [
     "S603",    # subprocess calls the claude CLI — trusted, controlled input
 ]
-"skills/skill-optimizer/scripts/optimize_description.py" = [
+"skills/skill-audit/scripts/optimize_description.py" = [
     "S603",    # subprocess calls the claude CLI — trusted, controlled input
 ]
-"skills/skill-optimizer/scripts/tests/*.py" = [
+"skills/skill-audit/scripts/tests/*.py" = [
     "S101",    # assert is correct in tests
     "S603",    # subprocess calls in tests use controlled, trusted input
     "PLE2502", # BiDi chars in test strings are the inputs being tested
@@ -92,7 +92,7 @@ ignore = [
     "ERA001",  # noqa comments are intentional
     "RUF001",  # × in user-facing messages is intentional (multiplication sign)
     "N802",    # visit_* method names are required by ast.NodeVisitor API
-    "TRY300",  # return before except is intentional — matches skill-optimizer pattern
+    "TRY300",  # return before except is intentional — matches skill-audit pattern
 ]
 "evals/create-agents-for-repo/*.py" = [
     "S603",    # subprocess argv is built from resolved fixture paths, never user text

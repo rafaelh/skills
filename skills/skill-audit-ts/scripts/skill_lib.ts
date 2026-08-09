@@ -1,6 +1,6 @@
 // agent-tool: false
 /**
- * Shared helpers for skill-optimizer-ts scripts.
+ * Shared helpers for skill-audit-ts scripts.
  *
  * Imported by validate_skill.ts, analyze_skill.ts, recommend_scripts.ts, and others.
  * Node built-ins only.

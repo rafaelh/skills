@@ -8,7 +8,7 @@ import { runCli } from "./test-helpers.js";
 let root: string;
 
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), "skill-optimizer-ts-"));
+  root = mkdtempSync(join(tmpdir(), "skill-audit-ts-"));
 });
 
 afterEach(() => {

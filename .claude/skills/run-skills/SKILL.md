@@ -1,6 +1,6 @@
 ---
 name: run-skills
-description: Build, run, smoke-test, and drive the skills marketplace and its bundled agent tools. Use when asked to run this repo, start or exercise the skill-optimizer / agent-tool-builder scripts, verify a change to a bundled script or SKILL.md actually works, check Python/TypeScript parity, run the tests, lint, typecheck, or confirm the marketplace manifests still line up.
+description: Build, run, smoke-test, and drive the skills marketplace and its bundled agent tools. Use when asked to run this repo, start or exercise the skill-audit / agent-tool-builder scripts, verify a change to a bundled script or SKILL.md actually works, check Python/TypeScript parity, run the tests, lint, typecheck, or confirm the marketplace manifests still line up.
 ---
 
 # Run the skills marketplace
@@ -23,7 +23,7 @@ Verified on Arch Linux with `uv 0.12.1`, `Python 3.14.6`, `node v26.5.1`, `npm 1
 
 ```bash
 uv sync                                   # dev deps: pytest, ruff, pyright
-cd skills/skill-optimizer-ts && npm ci    # tsx, vitest, eslint, prettier
+cd skills/skill-audit-ts && npm ci    # tsx, vitest, eslint, prettier
 ```
 
 `npm ci` takes ~1.3s and prints a warning about a blocked `esbuild` postinstall. That is harmless
@@ -69,11 +69,11 @@ Most work here edits one script. Run that script directly rather than the whole 
 
 ```bash
 # any Python tool
-uv run python3 skills/skill-optimizer/scripts/validate_skill.py skills/architecture --json
+uv run python3 skills/skill-audit/scripts/validate_skill.py skills/architecture --json
 
 # any TypeScript tool — use the vendored binary, not `npx`
-skills/skill-optimizer-ts/node_modules/.bin/tsx \
-  skills/skill-optimizer-ts/scripts/validate_skill.ts skills/architecture --json
+skills/skill-audit-ts/node_modules/.bin/tsx \
+  skills/skill-audit-ts/scripts/validate_skill.ts skills/architecture --json
 ```
 
 Both print the same payload:
@@ -102,7 +102,7 @@ uv run pre-commit run --all-files                   # 10 hooks, all pass
 ```
 
 ```bash
-cd skills/skill-optimizer-ts
+cd skills/skill-audit-ts
 npm test          # 170 passed (9 files) in ~5.7s
 npm run typecheck
 npm run lint
@@ -110,8 +110,8 @@ npm run lint
 
 ## Gotchas
 
-- **`detect_skill_overlap` reports a collision on a healthy repo.** `skill-optimizer` and
-  `skill-optimizer-ts` sit at cosine **0.8749**, well over the 0.5 threshold, despite both carrying
+- **`detect_skill_overlap` reports a collision on a healthy repo.** `skill-audit` and
+  `skill-audit-ts` sit at cosine **0.8749**, well over the 0.5 threshold, despite both carrying
   disambiguators. Expected, not a regression — read `pairs`, don't treat it as a failure.
 - **Findings never fail the exit code by default.** `validate_skill`, `analyze_skill`,
   `audit_security`, and `detect_skill_overlap` all exit 0 with findings — a skill tripping 5
@@ -127,7 +127,7 @@ npm run lint
   never proof a skill is safe to install; the semantic risks
   (AST07/09/10) need the human checks in `references/security.md`.
 - **Python 3.14 is enforced by syntax, not a version check.**
-  `skills/skill-optimizer/scripts/audit_security.py:157` uses PEP 758 unparenthesized
+  `skills/skill-audit/scripts/audit_security.py:157` uses PEP 758 unparenthesized
   `except A, B:`. On 3.13 that is `SyntaxError: multiple exception types must be parenthesized` —
   no friendly message. And `ruff format` at `target-version = py314` will *rewrite* your
   parenthesized `except (A, B):` into that form, so this spreads on its own.
@@ -149,14 +149,14 @@ npm run lint
 ## Troubleshooting
 
 - **`npm error enoent Could not read package.json … /home/rafael/git/skills/package.json`**: there
-  is no root `package.json`. `cd skills/skill-optimizer-ts` first — every npm script lives there.
+  is no root `package.json`. `cd skills/skill-audit-ts` first — every npm script lives there.
 - **`npm warn install-scripts esbuild@0.28.1 (postinstall: node install.js)` blocked**: npm 12
   blocks unapproved install scripts. Harmless here — esbuild ships prebuilt platform binaries as
   optional deps. Verified after a fresh `npm ci`: `tsx` runs and all 168 vitest tests pass.
 - **`SyntaxError: multiple exception types must be parenthesized`**: you are on Python ≤ 3.13.
   `uv sync` pins 3.14; check with `uv run python3 --version`.
 - **`toolchain/tsx  missing …/node_modules/.bin/tsx`** (driver exits 2): run
-  `cd skills/skill-optimizer-ts && npm ci`.
+  `cd skills/skill-audit-ts && npm ci`.
 - **Driver reports `manifests/marketplace-covers-disk … only-on-disk=['<name>']`**: a skill
   directory exists without a `marketplace.json` entry. Adding a skill means editing **two**
   manifests — the root `.claude-plugin/marketplace.json` and the skill's own

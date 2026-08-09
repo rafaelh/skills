@@ -10,7 +10,7 @@ const SCRIPTS_DIR = dirname(fileURLToPath(import.meta.url));
 let root: string;
 
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), "skill-optimizer-ts-"));
+  root = mkdtempSync(join(tmpdir(), "skill-audit-ts-"));
 });
 
 afterEach(() => {

@@ -9,7 +9,7 @@ let root: string;
 let savedApiKey: string | undefined;
 
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), "skill-optimizer-ts-"));
+  root = mkdtempSync(join(tmpdir(), "skill-audit-ts-"));
   savedApiKey = process.env.ANTHROPIC_API_KEY;
   delete process.env.ANTHROPIC_API_KEY;
 });

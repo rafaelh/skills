@@ -111,7 +111,7 @@ wheels = [
 ]
 
 [[package]]
-name = "skill-optimizer"
+name = "skill-audit"
 version = "2.0"
 source = { virtual = "." }
 

@@ -6,15 +6,15 @@
   },
   "plugins": [
     {
-      "name": "skill-optimizer",
+      "name": "skill-audit",
       "description": "Audit, optimize, validate, scaffold, and trigger-eval Claude Agent Skills (SKILL.md files)",
-      "source": "./skills/skill-optimizer",
+      "source": "./skills/skill-audit",
       "category": "development"
     },
     {
-      "name": "skill-optimizer-ts",
+      "name": "skill-audit-ts",
       "description": "Audit, optimize, validate, scaffold, and trigger-eval Claude Agent Skills (SKILL.md files) whose bundled scripts are TypeScript",
-      "source": "./skills/skill-optimizer-ts",
+      "source": "./skills/skill-audit-ts",
       "category": "development"
     },
     {
