@@ -21,7 +21,7 @@ target-version = "py314"
 line-length = 100
 # Eval fixtures are snapshots of a target repo, held byte-identical so results stay
 # comparable between rounds. Formatting them would change what the skill is measured on.
-extend-exclude = ["evals/*/fixtures/*"]
+extend-exclude = ["evals/*/fixtures/*", "**/evals/fixtures/*"]
 
 [tool.ruff.lint]
 select = [
@@ -98,6 +98,9 @@ ignore = [
     "S603",    # subprocess argv is built from resolved fixture paths, never user text
     "S607",    # `git` and `diff` come from PATH by design — the harness runs on the dev's tools
 ]
+"skills/plan/evals/*.py" = [
+    "S603",    # subprocess argv is the resolved claude CLI plus harness-owned prompts
+]
 "skills/create-agents-for-repo/tests/*.py" = [
     "S101",    # assert is correct in tests
     "S603",    # subprocess calls in tests use controlled, trusted input
@@ -114,12 +117,19 @@ force-sort-within-sections = true
 [tool.pytest.ini_options]
 # Fixture repos carry their own suites; collecting them would run a text adventure
 # game's tests as part of this repo's.
-norecursedirs = ["evals/*/fixtures", ".venv", "node_modules"]
+norecursedirs = ["evals/*/fixtures", "**/evals/fixtures", ".venv", "node_modules"]
 
 [tool.pyright]
 pythonVersion = "3.14"
 typeCheckingMode = "strict"
 include = ["skills", ".claude/skills"]
-exclude = ["**/node_modules", "**/__pycache__", ".venv", "evals/*/fixtures"]
+exclude = [
+    "**/node_modules",
+    "**/__pycache__",
+    ".venv",
+    "evals/*/fixtures",
+    # Reached both directly and through the .claude/skills/plan symlink.
+    "**/evals/fixtures",
+]
 venvPath = "."
 venv = ".venv"

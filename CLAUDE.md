@@ -21,13 +21,16 @@ Script-bearing skills — held to the contracts below:
 | `skills/agent-tool-builder` | Python | Build & audit Python scripts that agents call as tools |
 | `skills/create-agents-for-repo` | Python | Fit `.claude/agents/*.md` subagents to a *target* repo and wire their call sites |
 
-The rest (`architecture`, `plan`, `refactor`, `tdd`) are prose-only — `SKILL.md` plus optional
-`references/`, no `scripts/` — so the agent-tool contract does not apply to them.
+The rest (`architecture`, `plan`, `refactor`, `tdd`) are prose-only — no `scripts/`, so the
+agent-tool contract does not apply.
 
 `create-agents-for-repo` is the one skill that operates on a *consuming* repo rather than on skills
 themselves. Skills travel between repos; the subagents it writes deliberately do not, because they
-hardcode the local toolchain. Test against a real target checkout — `evals/` holds three fixture
-repos, a grader and a staging script; see `evals/README.md` before re-measuring.
+hardcode the local toolchain.
+
+Two skills carry developer eval harnesses: `evals/create-agents-for-repo/` (fixture repos, staging,
+grader) and `skills/plan/evals/`, which drives a simulated interview — a conversation leaves no
+artifact to diff. Read its README first.
 
 ## Commands
 

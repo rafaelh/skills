@@ -1,0 +1,114 @@
+{
+  "skill_name": "plan",
+  "evals": [
+    {
+      "id": 0,
+      "name": "rate-limit-in-repo",
+      "fixture": "api-repo",
+      "persona": "rate-limit.md",
+      "prompt": "we need per-tenant rate limiting on the atlas api this quarter. i've got a rough idea of what i want but i keep going round in circles on it — can we plan it out properly before i write anything?",
+      "expected_output": "Reads the repo first, so it never asks what framework, whether Redis exists, or what the current limiter does. Opens on a root decision (replace vs supplement the IP limiter, or where limits are stored) with a recommendation attached. Surfaces the Redis-outage behaviour and the /internal exemption. Ends handoff-ready with a /tdd offer.",
+      "code_bearing": true,
+      "repo_answers": [
+        {
+          "label": "what framework / stack the service is on",
+          "pattern": "(?i)\\b(what|which|are you (on|using))\\b[^?]{0,70}\\b(framework|web stack|tech stack|fastapi|flask|django)\\b[^?]{0,40}\\?"
+        },
+        {
+          "label": "whether Redis is already available",
+          "pattern": "(?i)\\b(do|does|are|is|have)\\b[^?]{0,60}\\bredis\\b[^?]{0,60}\\b(available|already|in (the )?stack|access|use|running|set up)\\b[^?]{0,30}\\?"
+        },
+        {
+          "label": "whether a rate limiter already exists",
+          "pattern": "(?i)\\b(do|does|is there|are there|have you)\\b[^?]{0,60}\\b(existing|current|already|any)\\b[^?]{0,40}\\brate.?limit\\w*[^?]{0,40}\\?"
+        },
+        {
+          "label": "how tenants are identified on a request",
+          "pattern": "(?i)\\bhow\\b[^?]{0,60}\\b(identify|identified|authenticate|resolve|determine|know)\\b[^?]{0,40}\\btenants?\\b[^?]{0,40}\\?"
+        },
+        {
+          "label": "how the service is deployed",
+          "pattern": "(?i)\\b(where|how)\\b[^?]{0,50}\\b(deployed|hosted|running in production|run in production)\\b[^?]{0,40}\\?"
+        }
+      ],
+      "judgement": [
+        "Surfaces what should happen when Redis is unavailable (fail open vs fail closed) as a decision the user has to make",
+        "Makes the call itself on choices that are already settled — reusing the Redis client in `deps.py`, tiering off the existing `Tenant.plan` column — instead of asking the user to ratify them",
+        "Explains the rate-limiting algorithm choice by what it does to a bursty ETL client at the top of the hour, rather than by naming token bucket or sliding window and leaving the user to infer the impact"
+      ]
+    },
+    {
+      "id": 1,
+      "name": "postmortem-rollout-no-code",
+      "fixture": null,
+      "persona": "postmortem.md",
+      "prompt": "I manage 12 engineers across three squads and we have no real postmortem process — last month's outage never got written up at all. I want to plan the rollout properly and think it through before I announce anything to the team.",
+      "expected_output": "Interviews the same way for a plan that produces no code: one decision at a time, recommendation first, ordered so that scope questions (what counts as an incident) come before mechanics (who writes it, deadline). Never offers /tdd or proposes building anything, because there is no code to build.",
+      "code_bearing": false,
+      "repo_answers": [],
+      "judgement": [
+        "Never proposes writing code, tests, or a script, and never offers a TDD or implementation handoff",
+        "Forces a decision on who owns action items after the document is filed, rather than leaving tracking vague",
+        "Settles what counts as a customer-visible incident before settling the mechanics of who writes the document and by when"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "stress-test-webhook-plan",
+      "fixture": "payments-repo",
+      "persona": "webhook-queue.md",
+      "prompt": "here's my plan for getting stripe webhooks off the request path, can you stress test it before i take it to the team?\n\n1. keep the same endpoint url so stripe doesn't need reconfiguring\n2. verify the signature, drop the raw event on an SQS queue, return 200 immediately\n3. a lambda picks events off the queue and runs the existing handlers\n4. we'll figure out dedupe/replay later, the unique constraint probably covers it\n\nobviously we'd keep the handlers exactly as they are so it's a small diff. should be a couple of days work.",
+      "expected_output": "Does not validate the plan back. Treats 'we'll figure out dedupe later' and 'obviously we'd keep the handlers as they are' as unresolved decisions. Reads handlers.py and finds that subscription.updated has no version check, so decoupling ordering from delivery is a real hazard. Raises cutover and DLQ ownership.",
+      "code_bearing": true,
+      "repo_answers": [
+        {
+          "label": "whether queue infrastructure already exists",
+          "pattern": "(?i)\\b(do|does|is there|are you|have you)\\b[^?]{0,60}\\b(queue|celery|sqs|kafka|rabbit|broker|worker)\\b[^?]{0,60}\\?"
+        },
+        {
+          "label": "whether duplicate events are already handled",
+          "pattern": "(?i)\\b(do|does|is there|are you|have you)\\b[^?]{0,60}\\b(dedup\\w*|idempoten\\w*|duplicate\\w*)\\b[^?]{0,60}\\?"
+        },
+        {
+          "label": "what the endpoint does today",
+          "pattern": "(?i)\\bwhat\\b[^?]{0,40}\\b(currently|today|right now)\\b[^?]{0,60}\\b(endpoint|webhook|handler)\\w*[^?]{0,40}\\?"
+        }
+      ],
+      "judgement": [
+        "Names the out-of-order `customer.subscription.updated` hazard, pointing at the handler taking the event payload with no version or timestamp check",
+        "Treats 'we'll figure out dedupe/replay later' as an unresolved decision to settle now rather than accepting the deferral",
+        "Surfaces 'obviously we'd keep the handlers exactly as they are' as an assumption to confirm rather than a given",
+        "Raises what happens to events already in flight when the change is cut over",
+        "Gets the user to explicitly accept or reject keeping the same endpoint URL, rather than only noting it as a risk and moving on"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "slow-api-vague",
+      "fixture": "api-repo",
+      "persona": "slow-api.md",
+      "prompt": "our enterprise customers keep telling us the api is slow and one of them is threatening to churn. i inherited this service six weeks ago. i need a plan. help?",
+      "expected_output": "Refuses to turn a vague complaint into a list of fixes. Pins down what is actually slow and for whom before proposing anything, and forces the instrument-first vs fix-the-obvious-N+1 tradeoff as a choice rather than listing both. Reads the reports route rather than asking what it does.",
+      "code_bearing": true,
+      "repo_answers": [
+        {
+          "label": "what the slow endpoint does",
+          "pattern": "(?i)\\bwhat\\b[^?]{0,50}\\b(reports?|endpoints?|routes?)\\b[^?]{0,50}\\b(do|does|look like|return)\\b[^?]{0,40}\\?"
+        },
+        {
+          "label": "whether caching exists",
+          "pattern": "(?i)\\b(do|does|is there|are you|have you)\\b[^?]{0,60}\\bcach\\w*[^?]{0,60}\\?"
+        },
+        {
+          "label": "what framework / stack the service is on",
+          "pattern": "(?i)\\b(what|which|are you (on|using))\\b[^?]{0,70}\\b(framework|web stack|tech stack|fastapi|flask|django|orm)\\b[^?]{0,40}\\?"
+        }
+      ],
+      "judgement": [
+        "Pins down what is actually slow — which endpoint, whose traffic, what counts as too slow — before proposing any fix",
+        "Forces a choice between instrumenting first and fixing the visible problem first, rather than recommending both in parallel",
+        "Surfaces that the report response shape is public and that pagination would be a breaking change, as a decision rather than an assumption"
+      ]
+    }
+  ]
+}
