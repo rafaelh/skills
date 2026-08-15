@@ -46,7 +46,7 @@ If the user gives you a path that is not inside a vault, do not silently treat i
 
 | Task                              | Script                    | Reference                                     |
 |-----------------------------------|---------------------------|-----------------------------------------------|
-| Locate the root, enumerate files  | `vault.py`                | `references/vault-structure.md`                |
+| Locate the root, enumerate files  | `vault.py`                | `references/vault-structure.md`               |
 | Resolve a wikilink target to note(s) | `resolver.py`          | `references/linking.md`                       |
 | Read/write frontmatter            | `vault_frontmatter.py`    | `references/frontmatter.md`                   |
 | Parse wikilinks/embeds/tags       | `links.py`                | `references/markdown-syntax.md`, `linking.md` |
