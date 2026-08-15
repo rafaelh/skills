@@ -36,6 +36,125 @@ it. Rounds 1 and 2 are comparable on the assertions they share and **not** on th
   why round 1 was a 9/9 tie there. They now target making the settled calls yourself and explaining
   the algorithm choice by its effect on a bursty client.
 
+## Rubric v4 — 2026-08-15, after round 3
+
+Four checks retired for being unsatisfiable by a run following the skill, one reworded, one
+re-based. Round 4 runs under v4, and re-grades round 3's stored transcripts under it so the two
+rounds line up — round 3's own numbers above stay as they were measured.
+
+- **The opening word budget is gone.** It was the wrong axis: raised once from 350 to 450, it still
+  failed a 484-word turn that had read the repo and asked four recommendation-led questions, and it
+  failed a 579-word turn asking eight questions alongside a genuine plan dump. The check now looks
+  for what a delivered plan actually does — announce itself in a `## The plan` heading — and
+  ignores length. On round 3's transcripts that reads 4/4 new, 4/4 old, 2/4 none: still separating
+  the arm that dumps, no longer punishing the arm that reads before it asks.
+- **"Every question states a recommended answer" is scoped to decision questions.** As written it
+  failed a run for asking how many rows the biggest report held — a fact the interviewer cannot
+  look up and cannot recommend an answer to — which is why the arm that asked least scored best on
+  it, 2/4 against the skill's 1/4. Questions asking only for an unlookupable fact are now exempt.
+- **Eval 3's first two per-eval assertions are replaced.** One required asking what was slow when
+  the fixture's docstring names the endpoint; the other required staging an instrument-first choice
+  when the bug is confirmed in the source. Both punish what the skill teaches, which is why they
+  were 0/3 for three rounds. They are replaced by three that target the case's actual purpose —
+  decision-forcing on vague scope: cut the complaint to one named target, settle the order of work
+  including what is deferred, and settle what "fast enough" means or settle explicitly that it
+  cannot be set.
+- **Eval 0's algorithm assertion is re-based** off "a bursty ETL client at the top of the hour",
+  which demanded the run invent one particular illustration. A round-3 run explaining that "5/sec
+  invites arguments about a burst of 6 that landed in the same second" was failed by it. It now
+  asks for the experience of a client hitting the limit, however illustrated.
+
+Not touched, though both were 0/3 in round 3: eval 2's endpoint-URL and in-flight-events
+assertions. That run interviewed for two turns and stopped — a short interview is the likeliest
+explanation, and there is no evidence yet that a longer one could not satisfy them.
+
+## Round 3 — 2026-08-15
+
+One change to the skill, deliberately: the lead-with-a-recommendation rule in `How to ask` now says
+the recommendation belongs on the still-open question, not only on the preamble of calls already
+made. Rubric v3 — the mechanical open-door check dropped (it fired on 1 of 4 transcripts the blind
+grader passed 4 of 4, so it was measuring which phrasings the regex knew; the judgement statement
+covering the same behaviour stays), and one judgement assertion added on decisions settled
+unilaterally, since the rubric could see whether the questions *asked* were real but not whether the
+ones *skipped* were skippable. Arms: `with_skill` is the edit, `old_skill` is `5f8679d`'s SKILL.md
+(round 2's rewrite), `without_skill` is no skill. All `sonnet`; `--max-turns 16`.
+
+| Eval | new skill | old skill | no skill |
+|---|---|---|---|
+| 0 rate-limit-in-repo | 76% (16/21) | 81% (17/21) | 76% (16/21) |
+| 1 postmortem-rollout-no-code | 95% (18/19) | 79% (15/19) | 74% (14/19) |
+| 2 stress-test-webhook-plan | 65% (15/23) | 74% (17/23) | 17% (4/23) |
+| 3 slow-api-vague | 67% (14/21) | 62% (13/21) | 48% (10/21) |
+| **Mean** | **75.7%** | **73.9%** | **53.7%** |
+
++1.8pp is inside noise at one run per cell, the same reading as round 2. Cost is flat between the
+skill arms at $0.47–$0.68 a run, against $0.15–$0.42 unaided.
+
+### Three instruments were repaired mid-round
+
+Found by reading transcripts against their own grades. Mechanical checks are deterministic, so the
+runs were re-graded in place without re-spending on the grader; judgement verdicts are untouched.
+
+- `BUILD_HANDOFF` matched a bare "want me to write", so *"want me to write this up as a markdown
+  plan doc"* — the handoff the skill exists to offer — was scored as an offer to write code. Its
+  write branch now has to name something code-shaped.
+- `PLAN_FILE_OFFER` missed the same sentence: it allowed no words between the article and
+  `file|doc`, and real offers name the artefact. So both skill arms lost two checks on eval 1 for
+  doing the right thing once.
+- `_RECOMMENDATION` was a closed verb list that did not contain "my call:", "I'd fix", "I'd reach
+  for" or "I'd leave". It now reads any "I'd <verb>" bar the forms that ask for something
+  ("I'd need to know"). This is the same defect that retired the open-door check, in the check that
+  matters most.
+
+**Round 2's numbers for these three checks were produced by the broken versions and cannot be
+re-graded — those transcripts are gone.** Its "file offer 2/4" and its recommendation column are
+not comparable with anything here.
+
+### What the round says about the skill
+
+- **The edit cannot be credited with the recommendation result.** Under the repaired instrument the
+  round reads 4/4 new, 3/4 old, 2/4 none — but round 2's 2/4 was measured with the broken one, so
+  there is no before to compare against. What can be said is that with a working instrument, both
+  skill arms lead their questions and the unaided arm does so less.
+- **Eval 1 is where the edit shows**: 95%, +16pp over the old skill, its one remaining failure being
+  the opening word budget.
+- **One clear regression**: "favours the option that leaves less to maintain" is 1/4 new against 3/4
+  old.
+- **Convergence speed is the new variance.** The new skill's eval 2 run interviewed for two turns —
+  below the three-turn interview floor, costing it that check and the repo-answers one. Round 2's
+  ran four.
+
+### Eval 3, read by a human
+
+Round 2 asked for this. Two of its three per-eval assertions are unsatisfiable by a run that follows
+the skill, which is why they have failed in every arm for three rounds:
+
+- *"Pins down what is actually slow … before proposing any fix"* — the fixture's own docstring names
+  the endpoint and the N+1 is visible in the source. The skill says read rather than ask; the
+  assertion requires asking.
+- *"Forces a choice between instrumenting first and fixing the visible problem first"* — with the
+  bug confirmed in the source, instrument-first is not a live option. The skill says cut decisions
+  with one sensible answer; the assertion requires staging one.
+
+Only the third, pagination as a breaking change to a public response shape, is a fair miss. Rewrite
+the first two against what the round-3 transcript shows a good run doing.
+
+### What this round says about the rubric
+
+- **Round 2's convergence finding does not replicate.** The same old-skill text ran 7, 10, 4 and 3
+  turns here and stopped itself every time, where round 2 capped it at 16 on two evals and concluded
+  non-termination was "a property of the skill". It is run-to-run variance. Nothing about turn count
+  should be concluded from one run per cell.
+- **The "every question" judgement assertions reward asking less.** "Every question states a
+  recommended answer" reads 1/4 new, 0/4 old, **2/4 none** — the grader is told a single exception
+  fails the assertion, and a factual question ("how big is their largest report?") cannot carry a
+  recommendation. Scope it to decision questions.
+- **The opening word budget is now catching the skill's own prescription.** Eval 3's new-skill turn
+  failed at 484 words against 450, for a turn that read the whole repo and asked four
+  recommendation-led questions. Raising the number again is not the fix; the check wants a proxy for
+  "delivered a finished plan" that is not length.
+- Inverse-saturated for a second round: eval 0's bursty-ETL-client assertion, 0/3.
+
 ## Round 2 — 2026-08-13
 
 Skill rewritten from round 1's review (see "What the review changed in the skill" below). Rubric

@@ -38,13 +38,21 @@ from transcript_lib import (
 
 HERE = Path(__file__).resolve().parent
 
-# An unaided model answering "help me plan X" tends to reply with the plan. The budget is
-# set well above a recommendation-plus-question turn and well below a plan document.
-# Calibrated on round 1's first turns: unaided runs came in at 516, 632 and 667 words, the
-# skill at 165-292. Raised from 350 for round 2, because the skill now opens by stating the
-# calls it made itself before asking, which is longer by design — an unmodified 350 would have
-# failed it at 351 words for doing the thing it was told to do. Still clears every dump.
-OPENING_WORD_BUDGET = 450
+# A first turn that hands over a finished plan announces itself: a "## The plan" heading, or
+# "here's the plan". This replaces a word budget, which was the wrong axis — raised once from 350
+# to 450 and still failing a 484-word turn that had read the whole repo and asked four
+# recommendation-led questions, while a 579-word turn asking eight questions failed alongside a
+# genuine dump. Numbered bold items are deliberately not a signal: interview openings use them to
+# lay out their questions as often as plans use them for steps.
+PLAN_DELIVERED = re.compile(
+    r"""(?im)
+      ^\s{0,3}\#{1,4}\s[^\n]*\b(the\ plan|my\ plan|proposed\ plan|the\ proposal|roadmap|
+        recommended\ approach|implementation\ plan)\b
+    | \bhere'?s\ (the|my|a)\ (plan|proposal|roadmap)\b
+    | ^\s{0,3}\#{1,4}\s*(phase|step|milestone|week)\s*\d
+    """,
+    re.VERBOSE | re.IGNORECASE | re.MULTILINE,
+)
 
 # Two thirds rather than all of them: the recommendation regex is a keyword match and will
 # miss valid phrasings, so a clean sweep would measure vocabulary, not behaviour.
@@ -55,35 +63,22 @@ RECOMMENDATION_MAJORITY = 2 / 3
 # least four open decisions, so no honest interview settles them in fewer turns than this.
 MIN_INTERVIEW_TURNS = 3
 
-# Half rather than two thirds: this phrasing set is narrower than the recommendation one, so a
-# higher bar would measure how many ways the harness knows to say "or something else".
-OPEN_DOOR_MAJORITY = 1 / 2
-OPEN_DOOR = re.compile(
-    r"""
-      or\ something\ (else|different)
-    | or\ (is\ there|do\ you\ have|would\ you\ (rather|prefer))
-    | or\ (a\ )?(third|another|some\ other)\ (option|answer|approach)
-    | if\ (neither|none\ of|that'?s\ not|it'?s\ neither)
-    | (push\ back|redirect\ me|tell\ me\ if|let\ me\ know\ if|say\ so)
-    | (something|an\ option)\ I\ (haven'?t|have\ not)\ (listed|thought)
-    | (shout|flag\ it)\ if
-    | if\ you\ have\ (a\ )?(different|another|other)
-    """,
-    re.IGNORECASE | re.VERBOSE,
-)
-
 TDD_OFFER = re.compile(r"(?i)(/tdd\b|\btdd\b|test.driven development)")
+# The write branch has to name something code-shaped. A bare "want me to write" also matches
+# "want me to write this up as a markdown plan doc" — the handoff the skill is supposed to offer —
+# which cost both skill arms this check in round 3 for doing the right thing.
 BUILD_HANDOFF = re.compile(
     r"(?i)(/tdd\b|\btdd\b|test.driven"
     r"|drive the implementation|start (implementing|building|coding)"
-    r"|want me to (write|build|implement|code)"
-    r"|shall i (write|build|implement|code))"
+    r"|(want me to|shall i|should i) (build|implement|code)\b"
+    r"|(want me to|shall i|should i) write (the |an? |some )?(code|tests?|script|implementation))"
 )
 # Anchored on an actual file, not on "write it up" — in a postmortem interview that phrase means
-# writing the postmortem, and it was passing this check for both arms.
+# writing the postmortem, and it was passing this check for both arms. The gap between the article
+# and the noun is open because real offers name the artefact: "as a markdown plan doc".
 PLAN_FILE_OFFER = re.compile(
     r"(?i)((write|save|drop|put|dump)[^.?!\n]{0,40}\b(to|into|as|in)\s+(an?|the)\s+"
-    r"(markdown\s+|\.md\s+|separate\s+)*(file|doc\w*)"
+    r"[\w.-]{0,12}(\s+[\w.-]{1,12}){0,3}\s*(file|doc\w*)"
     r"|markdown file|plan (file|document)\b|(file|doc\w*)[^.?!\n]{0,40}fresh context)"
 )
 
@@ -92,8 +87,12 @@ SHARED_JUDGEMENT = [
     "and the listed alternatives are strawmen",
     "Where a turn asks about more than one decision, those decisions are independent of each "
     "other rather than one depending on the answer to another in the same turn",
-    "Every question states a recommended answer and a short rationale before asking the user "
-    "to confirm or redirect it",
+    # Scoped to decision questions on purpose. Read as "every question", it failed on a run that
+    # asked how many rows the biggest report held — a fact the interviewer cannot look up and
+    # cannot recommend an answer to — so the arm that asked least scored best on it.
+    "Every question that puts a decision to the user states a recommended answer and a short "
+    "rationale before asking them to confirm or redirect it; questions asking only for a fact "
+    "the interviewer has no way to look up are exempt",
     "Choices are framed by what they change for the user, not by the name of the mechanism, so "
     "the impact is legible to someone who does not know the jargon",
     "Questions are asked in a way that accepts an answer the interviewer did not list, rather "
@@ -104,6 +103,12 @@ SHARED_JUDGEMENT = [
     "Where two options both work, the recommendation favours the one leaving less to maintain, "
     "and says what that option gives up",
     "The plan is one the user agreed to decision by decision, not one handed to them",
+    # The counterweight to the assertion above about strawman questions: cutting a question is only
+    # right when there was nothing to decide. Without this, a short interview that quietly made a
+    # call the user cared about scores as an efficient one.
+    "Every decision the interviewer settled on the user's behalf was genuinely settle-able — "
+    "answered by the code, or a choice with one sensible answer — rather than a judgement call "
+    "the user had a stake in",
 ]
 
 GRADER_PROMPT = """You are grading a transcript of a planning interview. Someone was asked
@@ -140,34 +145,15 @@ def check_opening(transcript: Transcript) -> Json:
     if not turns:
         return expectation(text, False, "The interviewer never replied.")
     first = turns[0]
-    words = word_count(first.text)
     questions = question_sentences(first.text)
-    passed = words <= OPENING_WORD_BUDGET and bool(questions)
+    delivered = PLAN_DELIVERED.search(prose(first.text))
+    dump = f", and reads as a delivered plan: {delivered.group(0).strip()!r}." if delivered else "."
     return expectation(
         text,
-        passed,
-        f"First turn is {words} words (budget {OPENING_WORD_BUDGET}) and contains "
-        f"{len(questions)} question(s)."
-        + (f" First: {questions[0]!r}" if questions else " It asked nothing."),
-    )
-
-
-def check_open_door(transcript: Transcript) -> Json:
-    """Bundling is fine when the decisions are real; a closed menu of options is not.
-
-    Replaces a one-question-per-turn check, which measured the wrong thing — see benchmark.md.
-    """
-    text = "Questions leave room for an answer the interviewer did not list"
-    asking = [t for t in transcript.assistant_turns() if question_sentences(t.text)]
-    if not asking:
-        return expectation(text, False, "No turn asked a question.")
-    open_turns = [i for i, t in enumerate(asking, start=1) if OPEN_DOOR.search(prose(t.text))]
-    ratio = len(open_turns) / len(asking)
-    return expectation(
-        text,
-        ratio >= OPEN_DOOR_MAJORITY,
-        f"{len(open_turns)} of {len(asking)} question turns invite an unlisted answer "
-        f"({ratio:.0%}; threshold {OPEN_DOOR_MAJORITY:.0%}).",
+        bool(questions) and delivered is None,
+        f"First turn is {word_count(first.text)} words with {len(questions)} question(s)"
+        + (f", first {questions[0]!r}" if questions else ", asking nothing")
+        + dump,
     )
 
 
@@ -272,7 +258,6 @@ def check_tdd_handoff(transcript: Transcript, case: Json) -> Json:
 def mechanical(transcript: Transcript, case: Json) -> list[Json]:
     checks = [
         check_opening(transcript),
-        check_open_door(transcript),
         check_recommendation(transcript),
         check_termination(transcript),
         check_plan_file_offer(transcript),

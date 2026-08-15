@@ -30,8 +30,14 @@ Interview the user until every real decision in the plan has an explicit answer.
 
 ## How to ask
 
-**Lead with your recommended answer and a one-line rationale.** Their job is to review a call, not
-to redo the analysis. A bare "what do you think about X?" makes them do all the work.
+**Lead every question with your recommended answer and a one-line rationale.** Their job is to
+review a call, not to redo the analysis, and a bare "what do you think about X?" makes them do all
+the work.
+
+Watch for the near-miss version of this: recommending confidently on the calls you already made in
+step 2, then leaving the still-open decision as a bare menu — "so: A or B?". The open ones are
+where a lead is worth most, because they are the ones where the user has to think. If you truly
+can't pick, say what would decide it for you.
 
 **Say what the choice changes, not what it's called.** Jargon names a mechanism; they are buying a
 consequence. "Retries stop being your problem, but two events can land out of order" tells them

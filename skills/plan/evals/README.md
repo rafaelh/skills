@@ -106,8 +106,7 @@ rerun, but every one is a proxy, so each reports what it matched.
 
 | Check | Passes when | The proxy in it |
 |---|---|---|
-| Opens by asking | First turn ≤ 350 words and contains a question | A word budget stands in for "did not just deliver the plan" |
-| Questions leave the door open | ≥ half of question turns invite an answer that wasn't listed | Keyword match on a narrow phrasing set, hence the lower bar |
+| Opens by asking | First turn contains a question and no `## The plan`-style heading | Plan documents announce themselves in a heading; a turn that merely runs long does not |
 | Questions carry a recommendation | ≥ 2 in 3 question turns match a recommendation phrasing | Keyword match; a clean sweep would measure vocabulary, not behaviour |
 | Holds a real interview and stops on its own | `stop_reason` is `no_question` after ≥ 3 turns | The turn floor is what stops "here is your plan, no questions" from counting as a finished interview |
 | Reads the repo before its first question | Turn 1 made a read tool call | Deliberately strict: enumerating decisions in a codebase means looking at it |
@@ -115,11 +114,14 @@ rerun, but every one is a proxy, so each reports what it matched.
 | Offers to write the plan out | An offer naming a file or markdown | Anchored on a file, so "write it up" in a postmortem interview doesn't count |
 | TDD handoff | `/tdd` offered for code-bearing plans, no build offer for the others | — |
 
-Note what is deliberately *not* here: a one-question-per-turn check. Bundling is fine when the
-decisions are real and independent — see round 1's notes in `benchmark.md`. What replaced it is the
-judgement pair about strawman options and about bundling a decision with the thing it depends on.
+Two things are deliberately *not* here. A one-question-per-turn check: bundling is fine when the
+decisions are real and independent — see round 1's notes in `benchmark.md` — and the judgement pair
+about strawman options and about bundling a decision with its dependency replaced it. And an
+open-door check: a keyword match for "or something else" fired on 1 of 4 transcripts the blind
+grader passed 4 of 4, so it was measuring which phrasings the regex happened to know. Only the
+judgement statement survives.
 
-**Judgement** — the six shared statements in `grade.py` plus the per-eval ones in
+**Judgement** — the eleven shared statements in `grade.py` plus the per-eval ones in
 `evals.json`, sent to a grader model with the transcript, the arm label stripped and tool
 calls removed so it cannot tell which version it is reading.
 
@@ -132,6 +134,13 @@ leave it as a floor and add a sharper one next to it.
 Add assertions rather than rewriting them. A rubric edited between rounds makes the rounds
 incomparable, which costs more than the round was worth. Note what changed alongside the
 scores.
+
+The exception is a check that cannot be satisfied by a run doing the right thing. Three rounds of
+0/3 is not a finding about the skill, it is a broken check — read the transcript before believing
+it. Round 3 retired four that way, all of them grading a specific illustration the author had in
+mind rather than the behaviour underneath. When you do retire one, re-grade the stored transcripts
+of the previous round under the new rubric so the two rounds still line up; that is why the runs
+keep their `transcript.json`.
 
 If you edit a fixture, every earlier round becomes a different experiment. Prefer adding a
 fifth eval to bending an existing one.

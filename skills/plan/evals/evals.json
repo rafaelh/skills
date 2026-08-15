@@ -34,7 +34,7 @@
       "judgement": [
         "Surfaces what should happen when Redis is unavailable (fail open vs fail closed) as a decision the user has to make",
         "Makes the call itself on choices that are already settled — reusing the Redis client in `deps.py`, tiering off the existing `Tenant.plan` column — instead of asking the user to ratify them",
-        "Explains the rate-limiting algorithm choice by what it does to a bursty ETL client at the top of the hour, rather than by naming token bucket or sliding window and leaving the user to infer the impact"
+        "Explains the rate-limiting algorithm choice by what a client hitting the limit actually experiences — what becomes of a burst of requests — rather than by naming token bucket or sliding window and leaving the user to infer the impact"
       ]
     },
     {
@@ -105,8 +105,9 @@
         }
       ],
       "judgement": [
-        "Pins down what is actually slow — which endpoint, whose traffic, what counts as too slow — before proposing any fix",
-        "Forces a choice between instrumenting first and fixing the visible problem first, rather than recommending both in parallel",
+        "Cuts the vague complaint down to one named target — a specific endpoint and a specific customer's workload — instead of carrying a list of parallel improvements forward",
+        "Settles the order of work as a decision: what ships first and what is explicitly deferred or left out, rather than recommending several improvements together",
+        "Settles what counts as fast enough, or settles explicitly that no target can be set and says what will be reported in its place, rather than leaving the bar undefined",
         "Surfaces that the report response shape is public and that pagination would be a breaking change, as a decision rather than an assumption"
       ]
     }

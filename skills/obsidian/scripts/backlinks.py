@@ -13,8 +13,9 @@ Library API:
 CLI:
     backlinks.py NOTE          # JSON list of inbound links
 
-A wikilink counts as a backlink to NOTE if its target is either NOTE's
-basename (without .md) or NOTE's vault-relative path (without .md).
+A wikilink counts as a backlink to NOTE if its target resolves to NOTE:
+NOTE's basename, its vault-relative path (both without .md), or any of
+its frontmatter aliases, matched case-insensitively (see resolver.py).
 Links inside code are skipped (handled by links.py). Self-references
 inside NOTE itself are excluded.
 """

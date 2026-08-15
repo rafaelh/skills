@@ -46,12 +46,16 @@ _QUESTION = re.compile(r"[^.?!\n]*\?")
 # Phrasings that mark an answer the user is being asked to confirm rather than supply.
 # Deliberately generous: a miss here understates the skill, so the threshold that
 # consumes this is a two-thirds majority rather than a clean sweep.
+#
+# "I'd <verb>" is taken as a lead whatever the verb, because a closed verb list turned out to
+# measure the harness's vocabulary rather than the interview — round 3's transcripts led with
+# "my call:", "I'd fix", "I'd reach for", "I'd leave", none of which the list knew. The
+# exclusions are the phrasings where "I'd" asks for something instead of offering something.
 _RECOMMENDATION = re.compile(
     r"""
-    \bI(?:'d|\ would)\ (?:recommend|suggest|propose|go\ with|default|pick|lean|start|keep|
-        drop|replace|use|treat|split|say|argue)\b
+    \bI(?:'d|\ would)\ (?!need|like|want|prefer\ to\ know|have\ to\ know)\w+
     | \bI\ (?:recommend|suggest|propose)\b
-    | \bmy\ (?:recommendation|suggestion|take|instinct|vote)\b
+    | \bmy\ (?:recommendation|suggestion|take|instinct|vote|call|read|default|preference)\b
     | \brecommend(?:ation|ed\ answer)\s*:
     | \blet'?s\ go\ with\b
     | \bthe\ (?:right|better|safer|obvious)\ (?:answer|call|choice|default)\ (?:here\ )?is\b
