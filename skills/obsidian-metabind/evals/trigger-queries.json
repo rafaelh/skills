@@ -1,0 +1,112 @@
+[
+  {
+    "query": "Add an INPUT[toggle:done] to my daily note",
+    "should_trigger": true,
+    "notes": "Explicit declaration syntax — the strongest trigger."
+  },
+  {
+    "query": "Why isn't my meta-bind slider rendering?",
+    "should_trigger": true,
+    "notes": "Plugin named directly, debugging intent."
+  },
+  {
+    "query": "My select field doesn't show up when I put it inline in a sentence",
+    "should_trigger": true,
+    "notes": "The allowInline gotcha, without naming the plugin."
+  },
+  {
+    "query": "Make this note interactive so I can tick things off without editing the frontmatter by hand",
+    "should_trigger": true,
+    "notes": "Intent only — no Meta Bind vocabulary at all."
+  },
+  {
+    "query": "Add a button to this note that increments the count property",
+    "should_trigger": true,
+    "notes": "Describes a meta-bind-button updateMetadata action in plain words."
+  },
+  {
+    "query": "I renamed a frontmatter property and now half my fields are broken",
+    "should_trigger": true,
+    "notes": "The rename.py --property case."
+  },
+  {
+    "query": "Check every ```meta-bind block in my vault for syntax errors",
+    "should_trigger": true,
+    "notes": "Fence language plus validation intent."
+  },
+  {
+    "query": "Which notes bind to the hitPoints property?",
+    "should_trigger": true,
+    "notes": "The scan.py --list case, phrased as a question."
+  },
+  {
+    "query": "Write a js-engine block that renders a table of my open tasks",
+    "should_trigger": true,
+    "notes": "JS Engine authoring is deliberately in scope."
+  },
+  {
+    "query": "What arguments can I pass to a progressBar input field?",
+    "should_trigger": true,
+    "notes": "Answered from field-spec.json rather than memory."
+  },
+  {
+    "query": "Add a VIEW field that shows strength divided by two, rounded down",
+    "should_trigger": true,
+    "notes": "Math view field, described rather than named."
+  },
+  {
+    "query": "This BUTTON[reset] doesn't do anything when I click it",
+    "should_trigger": true,
+    "notes": "Unresolved button id — inline syntax present."
+  },
+  {
+    "query": "Rename Other Note.md to Reference Note.md and fix every link to it",
+    "should_trigger": false,
+    "notes": "Near-miss: this is the obsidian skill's rename_note.py, not bind targets."
+  },
+  {
+    "query": "Add tags and aliases to the frontmatter of these three notes",
+    "should_trigger": false,
+    "notes": "Near-miss: plain frontmatter editing belongs to the obsidian skill."
+  },
+  {
+    "query": "Find all the broken wikilinks in my vault",
+    "should_trigger": false,
+    "notes": "Near-miss: vault-level link audit, obsidian skill."
+  },
+  {
+    "query": "Write a dataview query that lists every note tagged #project",
+    "should_trigger": false,
+    "notes": "Near-miss: a different plugin's in-note syntax."
+  },
+  {
+    "query": "Build me a Templater template for new meeting notes",
+    "should_trigger": false,
+    "notes": "Near-miss: another plugin, and 'template' overlaps Meta Bind vocabulary."
+  },
+  {
+    "query": "How do I change the accent colour in Obsidian's appearance settings?",
+    "should_trigger": false,
+    "notes": "Obsidian the app, explicitly out of scope for both skills."
+  },
+  {
+    "query": "Validate this .canvas file for me",
+    "should_trigger": false,
+    "notes": "Near-miss: canvas validation is the obsidian skill's."
+  },
+  {
+    "query": "I'm writing an Obsidian plugin and need to call Meta Bind's TypeScript API from my own code",
+    "should_trigger": false,
+    "notes": "Names Meta Bind but is plugin development from outside a vault — the stated NOT."
+  },
+  {
+    "query": "Add an input type=checkbox to this HTML form",
+    "should_trigger": false,
+    "notes": "Near-miss: 'input field' in a completely unrelated sense."
+  },
+  {
+    "query": "Bind this click handler to the button in my React component",
+    "should_trigger": false,
+    "notes": "Near-miss: 'bind' and 'button' in a web-dev sense."
+  }
+]

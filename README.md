@@ -162,6 +162,29 @@ It then proposes the whole batch and stops for approval before writing anything,
 
 
 <details>
+  <summary>obsidian, obsidian-metabind</summary>
+
+### obsidian
+Works on an Obsidian vault as a set of files: notes, frontmatter (Properties), wikilinks, backlinks, `.canvas` and `.base`. It locates the vault root, parses and rewrites wikilinks properly (they carry pipes, heading refs and block refs, so regex doesn't cut it), edits frontmatter without disturbing key order, renames a note while fixing every inbound link, lists notes by tag or property, and validates canvas/base files.
+
+It stops at plugin syntax. `references/plugin-conventions.md` teaches it to *recognize* Dataview, Templater, Tasks, Excalidraw and Meta Bind so it leaves them byte-for-byte alone, and to hand off when a sibling skill exists.
+
+### obsidian-metabind
+Reads, authors, audits and refactors [Meta Bind](https://www.moritzjung.dev/obsidian-meta-bind-plugin-docs/) syntax — the input fields, view fields, buttons and embeds that make a note interactive.
+
+**Why it's separate from `obsidian`.** Meta Bind's surface — 21 input field types, 17 input field arguments, 4 view field types, 14 button actions, a bind target grammar and two plugin APIs — is larger than all of `skills/obsidian/references/` put together. Neither skill invokes the other, so a vault with Meta Bind but no `obsidian` install still works.
+
+**What it does**
+- `scan.py --list` inventories every declaration in the vault; `--check` validates them, `--strict` also flags bind targets naming a property that doesn't exist yet
+- `rename.py --property` retargets a renamed frontmatter key across inline fields, fenced blocks, `js-view` headers and button `updateMetadata` YAML; `--path` fixes cross-note bind targets after a note moves, which `obsidian`'s `rename_note.py` doesn't touch
+- `refresh_docs.py` regenerates `references/field-spec.json` from the plugin's own `FieldConfigs.ts` and `ButtonConfig.ts`, pinned to the version the vault actually has installed
+
+**Two things it deliberately won't do.** It never rewrites identifiers inside `js` or `inlineJS` code — it reports those sites for you to review, because pattern-rewriting arbitrary JS eventually corrupts working code. And it doesn't parse declarations with regex: argument values legitimately contain brackets and commas (`option(80, Griffon [flying])`), so a declaration's extent comes from its host code span or fence, mirroring the plugin's own parser.
+
+</details>
+
+
+<details>
   <summary>architecture, plan, tdd, refactor</summary>
 
 ## These skills are designed to be used together
@@ -198,10 +221,12 @@ This repo is a Claude Code plugin marketplace. From inside Claude Code, add the 
 /plugin install plan@rafaelh
 /plugin install tdd@rafaelh
 /plugin install refactor@rafaelh
+/plugin install obsidian@rafaelh
+/plugin install obsidian-metabind@rafaelh
 /reload-plugins
 ```
 
-Once installed, skills activate automatically based on context — `skill-audit` or `skill-audit-ts` when you ask Claude to audit a SKILL.md (pick based on whether your bundled scripts are Python or TypeScript); `agent-tool-builder` when you ask Claude to write or improve a Python script an agent will call. `skill-audit` and `skill-audit-ts` cover overlapping ground by design — their descriptions each carry an explicit "NOT for X — see Y" disambiguator so only one activates per request.
+Once installed, skills activate automatically based on context — `skill-audit` or `skill-audit-ts` when you ask Claude to audit a SKILL.md (pick based on whether your bundled scripts are Python or TypeScript); `agent-tool-builder` when you ask Claude to write or improve a Python script an agent will call. `skill-audit` and `skill-audit-ts` cover overlapping ground by design — their descriptions each carry an explicit "NOT for X — see Y" disambiguator so only one activates per request. `obsidian` and `obsidian-metabind` are disambiguated the same way: general vault work goes to the former, anything `INPUT[` / `VIEW[` / `BUTTON[` / ```meta-bind to the latter.
 
 After installing `skill-audit-ts`, run `npm ci` once inside `skills/skill-audit-ts/` to resolve `tsx`/`typescript`/`vitest` from the committed lockfile.
 

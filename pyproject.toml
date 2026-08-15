@@ -115,14 +115,25 @@ ignore = [
     "S603",    # subprocess calls in tests use controlled, trusted input
     "PLC0415", # deferred imports in test methods are idiomatic pytest
 ]
+"skills/obsidian-metabind/scripts/tests/*.py" = [
+    "S101",    # assert is correct in tests
+    "S603",    # subprocess calls in tests use controlled, trusted input
+]
+"skills/obsidian-metabind/scripts/refresh_docs.py" = [
+    "PLC0415", # urllib is imported inside http_get() so the fetch machinery is only
+               # paid for by callers that actually fetch — every test injects a fetcher
+               # instead, and perf_check flags the module-level import otherwise
+]
 
 [tool.ruff.lint.isort]
 force-sort-within-sections = true
 
 [tool.pytest.ini_options]
 # Fixture repos carry their own suites; collecting them would run a text adventure
-# game's tests as part of this repo's.
-norecursedirs = ["evals/*/fixtures", "**/evals/fixtures", ".venv", "node_modules"]
+# game's tests as part of this repo's. `.claude/skills/` is symlinks back into
+# skills/, so collecting it would run every skill suite a second time — and, with
+# no __init__.py, collide on module basenames.
+norecursedirs = ["evals/*/fixtures", "**/evals/fixtures", ".claude", ".venv", "node_modules"]
 
 [tool.pyright]
 pythonVersion = "3.14"

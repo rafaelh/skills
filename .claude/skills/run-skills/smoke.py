@@ -25,6 +25,7 @@ TS_DIR = REPO / "skills" / "skill-audit-ts"
 TSX = TS_DIR / "node_modules" / ".bin" / "tsx"
 
 # Not agent tools: shared library modules and test helpers the validators skip.
+# Files carrying the `# agent-tool: false` marker are excluded too — see is_library().
 NOT_TOOLS = {"agents_lib.py", "skill_lib.py", "skill_lib.ts", "test-helpers.ts"}
 
 TIMEOUT = 120
@@ -57,11 +58,26 @@ def run(cmd: list[str], cwd: Path | None = None) -> tuple[int, str, str]:
     return proc.returncode, proc.stdout, proc.stderr
 
 
+def is_library(path: Path) -> bool:
+    """True for modules opting out of the agent-tool contract.
+
+    `validate_agent_tool.py` skips these; the driver has to agree or it demands
+    a --help from modules that deliberately have no CLI.
+    """
+    if path.name in NOT_TOOLS:
+        return True
+    try:
+        head = path.read_text(encoding="utf-8", errors="replace").splitlines()[:10]
+    except OSError:
+        return False
+    return any("agent-tool: false" in line for line in head)
+
+
 def python_tools() -> list[Path]:
     return sorted(
         p
         for p in REPO.glob("skills/*/scripts/*.py")
-        if p.name not in NOT_TOOLS and "tests" not in p.parts
+        if not is_library(p) and "tests" not in p.parts
     )
 
 
@@ -69,7 +85,7 @@ def ts_tools() -> list[Path]:
     return sorted(
         p
         for p in TS_DIR.glob("scripts/*.ts")
-        if p.name not in NOT_TOOLS and not p.name.endswith(".test.ts")
+        if not is_library(p) and not p.name.endswith(".test.ts")
     )
 
 

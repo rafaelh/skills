@@ -36,6 +36,27 @@ What this means for you:
 - Treat ```dataview``` and ```dataviewjs``` fenced blocks as opaque code; do not reformat their contents.
 - `inline:: fields` are stored in the note body, not frontmatter; they coexist with frontmatter properties.
 
+### `obsidian-meta-bind-plugin`
+
+In-note syntax:
+- Inline: `` `INPUT[toggle:done]` ``, `` `VIEW[{count} * 2][math:doubled]` ``, `` `BUTTON[id]` ``.
+- Blocks: ```` ```meta-bind ````, ```` ```meta-bind-button ```` (YAML), ```` ```meta-bind-embed ````,
+  ```` ```meta-bind-js-view ````.
+- Bind targets name frontmatter properties, so editing frontmatter can break a field elsewhere.
+
+What this means for you:
+- There *is* a sibling skill: `obsidian-metabind`. Invoke it to read, author, validate or refactor
+  any of the above — it carries the field/argument/action tables and a parser for the grammar.
+- Renaming a note breaks bind targets that point at it. `rename_note.py` fixes wikilinks only; the
+  sibling skill's `rename.py --path` fixes the bind targets.
+
+### `js-engine`
+
+In-note syntax: ```` ```js-engine ```` blocks running JS, usually alongside Meta Bind.
+
+What this means for you:
+- Treat the block contents as opaque code. Covered by `obsidian-metabind`.
+
 ### `templater-obsidian`
 
 In-note syntax:
@@ -97,6 +118,13 @@ Adds a default note shown on launch. No special file format. Recognition only.
 
 | Signal in a note                   | Likely plugin                |
 |------------------------------------|------------------------------|
+| `` `INPUT[…]` `` / `` `VIEW[…]` `` | `obsidian-meta-bind-plugin`  |
+| `` `BUTTON[…]` ``                  | `obsidian-meta-bind-plugin`  |
+| ```` ```meta-bind ```` block       | `obsidian-meta-bind-plugin`  |
+| ```` ```meta-bind-button ```` block | `obsidian-meta-bind-plugin` |
+| ```` ```meta-bind-embed ```` block | `obsidian-meta-bind-plugin`  |
+| ```` ```meta-bind-js-view ```` block | `obsidian-meta-bind-plugin` |
+| ```` ```js-engine ```` block       | `js-engine`                  |
 | ```` ```dataview ```` block        | `dataview`                   |
 | ```` ```dataviewjs ```` block      | `dataview`                   |
 | `(key:: value)` inline             | `dataview`                   |
@@ -109,7 +137,9 @@ Adds a default note shown on launch. No special file format. Recognition only.
 
 ## When to invoke a sibling skill
 
-If the user asks you to *write* plugin-specific syntax (a Dataview query, Templater template, Tasks query), check whether a `dataview-queries`, `templater`, or `obsidian-tasks` skill is installed. If it is, defer to it. If not, tell the user you don't have plugin-specific authoring loaded and offer to copy/edit existing examples in the vault verbatim.
+**Meta Bind has one: `obsidian-metabind`.** Any `INPUT[…]` / `VIEW[…]` / `BUTTON[…]` or `meta-bind*` block — reading, authoring, validating or refactoring — belongs there, not here. The two skills are independent: neither invokes the other, so a vault may have either installed alone. They compose by hand for a note rename — `rename_note.py` here moves the file and fixes wikilinks, then `rename.py --path` there fixes the bind targets aimed at it.
+
+For other plugins, if the user asks you to *write* plugin-specific syntax (a Dataview query, Templater template, Tasks query), check whether a `dataview-queries`, `templater`, or `obsidian-tasks` skill is installed. If it is, defer to it. If not, tell the user you don't have plugin-specific authoring loaded and offer to copy/edit existing examples in the vault verbatim.
 
 ## Source
 

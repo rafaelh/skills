@@ -1,0 +1,6 @@
+{
+  "name": "obsidian-metabind",
+  "description": "Read, author, audit, and refactor Meta Bind syntax in an Obsidian vault — input fields, view fields, buttons, embeds, and the Meta Bind / JS Engine APIs",
+  "version": "1.0.0",
+  "author": { "name": "Rafe Hart" }
+}

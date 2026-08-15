@@ -1,0 +1,7 @@
+{
+  "id": "js-engine",
+  "name": "JS Engine",
+  "version": "0.3.5",
+  "minAppVersion": "1.4.0",
+  "isDesktopOnly": false
+}

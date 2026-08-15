@@ -1,0 +1,656 @@
+{
+  "provenance": {
+    "generated_by": "scripts/refresh_docs.py",
+    "source_repo": "https://github.com/mProjectsCode/obsidian-meta-bind-plugin",
+    "source_ref": "1.5.1",
+    "source_commit": "8784bf7b52353b867de99840b751d9b5f5a40d78",
+    "source_files": "packages/core/src/config/FieldConfigs.ts, packages/core/src/config/ButtonConfig.ts",
+    "meta_bind_version": "1.5.1",
+    "js_engine_version": "0.3.6",
+    "license": "Derived from GPL-3.0 sources (c) mProjectsCode. This file contains enum names, arities and allow-lists extracted from them."
+  },
+  "embed_max_depth": 8,
+  "input_field_types": {
+    "date": {
+      "allow_in_block": true,
+      "allow_inline": true
+    },
+    "datePicker": {
+      "allow_in_block": true,
+      "allow_inline": true
+    },
+    "dateTime": {
+      "allow_in_block": true,
+      "allow_inline": true
+    },
+    "editor": {
+      "allow_in_block": true,
+      "allow_inline": false
+    },
+    "imageListSuggester": {
+      "allow_in_block": true,
+      "allow_inline": false
+    },
+    "imageSuggester": {
+      "allow_in_block": true,
+      "allow_inline": true
+    },
+    "inlineList": {
+      "allow_in_block": true,
+      "allow_inline": true
+    },
+    "inlineListSuggester": {
+      "allow_in_block": true,
+      "allow_inline": true
+    },
+    "inlineSelect": {
+      "allow_in_block": true,
+      "allow_inline": true
+    },
+    "list": {
+      "allow_in_block": true,
+      "allow_inline": false
+    },
+    "listSuggester": {
+      "allow_in_block": true,
+      "allow_inline": false
+    },
+    "multiSelect": {
+      "allow_in_block": true,
+      "allow_inline": false
+    },
+    "number": {
+      "allow_in_block": true,
+      "allow_inline": true
+    },
+    "progressBar": {
+      "allow_in_block": true,
+      "allow_inline": false
+    },
+    "select": {
+      "allow_in_block": true,
+      "allow_inline": false
+    },
+    "slider": {
+      "allow_in_block": true,
+      "allow_inline": true
+    },
+    "suggester": {
+      "allow_in_block": true,
+      "allow_inline": true
+    },
+    "text": {
+      "allow_in_block": true,
+      "allow_inline": true
+    },
+    "textArea": {
+      "allow_in_block": true,
+      "allow_inline": true
+    },
+    "time": {
+      "allow_in_block": true,
+      "allow_inline": true
+    },
+    "toggle": {
+      "allow_in_block": true,
+      "allow_inline": true
+    }
+  },
+  "input_field_arguments": {
+    "addLabels": {
+      "allowed_field_types": [
+        "progressBar",
+        "slider"
+      ],
+      "allow_multiple": false,
+      "arities": [
+        0,
+        1
+      ],
+      "signatures": [
+        [],
+        [
+          {
+            "name": "value",
+            "allowed": [
+              "true",
+              "false"
+            ]
+          }
+        ]
+      ]
+    },
+    "allowOther": {
+      "allowed_field_types": [
+        "inlineListSuggester",
+        "listSuggester",
+        "suggester"
+      ],
+      "allow_multiple": false,
+      "arities": [
+        0,
+        1
+      ],
+      "signatures": [
+        [],
+        [
+          {
+            "name": "value",
+            "allowed": [
+              "true",
+              "false"
+            ]
+          }
+        ]
+      ]
+    },
+    "class": {
+      "allowed_field_types": [],
+      "allow_multiple": true,
+      "arities": [
+        1
+      ],
+      "signatures": [
+        [
+          {
+            "name": "className",
+            "allowed": []
+          }
+        ]
+      ]
+    },
+    "defaultValue": {
+      "allowed_field_types": [],
+      "allow_multiple": false,
+      "arities": [
+        1
+      ],
+      "signatures": [
+        [
+          {
+            "name": "value",
+            "allowed": []
+          }
+        ]
+      ]
+    },
+    "limit": {
+      "allowed_field_types": [
+        "inlineList",
+        "list",
+        "text",
+        "textArea"
+      ],
+      "allow_multiple": false,
+      "arities": [
+        1
+      ],
+      "signatures": [
+        [
+          {
+            "name": "value",
+            "allowed": [
+              "number"
+            ]
+          }
+        ]
+      ]
+    },
+    "maxValue": {
+      "allowed_field_types": [
+        "progressBar",
+        "slider"
+      ],
+      "allow_multiple": false,
+      "arities": [
+        1
+      ],
+      "signatures": [
+        [
+          {
+            "name": "value",
+            "allowed": [
+              "number"
+            ]
+          }
+        ]
+      ]
+    },
+    "minValue": {
+      "allowed_field_types": [
+        "progressBar",
+        "slider"
+      ],
+      "allow_multiple": false,
+      "arities": [
+        1
+      ],
+      "signatures": [
+        [
+          {
+            "name": "value",
+            "allowed": [
+              "number"
+            ]
+          }
+        ]
+      ]
+    },
+    "multiLine": {
+      "allowed_field_types": [
+        "list"
+      ],
+      "allow_multiple": false,
+      "arities": [
+        0,
+        1
+      ],
+      "signatures": [
+        [],
+        [
+          {
+            "name": "value",
+            "allowed": [
+              "true",
+              "false"
+            ]
+          }
+        ]
+      ]
+    },
+    "offValue": {
+      "allowed_field_types": [
+        "toggle"
+      ],
+      "allow_multiple": false,
+      "arities": [
+        1
+      ],
+      "signatures": [
+        [
+          {
+            "name": "value",
+            "allowed": []
+          }
+        ]
+      ]
+    },
+    "onValue": {
+      "allowed_field_types": [
+        "toggle"
+      ],
+      "allow_multiple": false,
+      "arities": [
+        1
+      ],
+      "signatures": [
+        [
+          {
+            "name": "value",
+            "allowed": []
+          }
+        ]
+      ]
+    },
+    "option": {
+      "allowed_field_types": [
+        "imageListSuggester",
+        "imageSuggester",
+        "inlineListSuggester",
+        "inlineSelect",
+        "listSuggester",
+        "multiSelect",
+        "select",
+        "suggester"
+      ],
+      "allow_multiple": true,
+      "arities": [
+        1,
+        2
+      ],
+      "signatures": [
+        [
+          {
+            "name": "value",
+            "allowed": []
+          }
+        ],
+        [
+          {
+            "name": "value",
+            "allowed": []
+          },
+          {
+            "name": "name",
+            "allowed": []
+          }
+        ]
+      ]
+    },
+    "optionQuery": {
+      "allowed_field_types": [
+        "imageListSuggester",
+        "imageSuggester",
+        "inlineListSuggester",
+        "listSuggester",
+        "suggester"
+      ],
+      "allow_multiple": true,
+      "arities": [
+        1
+      ],
+      "signatures": [
+        [
+          {
+            "name": "value",
+            "allowed": []
+          }
+        ]
+      ]
+    },
+    "placeholder": {
+      "allowed_field_types": [
+        "inlineList",
+        "list",
+        "number",
+        "text",
+        "textArea"
+      ],
+      "allow_multiple": false,
+      "arities": [
+        1
+      ],
+      "signatures": [
+        [
+          {
+            "name": "value",
+            "allowed": []
+          }
+        ]
+      ]
+    },
+    "showcase": {
+      "allowed_field_types": [],
+      "allow_multiple": false,
+      "arities": [
+        0,
+        1
+      ],
+      "signatures": [
+        [],
+        [
+          {
+            "name": "value",
+            "allowed": [
+              "true",
+              "false"
+            ]
+          }
+        ]
+      ]
+    },
+    "stepSize": {
+      "allowed_field_types": [
+        "progressBar",
+        "slider"
+      ],
+      "allow_multiple": false,
+      "arities": [
+        1
+      ],
+      "signatures": [
+        [
+          {
+            "name": "value",
+            "allowed": [
+              "number"
+            ]
+          }
+        ]
+      ]
+    },
+    "title": {
+      "allowed_field_types": [],
+      "allow_multiple": false,
+      "arities": [
+        1
+      ],
+      "signatures": [
+        [
+          {
+            "name": "value",
+            "allowed": []
+          }
+        ]
+      ]
+    },
+    "useLinks": {
+      "allowed_field_types": [
+        "inlineListSuggester",
+        "listSuggester",
+        "suggester"
+      ],
+      "allow_multiple": false,
+      "arities": [
+        0,
+        1
+      ],
+      "signatures": [
+        [],
+        [
+          {
+            "name": "value",
+            "allowed": [
+              "true",
+              "partial",
+              "false"
+            ]
+          }
+        ]
+      ]
+    }
+  },
+  "view_field_types": {
+    "image": {},
+    "link": {},
+    "math": {},
+    "text": {}
+  },
+  "view_field_arguments": {
+    "class": {
+      "allowed_field_types": [],
+      "allow_multiple": true,
+      "arities": [
+        1
+      ],
+      "signatures": [
+        [
+          {
+            "name": "className",
+            "allowed": []
+          }
+        ]
+      ]
+    },
+    "hidden": {
+      "allowed_field_types": [],
+      "allow_multiple": false,
+      "arities": [
+        0,
+        1
+      ],
+      "signatures": [
+        [],
+        [
+          {
+            "name": "value",
+            "allowed": [
+              "true",
+              "false"
+            ]
+          }
+        ]
+      ]
+    },
+    "renderMarkdown": {
+      "allowed_field_types": [
+        "text"
+      ],
+      "allow_multiple": false,
+      "arities": [
+        0,
+        1
+      ],
+      "signatures": [
+        [],
+        [
+          {
+            "name": "value",
+            "allowed": [
+              "true",
+              "false"
+            ]
+          }
+        ]
+      ]
+    }
+  },
+  "button_styles": [
+    "default",
+    "destructive",
+    "plain",
+    "primary"
+  ],
+  "button_action_types": {
+    "command": {
+      "required": [
+        "command"
+      ],
+      "optional": []
+    },
+    "createNote": {
+      "required": [
+        "fileName"
+      ],
+      "optional": [
+        "folderPath",
+        "openIfAlreadyExists",
+        "openNote"
+      ]
+    },
+    "inlineJS": {
+      "required": [
+        "code"
+      ],
+      "optional": [
+        "args"
+      ]
+    },
+    "input": {
+      "required": [
+        "str"
+      ],
+      "optional": []
+    },
+    "insertIntoNote": {
+      "required": [
+        "line",
+        "value"
+      ],
+      "optional": [
+        "templater"
+      ]
+    },
+    "js": {
+      "required": [
+        "file"
+      ],
+      "optional": [
+        "args"
+      ]
+    },
+    "open": {
+      "required": [
+        "link"
+      ],
+      "optional": [
+        "newTab"
+      ]
+    },
+    "regexpReplaceInNote": {
+      "required": [
+        "regexp",
+        "replacement"
+      ],
+      "optional": [
+        "regexpFlags"
+      ]
+    },
+    "replaceInNote": {
+      "required": [
+        "fromLine",
+        "replacement",
+        "toLine"
+      ],
+      "optional": [
+        "templater"
+      ]
+    },
+    "replaceSelf": {
+      "required": [
+        "replacement"
+      ],
+      "optional": [
+        "templater"
+      ]
+    },
+    "runTemplaterFile": {
+      "required": [
+        "templateFile"
+      ],
+      "optional": []
+    },
+    "sleep": {
+      "required": [
+        "ms"
+      ],
+      "optional": []
+    },
+    "templaterCreateNote": {
+      "required": [
+        "templateFile"
+      ],
+      "optional": [
+        "fileName",
+        "folderPath",
+        "openIfAlreadyExists",
+        "openNote"
+      ]
+    },
+    "updateMetadata": {
+      "required": [
+        "bindTarget",
+        "evaluate",
+        "value"
+      ],
+      "optional": []
+    }
+  },
+  "button_config_fields": {
+    "required": [
+      "label",
+      "style"
+    ],
+    "optional": [
+      "action",
+      "actions",
+      "backgroundImage",
+      "class",
+      "cssStyle",
+      "hidden",
+      "icon",
+      "id",
+      "tooltip"
+    ]
+  }
+}

@@ -52,6 +52,18 @@
       "description": "Simplify code that works but is harder to read, maintain, or extend than it should be",
       "source": "./skills/refactor",
       "category": "development"
+    },
+    {
+      "name": "obsidian",
+      "description": "Work with an Obsidian vault: notes, frontmatter, wikilinks, backlinks, canvas and base files",
+      "source": "./skills/obsidian",
+      "category": "development"
+    },
+    {
+      "name": "obsidian-metabind",
+      "description": "Read, author, audit, and refactor Meta Bind syntax in an Obsidian vault — input fields, view fields, buttons, embeds, and the Meta Bind / JS Engine APIs",
+      "source": "./skills/obsidian-metabind",
+      "category": "development"
     }
   ]
 }

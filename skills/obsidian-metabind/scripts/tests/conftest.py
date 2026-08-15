@@ -4,6 +4,7 @@ import sys
 SCRIPTS_DIR = Path(__file__).resolve().parent.parent
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
+TEST_VAULT = FIXTURES / "test_vault"
 
 
 def _claim_flat_module_names() -> None:

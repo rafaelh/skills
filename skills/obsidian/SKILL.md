@@ -1,6 +1,6 @@
 ---
 name: obsidian
-description: Use this skill when working with an Obsidian vault — reading or editing markdown notes, frontmatter (a.k.a. Properties), wikilinks, embeds, callouts, .canvas files, or .base files. Trigger when the user mentions Obsidian, a vault, wikilinks, [[ ]] syntax, properties (tags/aliases/cssclasses), backlinks, a map of content / MOC, broken links, or files under a directory containing .obsidian/, or .canvas / .base extensions. Also trigger on tasks that fit even when Obsidian isn't named — e.g. "rename this markdown file and update every link to it". Provides scripts to locate the vault root, parse and rewrite wikilinks, edit frontmatter idempotently, rename notes while updating backlinks, list notes by tag or property, and validate canvas/base files, plus references for Obsidian's syntax and file formats. Does NOT cover using Obsidian as a desktop app, plugin development, or theming — for plugin-specific behavior (Dataview, Templater, Tasks queries), invoke the matching plugin skill.
+description: Use this skill when working with an Obsidian vault — reading or editing markdown notes, frontmatter (a.k.a. Properties), wikilinks, embeds, callouts, .canvas files, or .base files. Trigger when the user mentions Obsidian, a vault, wikilinks, [[ ]] syntax, properties (tags/aliases/cssclasses), backlinks, a map of content / MOC, broken links, or files under a directory containing .obsidian/, or .canvas / .base extensions. Also trigger on tasks that fit even when Obsidian isn't named — e.g. "rename this markdown file and update every link to it". Scripts locate the vault root, parse and rewrite wikilinks, edit frontmatter idempotently, rename notes while updating backlinks, list notes by tag or property, and validate canvas/base files, plus references for Obsidian's syntax and file formats. Does NOT cover Obsidian as a desktop app, plugin development, or theming — for plugin syntax invoke the matching plugin skill, and for Meta Bind (`INPUT[`, `VIEW[`, `BUTTON[`, ```meta-bind) use obsidian-metabind.
 ---
 
 # Obsidian Vault
@@ -91,6 +91,7 @@ If `references/.cache/` exists, it contains pages fetched by `refresh_docs.py` �
 - Rewriting an entire note to change one frontmatter key. Use `vault_frontmatter.py` so the body and key order stay intact.
 - Stripping unknown frontmatter keys. The user (or a plugin) may rely on them.
 - Generating a Dataview query as part of this skill. That belongs in a Dataview-specific sibling skill.
+- Authoring or editing Meta Bind syntax here. `obsidian-metabind` owns it; this skill only recognizes it.
 
 ## Specification
 
