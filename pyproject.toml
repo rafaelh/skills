@@ -110,6 +110,11 @@ ignore = [
     "S101",    # assert is correct in tests
     "S603",    # subprocess calls in tests use controlled, trusted input
 ]
+"skills/obsidian/scripts/tests/*.py" = [
+    "S101",    # assert is correct in tests
+    "S603",    # subprocess calls in tests use controlled, trusted input
+    "PLC0415", # deferred imports in test methods are idiomatic pytest
+]
 
 [tool.ruff.lint.isort]
 force-sort-within-sections = true
