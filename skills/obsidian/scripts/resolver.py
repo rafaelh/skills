@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# agent-tool: false
 """Resolve wikilink targets to vault notes.
 
 A `Resolver` builds a name index for a vault: every note's basename, its

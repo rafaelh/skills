@@ -96,5 +96,5 @@ If `references/.cache/` exists, it contains pages fetched by `refresh_docs.py` â
 
 - Every script is Python 3 stdlib-only except `vault_frontmatter.py`, `vault_list.py`, and `base_validate.py`, which depend on PyYAML (already present in most Python environments; install with `pip install pyyaml` if missing).
 - Every script accepts `--vault PATH` and falls back to walking up from cwd.
-- Every script has a sibling `tests/test_<name>.py` runnable with `python3 -m pytest scripts/tests/`.
+- Every entry-point script has a sibling `tests/test_<name>.py` runnable with `python3 -m pytest scripts/tests/`. The two shared library modules have none: `models.py` is dataclasses only, and `validate_cli.py` is exercised through the canvas/base validators' own CLI tests.
 - The fixture vault at `scripts/tests/fixtures/test_vault/` is the only vault any test may touch. It is the source of truth for "what a minimal valid vault looks like."

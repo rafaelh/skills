@@ -28,25 +28,18 @@ What it does NOT do
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass, field
 import json
 from pathlib import Path
 import shutil
 import sys
 
 from links import rewrite_link_target
+from models import RenameResult
 from vault import NotInVaultError, iter_canvas, iter_notes, locate_vault, relpath_no_ext
 
 
 class RenameError(Exception):
     pass
-
-
-@dataclass
-class RenameResult:
-    moved: bool
-    updated_files: list[Path] = field(default_factory=list[Path])
-    canvas_warnings: list[Path] = field(default_factory=list[Path])
 
 
 def rename_note(

@@ -23,25 +23,15 @@ inside NOTE itself are excluded.
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass
+from dataclasses import asdict
 import json
 from pathlib import Path
 import sys
 
 from links import parse_links
+from models import Backlink
 from resolver import Resolver
 from vault import NotInVaultError, iter_notes, locate_vault
-
-
-@dataclass
-class Backlink:
-    source: Path
-    target_form: str  # the literal target in the wikilink
-    is_embed: bool
-    heading: str | None
-    block: str | None
-    display: str | None
-    span: tuple[int, int]
 
 
 def find_backlinks(target_path: str | Path) -> list[Backlink]:
@@ -51,10 +41,11 @@ def find_backlinks(target_path: str | Path) -> list[Backlink]:
 
     vault = locate_vault(target)
     resolver = Resolver(vault)
+    target_resolved = target.resolve()
 
     out: list[Backlink] = []
     for md in iter_notes(vault):
-        if md.resolve() == target.resolve():
+        if md.resolve() == target_resolved:
             continue
         try:
             text = md.read_text(encoding="utf-8")
@@ -71,7 +62,7 @@ def find_backlinks(target_path: str | Path) -> list[Backlink]:
                 span=link.span,
             )
             for link in parse_links(text)
-            if resolver.matches(link.target, target)
+            if resolver.matches(link.target, target_resolved)
         )
     return out
 
@@ -87,18 +78,7 @@ def _main(argv: list[str]) -> int:
         print(f"backlinks: {exc}", file=sys.stderr)
         return 1
 
-    payload = [
-        {
-            "source": str(b.source),
-            "target_form": b.target_form,
-            "is_embed": b.is_embed,
-            "heading": b.heading,
-            "block": b.block,
-            "display": b.display,
-            "span": list(b.span),
-        }
-        for b in backlinks
-    ]
+    payload = [asdict(b) | {"source": str(b.source)} for b in backlinks]
     print(json.dumps(payload, indent=2))
     return 0
 

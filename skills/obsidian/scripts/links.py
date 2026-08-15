@@ -32,30 +32,13 @@ Code-region awareness:
 from __future__ import annotations
 
 import argparse
-from dataclasses import asdict, dataclass
+from dataclasses import asdict
 import json
 from pathlib import Path
 import re
 import sys
 
-
-@dataclass
-class Wikilink:
-    target: str
-    heading: str | None
-    block: str | None
-    display: str | None
-    is_embed: bool
-    raw: str
-    span: tuple[int, int]
-
-
-@dataclass
-class Tag:
-    name: str
-    raw: str
-    span: tuple[int, int]
-
+from models import Tag, Wikilink
 
 _WIKILINK_RE = re.compile(r"(!?)\[\[([^\[\]\n]+)\]\]")
 _TAG_RE = re.compile(

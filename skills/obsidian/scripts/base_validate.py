@@ -21,20 +21,29 @@ CLI:
 
 from __future__ import annotations
 
-import argparse
-from dataclasses import dataclass, field
-import json
 from pathlib import Path
 import sys
 from typing import Any, cast
 
+from models import ValidationResult
+from validate_cli import run_validation_cli
 import yaml
 
 
-@dataclass
-class ValidationResult:
-    valid: bool
-    errors: list[str] = field(default_factory=list[str])
+def _check_sort(sort: Any, idx: int, errors: list[str]) -> None:
+    if not isinstance(sort, list):
+        errors.append(f"views[{idx}]: 'sort' must be a list")
+        return
+    for sidx, entry in enumerate(cast("list[Any]", sort)):
+        if not isinstance(entry, dict):
+            errors.append(f"views[{idx}].sort[{sidx}]: must be a mapping")
+            continue
+        ent = cast("dict[str, Any]", entry)
+        if "property" not in ent:
+            errors.append(f"views[{idx}].sort[{sidx}]: missing 'property'")
+        direction: Any = ent.get("direction", "ASC")
+        if direction not in ("ASC", "DESC"):
+            errors.append(f"views[{idx}].sort[{sidx}]: direction must be ASC or DESC")
 
 
 def _check_view(view: Any, idx: int, errors: list[str]) -> None:
@@ -52,19 +61,7 @@ def _check_view(view: Any, idx: int, errors: list[str]) -> None:
         errors.append(f"views[{idx}]: 'order' must be a list")
     sort: Any = v.get("sort")
     if sort is not None:
-        if not isinstance(sort, list):
-            errors.append(f"views[{idx}]: 'sort' must be a list")
-        else:
-            for sidx, entry in enumerate(cast("list[Any]", sort)):
-                if not isinstance(entry, dict):
-                    errors.append(f"views[{idx}].sort[{sidx}]: must be a mapping")
-                    continue
-                ent = cast("dict[str, Any]", entry)
-                if "property" not in ent:
-                    errors.append(f"views[{idx}].sort[{sidx}]: missing 'property'")
-                direction: Any = ent.get("direction", "ASC")
-                if direction not in ("ASC", "DESC"):
-                    errors.append(f"views[{idx}].sort[{sidx}]: direction must be ASC or DESC")
+        _check_sort(sort, idx, errors)
 
 
 def _check_properties(properties: Any, errors: list[str]) -> None:
@@ -103,49 +100,22 @@ def validate_base(path: str | Path) -> ValidationResult:
     if "properties" in top:
         _check_properties(top["properties"], errors)
 
+    # A missing (or null) 'views' is tolerated for partial / templated bases.
     views: Any = top.get("views")
-    if views is None:
-        # Missing 'views' is tolerated for partial / templated bases.
-        pass
-    elif not isinstance(views, list):
-        errors.append("'views' must be a list")
-    else:
+    if isinstance(views, list):
         for idx, view in enumerate(cast("list[Any]", views)):
             _check_view(view, idx, errors)
+    elif views is not None:
+        errors.append("'views' must be a list")
 
     return ValidationResult(valid=not errors, errors=errors)
 
 
-def _main(argv: list[str]) -> int:
-    parser = argparse.ArgumentParser(description=(__doc__ or "").split("\n", 1)[0])
-    parser.add_argument("file")
-    parser.add_argument(
-        "--json",
-        dest="as_json",
-        action="store_true",
-        help="emit JSON summary on stdout",
-    )
-    args = parser.parse_args(argv)
-    result = validate_base(args.file)
-    if args.as_json:
-        print(
-            json.dumps(
-                {
-                    "file": args.file,
-                    "valid": result.valid,
-                    "errors": result.errors,
-                },
-                indent=2,
-            )
-        )
-        return 0 if result.valid else 1
-    if result.valid:
-        print("ok")
-        return 0
-    for err in result.errors:
-        print(err, file=sys.stderr)
-    return 1
-
-
 if __name__ == "__main__":
-    sys.exit(_main(sys.argv[1:]))
+    sys.exit(
+        run_validation_cli(
+            sys.argv[1:],
+            description=(__doc__ or "").split("\n", 1)[0],
+            validate=validate_base,
+        )
+    )

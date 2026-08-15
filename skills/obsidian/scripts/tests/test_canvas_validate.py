@@ -131,6 +131,20 @@ class TestValidateCanvas:
         result = validate_canvas(make(tmp_path, {"nodes": nodes, "edges": []}))
         assert not result.valid
 
+    def test_non_string_node_id_fails(self, tmp_path: Path):
+        node = {"id": 5, "type": "text", "x": 0, "y": 0, "width": 1, "height": 1, "text": ""}
+        result = validate_canvas(make(tmp_path, {"nodes": [node], "edges": []}))
+        assert not result.valid
+        assert any("'id'" in e for e in result.errors)
+
+    def test_missing_node_id_reports_only_the_missing_field(self, tmp_path: Path):
+        node = {"type": "text", "x": 0, "y": 0, "width": 1, "height": 1, "text": ""}
+        result = validate_canvas(make(tmp_path, {"nodes": [node], "edges": []}))
+        assert not result.valid
+        assert [e for e in result.errors if "'id'" in e] == [
+            "nodes[0]: missing required field 'id'"
+        ]
+
 
 class TestCli:
     def _run(self, *args: str):

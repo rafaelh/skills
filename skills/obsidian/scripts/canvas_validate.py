@@ -12,32 +12,32 @@ CLI:
 
 from __future__ import annotations
 
-import argparse
-from dataclasses import dataclass, field
 import json
 from pathlib import Path
 import sys
 from typing import Any, cast
 
-
-@dataclass
-class ValidationResult:
-    valid: bool
-    errors: list[str] = field(default_factory=list[str])
-
+from models import ValidationResult
+from validate_cli import run_validation_cli
 
 _NODE_REQUIRED = ("id", "type", "x", "y", "width", "height")
-_NODE_TYPES = ("text", "file", "link", "group")
 _TYPE_REQUIRED_EXTRA = {
     "text": ("text",),
     "file": ("file",),
     "link": ("url",),
     "group": (),
 }
+# Tuple, not the dict itself: `in` against a dict raises TypeError when a
+# malformed node carries an unhashable 'type'.
+_NODE_TYPES = tuple(_TYPE_REQUIRED_EXTRA)
 
 
 def _validate_node(node: Any, idx: int, errors: list[str]) -> str | None:
-    """Return the node's id if it has one, else None."""
+    """Return the node's id if it is a usable string, else None.
+
+    A None return means the node cannot take part in the duplicate-id and
+    edge-reference checks; the reason is already recorded in `errors`.
+    """
     if not isinstance(node, dict):
         errors.append(f"nodes[{idx}]: must be an object")
         return None
@@ -54,7 +54,12 @@ def _validate_node(node: Any, idx: int, errors: list[str]) -> str | None:
             for extra in _TYPE_REQUIRED_EXTRA[node_type]
             if extra not in n
         )
-    return n.get("id") if isinstance(n.get("id"), str) else None
+    node_id = n.get("id")
+    if isinstance(node_id, str):
+        return node_id
+    if "id" in n:
+        errors.append(f"nodes[{idx}]: 'id' must be a string, got {node_id!r}")
+    return None
 
 
 def _validate_edge(edge: Any, idx: int, node_ids: set[str], errors: list[str]) -> None:
@@ -67,10 +72,10 @@ def _validate_edge(edge: Any, idx: int, node_ids: set[str], errors: list[str]) -
         for key in ("id", "fromNode", "toNode")
         if key not in e
     )
-    for end in ("fromNode", "toNode"):
-        ref = e.get(end)
+    for ref_field in ("fromNode", "toNode"):
+        ref = e.get(ref_field)
         if isinstance(ref, str) and ref not in node_ids:
-            errors.append(f"edges[{idx}]: {end}={ref!r} references unknown node")
+            errors.append(f"edges[{idx}]: {ref_field}={ref!r} references unknown node")
     for side_field in ("fromSide", "toSide"):
         side = e.get(side_field)
         if side is not None and side not in ("top", "right", "bottom", "left"):
@@ -93,8 +98,7 @@ def validate_canvas(path: str | Path) -> ValidationResult:
         return ValidationResult(False, [f"invalid JSON: {exc}"])
 
     if not isinstance(data, dict):
-        errors.append("top-level must be an object with 'nodes' and 'edges'")
-        return ValidationResult(False, errors)
+        return ValidationResult(False, ["top-level must be an object with 'nodes' and 'edges'"])
 
     top = cast("dict[str, Any]", data)
     nodes: Any = top.get("nodes", [])
@@ -107,13 +111,11 @@ def validate_canvas(path: str | Path) -> ValidationResult:
         edges = []
 
     node_ids: set[str] = set()
-    seen_ids: set[str] = set()
     for idx, node in enumerate(cast("list[Any]", nodes)):
         nid = _validate_node(node, idx, errors)
         if nid is not None:
-            if nid in seen_ids:
+            if nid in node_ids:
                 errors.append(f"nodes[{idx}]: duplicate id {nid!r}")
-            seen_ids.add(nid)
             node_ids.add(nid)
 
     for idx, edge in enumerate(cast("list[Any]", edges)):
@@ -122,36 +124,11 @@ def validate_canvas(path: str | Path) -> ValidationResult:
     return ValidationResult(valid=not errors, errors=errors)
 
 
-def _main(argv: list[str]) -> int:
-    parser = argparse.ArgumentParser(description=(__doc__ or "").split("\n", 1)[0])
-    parser.add_argument("file")
-    parser.add_argument(
-        "--json",
-        dest="as_json",
-        action="store_true",
-        help="emit JSON summary on stdout",
-    )
-    args = parser.parse_args(argv)
-    result = validate_canvas(args.file)
-    if args.as_json:
-        print(
-            json.dumps(
-                {
-                    "file": args.file,
-                    "valid": result.valid,
-                    "errors": result.errors,
-                },
-                indent=2,
-            )
-        )
-        return 0 if result.valid else 1
-    if result.valid:
-        print("ok")
-        return 0
-    for err in result.errors:
-        print(err, file=sys.stderr)
-    return 1
-
-
 if __name__ == "__main__":
-    sys.exit(_main(sys.argv[1:]))
+    sys.exit(
+        run_validation_cli(
+            sys.argv[1:],
+            description=(__doc__ or "").split("\n", 1)[0],
+            validate=validate_canvas,
+        )
+    )
