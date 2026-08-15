@@ -54,23 +54,13 @@ def _split(text: str) -> tuple[str, str]:
     file. Anything else (a `---` later in the document, text before the first
     `---`) is body.
     """
-    if not text.startswith(DELIM + "\n") and text != DELIM + "\n" and text.rstrip("\n") != DELIM:
-        # File doesn't open with a delimiter line.
-        if not text.startswith(DELIM):
-            return "", text
-        # Edge case: file is just "---" with no newline.
-        if text.strip() == DELIM:
-            return "", text
-
     lines = text.split("\n")
-    if not lines or lines[0] != DELIM:
+    if lines[0] != DELIM:
         return "", text
 
     for i in range(1, len(lines)):
         if lines[i] == DELIM:
             fm_yaml = "\n".join(lines[1:i])
-            # Body is everything after the closing delim line. We dropped one
-            # trailing newline by splitting on "\n", so reconstruct carefully.
             body = "\n".join(lines[i + 1 :])
             return fm_yaml, body
 
@@ -182,10 +172,7 @@ def _main(argv: list[str]) -> int:
             set_key(args.note, args.key, value)
         elif args.cmd == "delete":
             delete_key(args.note, args.key)
-    except FrontmatterError as exc:
-        print(f"vault_frontmatter: {exc}", file=sys.stderr)
-        return 1
-    except FileNotFoundError as exc:
+    except (FrontmatterError, FileNotFoundError) as exc:
         print(f"vault_frontmatter: {exc}", file=sys.stderr)
         return 1
     return 0

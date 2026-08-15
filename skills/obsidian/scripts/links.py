@@ -66,64 +66,64 @@ def _build_code_mask(text: str) -> list[bool]:
             mask[i] = True
 
     # Indented code blocks (4+ spaces or tab, after blank line or already in block)
-    if text:
-        lines = text.split("\n")
-        offsets = [0]
-        for line in lines:
-            offsets.append(offsets[-1] + len(line) + 1)
-        prev_blank = True
-        in_block = False
-        for idx, line in enumerate(lines):
-            start = offsets[idx]
-            if start >= n:
-                break
-            if line.strip() == "":
-                in_block = False
-                prev_blank = True
-                continue
-            is_indent = line.startswith(("    ", "\t"))
-            if is_indent and (prev_blank or in_block) and not mask[start]:
-                for i in range(start, min(start + len(line), n)):
-                    mask[i] = True
-                in_block = True
-            else:
-                in_block = False
-            prev_blank = False
+    lines = text.split("\n")
+    offsets = [0]
+    for line in lines:
+        offsets.append(offsets[-1] + len(line) + 1)
+    prev_blank = True
+    in_block = False
+    for idx, line in enumerate(lines):
+        start = offsets[idx]
+        if start >= n:
+            break
+        if line.strip() == "":
+            in_block = False
+            prev_blank = True
+            continue
+        is_indent = line.startswith(("    ", "\t"))
+        if is_indent and (prev_blank or in_block) and not mask[start]:
+            for i in range(start, min(start + len(line), n)):
+                mask[i] = True
+            in_block = True
+        else:
+            in_block = False
+        prev_blank = False
 
     # Inline backtick code: matched runs `+...`+ of equal length
     i = 0
     while i < n:
-        if text[i] == "`" and not mask[i]:
-            run = 0
-            while i + run < n and text[i + run] == "`":
-                run += 1
-            j = i + run
-            close_at = -1
-            while j < n:
-                if text[j] == "`":
-                    close_run = 0
-                    while j + close_run < n and text[j + close_run] == "`":
-                        close_run += 1
-                    if close_run == run:
-                        close_at = j
-                        break
-                    j += close_run
-                else:
-                    j += 1
-            if close_at >= 0:
-                for k in range(i, close_at + run):
-                    mask[k] = True
-                i = close_at + run
-                continue
-            i += run
+        if text[i] != "`" or mask[i]:
+            i += 1
             continue
-        i += 1
+        run = 0
+        while i + run < n and text[i + run] == "`":
+            run += 1
+        # Search for matching closing run of the same length
+        j = i + run
+        close_at = -1
+        while j < n:
+            if text[j] != "`":
+                j += 1
+                continue
+            close_run = 0
+            while j + close_run < n and text[j + close_run] == "`":
+                close_run += 1
+            if close_run == run:
+                close_at = j
+                break
+            j += close_run
+        if close_at >= 0:
+            for k in range(i, close_at + run):
+                mask[k] = True
+            i = close_at + run
+        else:
+            i += run
 
     return mask
 
 
 def _in_code(mask: list[bool], start: int, end: int) -> bool:
-    return any(mask[i] for i in range(start, min(end, len(mask))))
+    return any(mask[start:end])
 
 
 def _parse_wikilink_body(body: str) -> tuple[str, str | None, str | None, str | None]:

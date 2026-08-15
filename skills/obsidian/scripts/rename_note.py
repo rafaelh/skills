@@ -76,7 +76,7 @@ def rename_note(
     old_basename = old.stem
     new_basename = new.stem
     old_relpath = relpath_no_ext(vault, old)
-    new_relpath = relpath_no_ext(vault, new.parent / new.name)
+    new_relpath = relpath_no_ext(vault, new)
 
     name_changed = old_basename != new_basename
     path_changed = old_relpath != new_relpath

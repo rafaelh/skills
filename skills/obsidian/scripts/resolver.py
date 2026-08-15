@@ -14,10 +14,6 @@ Library API:
 
 The index is built lazily on the first query and cached for the lifetime
 of the Resolver. Construct a fresh Resolver after the vault changes.
-
-This module owns the case-insensitivity and alias-inclusion semantics that
-were previously implicit in `backlinks.py` and `rename_note.py`. Callers
-get correctness; tests have a single surface.
 """
 
 from __future__ import annotations

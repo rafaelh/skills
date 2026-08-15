@@ -52,13 +52,11 @@ def parse_sitemap(xml_text: str) -> list[str]:
 
 def url_to_cache_path(url: str, base_dir: Path) -> Path:
     parsed = urllib.parse.urlparse(url)
-    parts = [seg for seg in parsed.path.split("/") if seg]
+    parts = [urllib.parse.unquote(seg) for seg in parsed.path.split("/") if seg]
     if not parts:
         return base_dir / parsed.netloc / "index.txt"
     *folders, last = parts
-    safe_folders = [urllib.parse.unquote(f) for f in folders]
-    safe_last = urllib.parse.unquote(last)
-    return base_dir.joinpath(parsed.netloc, *safe_folders, f"{safe_last}.txt")
+    return base_dir.joinpath(parsed.netloc, *folders, f"{last}.txt")
 
 
 class _TextExtractor(HTMLParser):
