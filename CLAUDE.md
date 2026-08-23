@@ -29,10 +29,13 @@ agent-tool contract does not apply. `create-agents-for-repo` operates on a *cons
 than on skills: skills travel between repos, the subagents it writes deliberately do not — they
 hardcode the local toolchain.
 
-Eval harnesses: `evals/create-agents-for-repo/` (fixture repos, staging,
-grader) and `skills/plan/evals/`, which drives a simulated interview — a conversation leaves no
-artifact to diff; read its README first. `skills/obsidian-metabind/evals/` is just a labeled query
-set for `eval_triggers.py`.
+Eval harnesses live in `evals/<skill>/`, outside the shipped plugin, and all follow
+[eval-approach.md](evals/eval-approach.md) — read it before touching one. Three shapes, decided by
+what a run leaves behind: artifact (`create-agents-for-repo`, stages fixture repos and diffs them),
+conversation (`plan`, drives a simulated interview and grades the transcript), trigger
+(`obsidian-metabind`, a labeled query set for `eval_triggers.py`). `evals/shared/` holds the
+plumbing they have in common — CLI invocation, the `grading.json` writer, the run-directory layout —
+imported flatly after a `sys.path` insert; suite-specific analysis stays in the suite.
 
 ## Commands
 
@@ -129,15 +132,6 @@ variable; Claude Code resolves it from `${CLAUDE_SKILL_DIR}`.
 Ruff runs a wide select list (`S` bandit, `PERF`, `TRY`, `PL`, `ERA`) at line-length 100,
 `target-version = py314`. Exceptions go in `[tool.ruff.lint.per-file-ignores]` in `pyproject.toml`
 **with a comment explaining why**, not as inline `# noqa`. Pyright is `strict` over `skills/`.
-
-**Abstraction is opt-in.** Its cost is concepts a reader must hold — functions, parameters,
-branches, files, config keys — not lines. A helper earns its keep through repeated use; until then,
-change the call sites. Grep first: a near-miss you extend beats a new one alongside. Don't compress
-by density either — one wide line doing three things costs more than three doing one each.
-
-**Keep diffs scoped.** No drive-by restructuring of code the task didn't touch. Deletion is the
-exception: remove grep-verified dead code inside functions you're already editing. Anything larger
-is a `refactor` pass.
 
 **Comments and docs carry intent, not history or restatement.** Keep the *why* — a workaround, a
 vendor quirk, a non-obvious constraint. Drop what the line already says and never narrate the

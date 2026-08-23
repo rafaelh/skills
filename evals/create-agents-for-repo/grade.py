@@ -1,16 +1,21 @@
 #!/usr/bin/env python3
-"""Grade one eval run of create-agents-for-repo against its assertions.
+"""Score one create-agents-for-repo eval run against its assertions.
 
-Usage: grade.py <run-dir> <fixture-dir> <eval-name>
-Writes <run-dir>/grading.json.
+    grade.py <run-dir> [--fixtures DIR]
 
-Developer harness, not something an agent calls — see evals/README.md.
+Reads `<run-dir>/eval_metadata.json` to learn which eval and fixture it is looking at,
+grades what the run left in `<run-dir>/repo` and `<run-dir>/outputs`, and writes
+`<run-dir>/grading.json`. Every check here is mechanical — computed from files on disk —
+so a run can be re-graded from stored artifacts under a later rubric.
+
+Developer harness, not something an agent calls — see README.md.
 """
 
 # agent-tool: false
 
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
 import re
@@ -18,12 +23,14 @@ import subprocess
 import sys
 from typing import cast
 
+HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE.parent / "shared"))
+
+from grading import expectation, write_grading
+from workspace import read_eval_metadata
+
 VALIDATOR = (
-    Path(__file__).resolve().parent.parent.parent
-    / "skills"
-    / "create-agents-for-repo"
-    / "scripts"
-    / "validate_agent_def.py"
+    HERE.parent.parent / "skills" / "create-agents-for-repo" / "scripts" / "validate_agent_def.py"
 )
 
 Json = dict[str, object]
@@ -35,7 +42,9 @@ TOOLCHAIN = {
     "reimport-repo": {"expect": ["pyright", "pytest", "ruff"], "forbid": ["mypy"]},
     "bare-repo": {"expect": ["mypy", "pytest", "ruff"], "forbid": ["pyright", "uv run"]},
 }
-ORIGINAL_AGENTS = {"build-green", "content-audit", "docs-drift", "test-scaffold"}
+# The fixture that already has a delegation setup, where "add nothing, wire what
+# exists" is a correct answer and clobbering what is there is the failure.
+REIMPORT_FIXTURE = "reimport-repo"
 
 
 def parse_fm(text: str) -> dict[str, str]:
@@ -110,7 +119,7 @@ def changed_paths(repo: Path, fixture: Path) -> list[str]:
     return paths
 
 
-def grade(run_dir: Path, fixture: Path, eval_name: str) -> Json:
+def grade(run_dir: Path, fixture: Path) -> list[Json]:
     repo = run_dir / "repo"
     agents_dir = repo / ".claude" / "agents"
     agent_files = sorted(agents_dir.glob("*.md")) if agents_dir.is_dir() else []
@@ -120,18 +129,23 @@ def grade(run_dir: Path, fixture: Path, eval_name: str) -> Json:
     claude_md = repo / "CLAUDE.md"
     claude_text = claude_md.read_text(encoding="utf-8") if claude_md.exists() else ""
 
+    fixture_agents = fixture / ".claude" / "agents"
+    original_agents: set[str] = (
+        {p.stem for p in fixture_agents.glob("*.md")} if fixture_agents.is_dir() else set()
+    )
+
     expectations: list[Json] = []
 
     def add(text: str, passed: bool, evidence: str) -> None:
-        expectations.append({"text": text, "passed": bool(passed), "evidence": evidence})
+        expectations.append(expectation(text, passed, evidence))
 
     # 1. Something was actually created — except on the re-import case, where the
     # repo already has four agents and "add nothing, wire what exists" is a correct
     # answer. Punishing that would reward padding.
-    new_agents = [n for n in frontmatters if n not in ORIGINAL_AGENTS]
+    new_agents = [n for n in frontmatters if n not in original_agents]
     proposal = run_dir / "outputs" / "proposal.md"
     ptext = proposal.read_text(encoding="utf-8").lower() if proposal.exists() else ""
-    if eval_name.startswith("eval-2"):
+    if fixture_key == REIMPORT_FIXTURE:
         justified = bool(re.search(r"no new agent|nothing new|adding none|no additional", ptext))
         add(
             "Added a new agent, or justified adding none",
@@ -250,7 +264,6 @@ def grade(run_dir: Path, fixture: Path, eval_name: str) -> Json:
     # Only agents this run authored are in scope. rich-repo and reimport-repo ship
     # four agents of their own; rewriting those is scope creep, so grading the run on
     # their tiers and phrasing would punish the correct behaviour.
-    fixture_agents = fixture / ".claude" / "agents"
     authored = {
         n
         for n, body in bodies.items()
@@ -323,13 +336,13 @@ def grade(run_dir: Path, fixture: Path, eval_name: str) -> Json:
         f"agents describing commands instead of naming them: {vague or 'none'}",
     )
 
-    # 11. Re-import case: extend, do not duplicate or clobber
-    if eval_name.startswith("eval-2"):
-        kept = ORIGINAL_AGENTS & set(frontmatters)
+    # 16 and 17. Re-import case: extend, do not duplicate or clobber
+    if fixture_key == REIMPORT_FIXTURE:
+        kept = original_agents & set(frontmatters)
         add(
             "Preserved all four pre-existing agents without duplicating them",
-            kept == ORIGINAL_AGENTS and len(agent_files) == len(frontmatters),
-            f"kept: {sorted(kept)}; missing: {sorted(ORIGINAL_AGENTS - set(frontmatters))}",
+            kept == original_agents and len(agent_files) == len(frontmatters),
+            f"kept: {sorted(kept)}; missing: {sorted(original_agents - set(frontmatters))}",
         )
         add(
             "Kept the pre-existing build-green / docs-drift routing rows in CLAUDE.md",
@@ -338,22 +351,36 @@ def grade(run_dir: Path, fixture: Path, eval_name: str) -> Json:
             f"docs-drift present: {'docs-drift' in claude_text}",
         )
 
-    passed = sum(1 for e in expectations if e["passed"])
-    return {
-        "run": str(run_dir),
-        "expectations": expectations,
-        "passed": passed,
-        "total": len(expectations),
-        "pass_rate": round(passed / len(expectations), 3) if expectations else 0.0,
-    }
+    return expectations
 
 
 def main() -> int:
-    run_dir, fixture, eval_name = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3]
-    result = grade(run_dir, fixture, eval_name)
-    (run_dir / "grading.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
-    print(f"{run_dir.parent.name}/{run_dir.name}: {result['passed']}/{result['total']}")
-    for e in cast("list[Json]", result["expectations"]):
+    parser = argparse.ArgumentParser(description="Grade one staged eval run.")
+    parser.add_argument("run_dir", type=Path, help="Run directory staged by prepare.py.")
+    parser.add_argument(
+        "--fixtures",
+        type=Path,
+        default=HERE / "fixtures",
+        help="Where the fixture repos live (default: ./fixtures).",
+    )
+    args = parser.parse_args()
+
+    run_dir: Path = args.run_dir
+    try:
+        metadata = read_eval_metadata(run_dir)
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"error: no readable eval_metadata.json in {run_dir} ({exc})", file=sys.stderr)
+        return 1
+
+    fixture = args.fixtures / str(metadata["fixture"])
+    if not fixture.is_dir():
+        print(f"error: fixture not found: {fixture}", file=sys.stderr)
+        return 1
+
+    grading = write_grading(run_dir, grade(run_dir, fixture))
+    summary = cast("Json", grading["summary"])
+    print(f"{metadata['eval_name']}/{metadata['arm']}: {summary['passed']}/{summary['total']}")
+    for e in cast("list[Json]", grading["expectations"]):
         print(f"  [{'PASS' if e['passed'] else 'FAIL'}] {e['text']}")
         if not e["passed"]:
             print(f"         {e['evidence']}")
@@ -361,4 +388,10 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except SystemExit:
+        raise
+    except Exception as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        sys.exit(2)

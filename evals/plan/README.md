@@ -1,6 +1,8 @@
 # Eval harness for `plan`
 
-Everything needed to re-measure the plan skill after editing it.
+Everything needed to re-measure the plan skill after editing it. A **conversation** suite in the
+sense of [eval-approach.md](../eval-approach.md): the run leaves a transcript, and the rubric is
+computed from that.
 
 `plan` is a conversation, not a file transform, so there is no artifact to diff. What the
 skill claims — one decision per turn, a recommendation attached to every question, roots
@@ -10,9 +12,8 @@ grades the transcript.
 
 This is a developer harness. Nothing here ships as an agent tool; all three scripts are
 marked `# agent-tool: false`, and `fixtures/` is excluded from ruff, pyright and pytest in
-the repo root config. It does travel with the published `plan` plugin, since the plugin is
-the whole skill directory — that costs installers a few hundred KB and buys anyone who
-forks the skill the ability to measure their fork.
+the repo root config. It lives outside `skills/plan/`, so it does not travel with the
+published plugin — measuring the skill means working from a clone of this repo.
 
 ## Contents
 
@@ -23,7 +24,7 @@ forks the skill the ability to measure their fork.
 | `personas/` | Briefs for the simulated user — what they have decided, what they have not |
 | `drive_interview.py` | Runs one interview to its end and records the transcript |
 | `grade.py` | Scores one transcript, writes `grading.json` |
-| `transcript_lib.py` | CLI invocation and the text analysis both scripts share |
+| `transcript_lib.py` | What a turn, a question and a recommendation are — the analysis both scripts share |
 | `benchmark.md` | Dated record of past rounds — compare against it, don't read a new score alone |
 
 ## How a run works
@@ -40,13 +41,12 @@ reading of "the plan is settled". A run that hits `--max-turns` (12) is recorded
 `stop_reason: max_turns` and fails the termination assertion.
 
 The two arms differ in **exactly one thing**: `with_skill` appends the body of
-`../SKILL.md` to the interviewer's system prompt, `without_skill` does not. Everything
-else — model, tools, fixture, persona, situation preamble — is identical.
+`../../skills/plan/SKILL.md` to the interviewer's system prompt, `without_skill` does not.
+Everything else — model, tools, fixture, persona, situation preamble — is identical.
 
-Both arms run `--safe-mode`, so no global `CLAUDE.md`, skills, MCP servers or hooks from
-the machine leak into a run. Without it, results depend on whose laptop produced them, and
-the no-skill arm can load the plan skill on its own and stop being a baseline. The `Skill`
-tool is blocked as well, for the same reason.
+Both arms run `--safe-mode` and block the `Skill` tool, for the reasons in
+[eval-approach.md](../eval-approach.md#the-two-arms). The CLI plumbing that enforces that lives in
+`../shared/claude_cli.py`, so it cannot drift between the driver and the grader.
 
 ## Why these four cases
 
@@ -65,35 +65,39 @@ invent data she does not have.
 ## Running a round
 
 ```bash
-WS=/tmp/plan-evals/iteration-1
+WS=/tmp/plan-evals
 
 python3 - "$WS" <<'EOF' > /tmp/plan-jobs
-import json, sys
-ws = sys.argv[1]
-for c in json.load(open("skills/plan/evals/evals.json"))["evals"]:
-    for arm in ("with_skill", "without_skill"):
-        # the run-N level is what skill-creator's aggregator globs for
-        print(f"{c['name']} {arm} {ws}/eval-{c['id']}-{c['name']}/{arm}/run-1")
+import sys
+sys.path.insert(0, "evals/shared")
+from pathlib import Path
+from workspace import ARMS, load_cases, run_dir
+
+ws = Path(sys.argv[1])
+_, cases = load_cases(Path("evals/plan/evals.json"))
+for case in cases:
+    for arm in ARMS:
+        print(case["name"], arm, run_dir(ws, case, arm, iteration=1))
 EOF
 
-xargs -P 8 -L1 sh -c 'python3 skills/plan/evals/drive_interview.py $0 --arm $1 --out $2' \
+xargs -P 8 -L1 sh -c 'python3 evals/plan/drive_interview.py $0 --arm $1 --out $2' \
   < /tmp/plan-jobs
 
-find "$WS" -name transcript.json -printf '%h\n' \
-  | xargs -P 8 -L1 python3 skills/plan/evals/grade.py
+find "$WS/iteration-1" -name transcript.json -printf '%h\n' \
+  | xargs -P 8 -L1 python3 evals/plan/grade.py
 ```
 
 Then aggregate and review with skill-creator's tooling:
 
 ```bash
-python -m scripts.aggregate_benchmark "$WS" --skill-name plan
-python <skill-creator>/eval-viewer/generate_review.py "$WS" --skill-name plan \
-  --benchmark "$WS/benchmark.json"
+python -m scripts.aggregate_benchmark "$WS/iteration-1" --skill-name plan
+python <skill-creator>/eval-viewer/generate_review.py "$WS/iteration-1" --skill-name plan \
+  --benchmark "$WS/iteration-1/benchmark.json"
 ```
 
 Timing and token counts are captured by the driver into `timing.json` per run — the
-interviewer's cost only. The simulated user is harness overhead and is recorded separately
-so it cannot flatter or inflate a round.
+interviewer's cost only. The simulated user is harness overhead, recorded under its own
+keys so it cannot flatter or inflate a round.
 
 Everything defaults to `sonnet`. Override with `--model` (the interviewer, i.e. the thing
 under test), `--persona-model`, and `--grader-model`. Keep the model fixed across arms and

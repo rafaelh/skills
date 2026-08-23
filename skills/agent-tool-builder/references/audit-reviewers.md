@@ -24,6 +24,8 @@ lens. Do not pass one reviewer's output to another.
 >
 > - Is the JSON shape stable across result counts (object vs array)?
 > - Is exit `3` actually reachable on an empty result, not just present in the source?
+> - Does every non-zero exit, `3` included, emit a message saying what happened
+>   and what to try next — enough that a caller needs no exit-code table?
 > - Does argument validation complete before any network or DB call?
 > - Does `--dry-run` cover every destructive path, or only the obvious one?
 > - Do the `epilog` examples still match the current flag set?

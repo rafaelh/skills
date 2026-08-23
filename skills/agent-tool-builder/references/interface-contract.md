@@ -29,6 +29,36 @@ Don't reach for `4`/`5` reflexively. A login-required tool might genuinely need
 `4`; a `--name` lookup that returns nothing should use `3`, not `4`. Most tools
 will only use `0/1/2/3`.
 
+### Every exit must explain itself
+
+The exit code is a *branch hint*, not the message. The script — never the
+SKILL.md — carries the meaning of its own exits. A caller that sees only the
+script's output must be able to act correctly without knowing what `3` means.
+
+So on every non-zero exit, say what happened and what to do next, in the
+structured stderr line (see "Structured error on stderr"):
+
+```
+$ fetch_record.py --id rec_99          # exit 3
+{"error": "No record matches id 'rec_99'", "code": "NOT_FOUND",
+ "hint": "list ids with --query '' --limit 20", "input": {"id": "rec_99"}}
+```
+
+Exit `3` is not an error, but it still gets a line: what was searched, and what
+to vary. Exit `0` self-describes too when the result is not the obvious one —
+a dry-run, a truncated page, a create that was a no-op — via `dry_run`,
+`meta.truncated`, `"created": false` in the payload.
+
+**Why this belongs in the script:** an exit-code table in SKILL.md costs tokens
+on every load, for every script, whether or not the tool is called — and it
+drifts the moment the script gains a code. Guidance that ships in the message
+costs nothing until the exit actually happens, and cannot drift. A SKILL.md that
+documents its scripts' exit codes is a sign the messages are too thin; fix the
+script, then delete the table.
+
+Test it by reading a failing run cold: if you can't tell what to do next without
+consulting the table above, the message is underspecified.
+
 ## Standard flags
 
 ### Always present

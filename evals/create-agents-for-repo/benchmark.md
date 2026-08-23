@@ -2,8 +2,7 @@
 
 A dated record of what this skill scored, so a future round can be compared against it rather than
 read in isolation. Append rounds; don't rewrite them. The harness that produces these numbers lives
-in [evals/create-agents-for-repo/](../evals/create-agents-for-repo/) — read its
-README before re-measuring.
+beside this file — read [README.md](README.md) before re-measuring.
 
 Three evals, two arms each (`with_skill`, `without_skill`), one run per cell. One run per cell means
 the token and time figures are single observations, not distributions: treat a 20% swing as noise.
@@ -33,6 +32,12 @@ v2 also fixed two defects in v1 that were inverting the signal, both worth remem
 
 Scores below are v2 throughout, including the round-1 column, which was re-graded from the stored
 artifacts. Round 1's v1 gradings are preserved as `grading-v1.json` beside each run.
+
+Rubric v2 is unchanged by the harness rework that moved this suite to `evals/create-agents-for-repo/`
+— same checks, same wording, same numbers. What changed is how a run is addressed: `grade.py` now
+takes one run directory and reads the eval and fixture out of its `eval_metadata.json`. Re-grading a
+run stored under the older layout means dropping that file into the run directory first, with
+`eval_name`, `arm` and `fixture` keys.
 
 ## Round 1 — 2026-08-09
 

@@ -96,12 +96,21 @@ ignore = [
     "N802",    # visit_* method names are required by ast.NodeVisitor API
     "TRY300",  # return before except is intentional — matches skill-audit pattern
 ]
+# Harness scripts are run by path (`python3 evals/plan/grade.py …`), so each one puts
+# evals/shared on sys.path before it can import from it — an import that cannot come first.
+"evals/*/*.py" = [
+    "E402",
+]
 "evals/create-agents-for-repo/*.py" = [
     "S603",    # subprocess argv is built from resolved fixture paths, never user text
     "S607",    # `git` and `diff` come from PATH by design — the harness runs on the dev's tools
 ]
-"skills/plan/evals/*.py" = [
+"evals/plan/*.py" = [
     "S603",    # subprocess argv is the resolved claude CLI plus harness-owned prompts
+]
+"evals/shared/*.py" = [
+    "S603",    # subprocess argv is the resolved claude CLI plus harness-owned prompts
+    "S607",    # `git` comes from PATH by design — a staged fixture uses the dev's git
 ]
 "skills/create-agents-for-repo/tests/*.py" = [
     "S101",    # assert is correct in tests
@@ -145,19 +154,19 @@ force-sort-within-sections = true
 # game's tests as part of this repo's. `.claude/skills/` is symlinks back into
 # skills/, so collecting it would run every skill suite a second time — and, with
 # no __init__.py, collide on module basenames.
-norecursedirs = ["evals/*/fixtures", "**/evals/fixtures", ".claude", ".venv", "node_modules"]
+norecursedirs = ["evals/*/fixtures", ".claude", ".venv", "node_modules"]
 
 [tool.pyright]
 pythonVersion = "3.14"
 typeCheckingMode = "strict"
-include = ["skills", ".claude/skills"]
+include = ["skills", ".claude/skills", "evals"]
+# Harness scripts import evals/shared flatly, the way skill scripts import their siblings.
+extraPaths = ["evals/shared"]
 exclude = [
     "**/node_modules",
     "**/__pycache__",
     ".venv",
     "evals/*/fixtures",
-    # Reached both directly and through the .claude/skills/plan symlink.
-    "**/evals/fixtures",
 ]
 venvPath = "."
 venv = ".venv"

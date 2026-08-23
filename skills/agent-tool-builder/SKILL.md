@@ -26,6 +26,12 @@ constraint: an agent cannot interactively query a script — it must express
 exactly what it needs via flags on one invocation, and the script must return
 structured, parseable output with a meaningful exit code.
 
+The bar: a good tool needs almost no documentation to use. It follows the
+standard interface, so the agent already knows the flags; its output is
+concise and structured; and when it exits unexpectedly it says why and what to
+try next. Guidance the tool carries itself costs nothing until it's needed —
+the same guidance written into a SKILL.md is paid for on every load.
+
 This skill operates in two modes. Identify which mode applies, then follow that
 mode's workflow exclusively.
 
@@ -113,6 +119,12 @@ exist" from "an error occurred" without parsing output. Add `4` (permission
 denied) or `5` (conflict) only when the agent's recovery path differs from
 `1`/`2`.
 
+**Every non-zero exit explains itself** — including `3` — in the structured
+stderr line: what happened, and what to do next. The caller should never need
+an exit-code table to act on the result. If you find yourself writing one into
+a SKILL.md, the messages are too thin; see
+[references/interface-contract.md](references/interface-contract.md).
+
 **Output shapes.** Stdout carries clean JSON or nothing, so the agent can
 `json.loads()` it unconditionally; errors go to stderr as their own JSON
 object. Always include `meta`, even empty — it gives the agent a stable key.
@@ -150,10 +162,8 @@ modifying an existing script. (The underlying template lives at
 `assets/templates/agent_tool.py.template` — `init_tool.py` reads it for you,
 no need to load it by hand.)
 
-**3b. Apply PEP 723 if the script is standalone.** Standalone means: anything
-in `bash/scripts/`, any `claude/skills/<name>/scripts/` file, or any one-off
-helper you might copy to another machine. Skip for modules inside a package
-(e.g. `src/tools/`, `src/actions/`) where `pyproject.toml` owns deps.
+**3b. Apply PEP 723 if the script is standalone.** Standalone means: any
+`claude/skills/<name>/scripts/` file, or any one-off helper you might copy to another machine.
 
 Read [references/pep723.md](references/pep723.md) for: shebang choice,
 `requires-python` and `dependencies` rules, drift modes the validator catches.
@@ -179,7 +189,7 @@ agent-tool specifics layer on top:
 
    1. Happy path → exit `0`, expected JSON shape on stdout
    2. Validation failure → exit `1`, structured error on stderr
-   3. Not-found → exit `3`, no stdout
+   3. Not-found → exit `3`, no stdout, stderr names what was searched
    4. Field selection (if `--fields` is in scope) → output limited to keys
    5. Pagination (if multi-record per step 1.7) → correct slice + `meta.next_cursor`
    6. Dry-run (if destructive per step 1.5) → exit `0`, no side effects

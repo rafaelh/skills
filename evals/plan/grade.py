@@ -19,24 +19,24 @@ from __future__ import annotations
 
 import argparse
 from collections import Counter
-import json
 from pathlib import Path
 import re
 import sys
 from typing import cast
 
+HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE.parent / "shared"))
+
+from grading import expectation, judge, numbered, write_grading
 from transcript_lib import (
     Json,
     Transcript,
-    extract_json_array,
     has_recommendation,
     prose,
     question_sentences,
-    run_claude,
     word_count,
 )
-
-HERE = Path(__file__).resolve().parent
+from workspace import find_case, load_cases
 
 # A first turn that hands over a finished plan announces itself: a "## The plan" heading, or
 # "here's the plan". This replaces a word budget, which was the wrong axis — raised once from 350
@@ -133,10 +133,6 @@ Judge each numbered assertion below against the transcript, and nothing else.
 Return only a JSON array, one object per assertion, in order:
 [{{"index": 1, "passed": true, "evidence": "Turn 2 says ..."}}]
 """
-
-
-def expectation(text: str, passed: bool, evidence: str) -> Json:
-    return {"text": text, "passed": passed, "evidence": evidence}
 
 
 def check_opening(transcript: Transcript) -> Json:
@@ -286,22 +282,10 @@ def judgement(transcript: Transcript, case: Json, model: str, cwd: Path) -> list
     statements = SHARED_JUDGEMENT + [
         str(j) for j in cast("list[object]", case.get("judgement", []))
     ]
-    numbered = "\n".join(f"{i}. {s}" for i, s in enumerate(statements, start=1))
-    prompt = GRADER_PROMPT.format(assertions=numbered, transcript=blind_transcript(transcript))
-    result = run_claude(prompt, cwd=cwd, model=model, allow_tools=False, timeout=600)
-    verdicts = extract_json_array(result.text)
-    by_index = {int(cast("int", v["index"])): v for v in verdicts if "index" in v}
-
-    out: list[Json] = []
-    for i, statement in enumerate(statements, start=1):
-        verdict = by_index.get(i)
-        if verdict is None:
-            out.append(expectation(statement, False, "The grader returned no verdict."))
-            continue
-        out.append(
-            expectation(statement, bool(verdict.get("passed")), str(verdict.get("evidence", "")))
-        )
-    return out
+    prompt = GRADER_PROMPT.format(
+        assertions=numbered(statements), transcript=blind_transcript(transcript)
+    )
+    return judge(statements, prompt, model=model, cwd=cwd)
 
 
 def main() -> int:
@@ -321,40 +305,33 @@ def main() -> int:
         return 1
     transcript = Transcript.load(transcript_path)
 
-    data = cast("Json", json.loads(Path(args.evals).read_text()))
-    cases = [cast("Json", c) for c in cast("list[object]", data["evals"])]
-    case = next((c for c in cases if str(c["name"]) == transcript.eval_name), None)
-    if case is None:
-        print(f"error: {transcript.eval_name!r} is not in {args.evals}", file=sys.stderr)
+    _, cases = load_cases(Path(args.evals))
+    try:
+        case = find_case(cases, transcript.eval_name)
+    except KeyError as exc:
+        print(f"error: {exc}", file=sys.stderr)
         return 1
 
     expectations = mechanical(transcript, case)
     if not args.mechanical_only:
         expectations += judgement(transcript, case, args.grader_model, run_dir)
 
-    passed = sum(1 for e in expectations if e["passed"])
-    total = len(expectations)
     tool_calls = Counter(t.split()[0] for turn in transcript.assistant_turns() for t in turn.tools)
-
-    # No timing block here on purpose: skill-creator's aggregator only falls through to
-    # the run's timing.json — the one place token counts live — when grading.json has none.
-    grading: Json = {
-        "expectations": expectations,
-        "summary": {
-            "passed": passed,
-            "failed": total - passed,
-            "total": total,
-            "pass_rate": round(passed / total, 3) if total else 0.0,
-        },
-        "execution_metrics": {
+    # No timing block here on purpose: the aggregator only falls through to the run's
+    # timing.json — the one place token counts live — when grading.json has none.
+    grading = write_grading(
+        run_dir,
+        expectations,
+        execution_metrics={
             "tool_calls": dict(tool_calls),
             "total_tool_calls": sum(tool_calls.values()),
             "total_steps": len(transcript.assistant_turns()),
             "errors_encountered": 0,
             "output_chars": sum(len(t.text) for t in transcript.assistant_turns()),
         },
-    }
-    (run_dir / "grading.json").write_text(json.dumps(grading, indent=2))
+    )
+    summary = cast("Json", grading["summary"])
+    passed, total = summary["passed"], summary["total"]
     print(f"{transcript.eval_name}/{transcript.arm}: {passed}/{total} passed")
     return 0
 

@@ -20,20 +20,17 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
-import shutil
 import sys
 from typing import cast
 
-from transcript_lib import (
-    Json,
-    Transcript,
-    Turn,
-    question_sentences,
-    run_claude,
-)
-
 HERE = Path(__file__).resolve().parent
-DEFAULT_SKILL = HERE.parent / "SKILL.md"
+sys.path.insert(0, str(HERE.parent / "shared"))
+
+from claude_cli import READ_ONLY_TOOLS, run_claude
+from transcript_lib import Transcript, Turn, question_sentences
+from workspace import find_case, load_cases, stage_fixture, write_eval_metadata, write_timing
+
+DEFAULT_SKILL = HERE.parent.parent / "skills" / "plan" / "SKILL.md"
 
 # Given to both arms. The interviewer has to know it is in a conversation and cannot
 # reach for a shell, or it burns turns trying to run things and being denied. Identical
@@ -68,16 +65,6 @@ How to reply:
 """
 
 
-def load_eval(evals_path: Path, key: str) -> Json:
-    data = cast("Json", json.loads(evals_path.read_text()))
-    cases = [cast("Json", c) for c in cast("list[object]", data["evals"])]
-    for case in cases:
-        if str(case["name"]) == key or str(case["id"]) == key:
-            return case
-    names = ", ".join(f"{c['id']}:{c['name']}" for c in cases)
-    raise SystemExit(f"no eval matching {key!r}. available: {names}")
-
-
 def skill_body(skill_md: Path) -> str:
     """SKILL.md with its YAML frontmatter removed — the part a triggered skill contributes."""
     text = skill_md.read_text()
@@ -86,18 +73,6 @@ def skill_body(skill_md: Path) -> str:
         if end != -1:
             text = text[end + 4 :]
     return text.strip()
-
-
-def stage_repo(fixture: str | None, out_dir: Path) -> Path:
-    """Give the interviewer its own copy so a run can never mutate the fixture."""
-    repo = out_dir / "repo"
-    if repo.exists():
-        shutil.rmtree(repo)
-    if fixture:
-        shutil.copytree(HERE / "fixtures" / fixture, repo)
-    else:
-        repo.mkdir(parents=True)
-    return repo
 
 
 def persona_reply(brief: str, transcript: Transcript, model: str, cwd: Path) -> Turn:
@@ -109,7 +84,7 @@ def persona_reply(brief: str, transcript: Transcript, model: str, cwd: Path) -> 
         f"## The conversation so far\n\n{history}\n\n"
         "Reply now, as the user, in your own words."
     )
-    result = run_claude(prompt, cwd=cwd, model=model, allow_tools=False, timeout=300)
+    result = run_claude(prompt, cwd=cwd, model=model, timeout=300)
     return Turn(
         role="user",
         text=result.text.strip().strip('"'),
@@ -140,12 +115,13 @@ def main() -> int:
     parser.add_argument("--max-turns", type=int, default=12)
     args = parser.parse_args()
 
-    case = load_eval(Path(args.evals), args.eval)
+    _, cases = load_cases(Path(args.evals))
+    case = find_case(cases, args.eval)
     out_dir = Path(args.out)
     (out_dir / "outputs").mkdir(parents=True, exist_ok=True)
 
     fixture = cast("str | None", case.get("fixture"))
-    repo = stage_repo(fixture, out_dir)
+    repo = stage_fixture(HERE / "fixtures" / fixture if fixture else None, out_dir / "repo")
     scratch = out_dir / "persona"
     scratch.mkdir(exist_ok=True)
 
@@ -174,7 +150,7 @@ def main() -> int:
             model=args.model,
             system_prompt=system,
             session_id=session_id,
-            allow_tools=True,
+            allowed_tools=READ_ONLY_TOOLS,
             timeout=900,
         )
         session_id = result.session_id or session_id
@@ -204,40 +180,28 @@ def main() -> int:
 
     (out_dir / "transcript.json").write_text(json.dumps(transcript.to_json(), indent=2))
     (out_dir / "outputs" / "transcript.md").write_text(transcript.to_markdown())
-    # `prompt` and `eval_id` are what the skill-creator viewer reads out of this file;
-    # the rest is here so a run directory explains itself without evals.json to hand.
-    (out_dir / "eval_metadata.json").write_text(
-        json.dumps(
-            {
-                "eval_id": case["id"],
-                "eval_name": case["name"],
-                "prompt": case["prompt"],
-                "assertions": case.get("judgement", []),
-                "arm": args.arm,
-                "fixture": fixture,
-                "code_bearing": case["code_bearing"],
-                "model": args.model,
-                "stop_reason": transcript.stop_reason,
-                "interviewer_turns": len(interviewer),
-            },
-            indent=2,
-        )
+    write_eval_metadata(
+        out_dir,
+        case,
+        args.arm,
+        {
+            "code_bearing": case["code_bearing"],
+            "model": args.model,
+            "stop_reason": transcript.stop_reason,
+            "interviewer_turns": len(interviewer),
+        },
     )
-    duration_ms = sum(t.duration_ms for t in interviewer)
-    (out_dir / "timing.json").write_text(
-        json.dumps(
-            {
-                # Only the interviewer's cost is the skill's cost; the simulated user is
-                # harness overhead and is recorded separately so it cannot distort a round.
-                "total_tokens": sum(t.tokens for t in interviewer),
-                "duration_ms": duration_ms,
-                "total_duration_seconds": round(duration_ms / 1000, 1),
-                "cost_usd": round(sum(t.cost_usd for t in interviewer), 4),
-                "persona_tokens": sum(t.tokens for t in persona_turns),
-                "persona_cost_usd": round(sum(t.cost_usd for t in persona_turns), 4),
-            },
-            indent=2,
-        )
+    write_timing(
+        out_dir,
+        total_tokens=sum(t.tokens for t in interviewer),
+        duration_ms=sum(t.duration_ms for t in interviewer),
+        cost_usd=sum(t.cost_usd for t in interviewer),
+        extra={
+            # The simulated user is harness overhead, not the skill's cost, so it is
+            # recorded beside the run's own figures rather than added to them.
+            "persona_tokens": sum(t.tokens for t in persona_turns),
+            "persona_cost_usd": round(sum(t.cost_usd for t in persona_turns), 4),
+        },
     )
     print(
         f"[{case['name']}/{args.arm}] done: {len(interviewer)} turns, "
