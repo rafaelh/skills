@@ -24,27 +24,13 @@ Most of these tools use python scripts, though there are some that use typescrip
   <summary>skill-audit</summary>
 
 ### skill-audit
+
 Audits, optimizes, validates, and trigger-evals Claude Agent Skills (SKILL.md files).
 
-**Validation and analysis**
-- Validates SKILL.md frontmatter, body structure, & script references against the spec
-- Analyzes token budget, section balance, progressive disclosure quality, & gotchas coverage
-- Recommends whether to introduce helper scripts, and what patterns they should follow
-- Detects description overlap between sibling skills (bag-of-words cosine similarity)
-
-**Description optimization**
-- Rewrites the `description` field with imperative phrasing and concrete trigger contexts
-- Runs a trigger-rate eval: invokes `claude -p` against a labeled query set and counts how often the skill activates
-- Iterates candidate descriptions against train failures, scores against a held-out validation set, and proposes the winner
-
-**Script quality** *(Python only)*
-- Checks helper scripts for performance anti-patterns (AST static analysis + optional cProfile runtime profiling)
-- Validates the agent-tool interface contract: `--format`, `--quiet`, `--dry-run` flags; exit codes `0/1/2/3`; no `input()`, no free-form stdout errors
-- Counts tokens via the Anthropic SDK when available, heuristic fallback otherwise
-
-**Security**
-- Audits a skill against the [OWASP Agentic Skills Top 10](https://owasp.org/www-project-agentic-skills-top-10/): over-privileged `allowed-tools`, hardcoded secrets, unsafe deserialization, shell injection, supply-chain (fetch-and-run, unpinned deps), hidden-unicode instructions, and prompt injection in prose (instruction-override, replacement system prompts, concealment from the user, exfiltration of credentials). No guarantee it'll work, but better than nothing!
-- Security checks cover SKILL.md and reference files regardless of language; Python-specific checks (unsafe deserialization, shell injection, dependency pinning) apply only to `.py` scripts
+- **Validation and analysis** — frontmatter, body structure and script references against the spec; token budget, section balance and progressive disclosure quality; description overlap between sibling skills (bag-of-words cosine similarity); whether the skill should have helper scripts at all
+- **Description optimization** — rewrites `description` with imperative phrasing and concrete trigger contexts, then proves the rewrite: a trigger-rate eval invokes `claude -p` against a labeled query set, iterates candidates against train failures, and scores the winner on a held-out split
+- **Script quality** *(Python only)* — performance anti-patterns via AST analysis plus optional cProfile, and the agent-tool interface contract: `--format`, `--quiet`, `--dry-run`, exit codes `0/1/2/3`, no `input()`, no free-form stdout errors
+- **Security** — audits against the [OWASP Agentic Skills Top 10](https://owasp.org/www-project-agentic-skills-top-10/): over-privileged `allowed-tools`, hardcoded secrets, unsafe deserialization, shell injection, supply chain (fetch-and-run, unpinned deps), hidden-unicode instructions, and prompt injection in prose. No guarantee it'll work, but better than nothing. Prose checks apply to any skill; the Python-specific ones only to `.py` scripts
 
 Scripts live in `skills/skill-audit/scripts/` and accept `--json` for machine-readable output.
 
@@ -69,13 +55,9 @@ Scripts live in `skills/skill-audit/scripts/` and accept `--json` for machine-re
 
 ### skill-audit-ts
 
-The TypeScript twin of `skill-audit` — same audit/eval workflow, for skills whose bundled scripts are TypeScript (run via `npx tsx`) instead of Python. For teams without Python available, most commonly Windows machines.
+The TypeScript twin of `skill-audit` — same audit/eval workflow, same script names and modes, for skills whose bundled scripts are TypeScript (run via `npx tsx`) instead of Python. For machines without Python available, most commonly Windows.
 
-**Validation, analysis, and description optimization** — same feature set as `skill-audit` above, retargeted at TypeScript.
-
-**Script quality** *(TypeScript only)* — `validate_agent_tool.ts` and `perf_check.ts` are folded directly into this skill (no dependency on `agent-tool-builder`, which is Python-only). Performance checks target JS/TS anti-patterns: string `+=` in a loop, `new RegExp(literal)` recompiled per iteration, array `.includes()`/`.indexOf()` membership tests, `readFileSync` in a loop, `.sort()`/`.reverse()` in a loop.
-
-**Security** — same OWASP Agentic Skills Top 10 coverage, with the script-construct checks retargeted: `eval()`/`new Function()`/`vm.runInThisContext` (unsafe deserialization), `child_process.exec`/`{shell: true}` (shell injection), `fs.rmSync(..., {recursive: true})` (dangerous fs), and `package.json` dependency pinning (supply chain) in place of PEP 723 checks.
+Validation, analysis and description optimization match `skill-audit` above. What differs is everything language-specific: perf checks target JS/TS anti-patterns (string `+=` in a loop, `new RegExp(literal)` recompiled per iteration, `.includes()`/`.indexOf()` membership tests, `readFileSync` or `.sort()` in a loop), the security script-construct checks target `eval()`/`new Function()`, `child_process.exec`/`{shell: true}` and `package.json` pinning, and `validate_agent_tool.ts` is folded in rather than borrowed from `agent-tool-builder`, which is Python-only.
 
 Scripts live in `skills/skill-audit-ts/scripts/` and accept `--format json|text` for machine-readable output.
 
@@ -101,26 +83,14 @@ Scripts live in `skills/skill-audit-ts/scripts/` and accept `--format json|text`
 
 ### agent-tool-builder
 
-Builds and reviews **Python** scripts intended to be called by AI agents as tools. Enforces a standard interface contract (structured JSON output, predictable exit codes, `--format`, `--quiet`, `--dry-run`) and catches performance anti-patterns before they cost agent round-trips.
+Builds and reviews **Python** scripts intended to be called by AI agents as tools. Enforces a standard interface contract — structured JSON output, predictable exit codes, `--format`, `--quiet`, `--dry-run` — and catches performance anti-patterns before they cost agent round-trips.
 
-> If your agent tools are written in TypeScript, Bash, or another language, this skill's validation and scaffolding won't apply. You'd need a separate contract enforcer for that language's conventions.
+- Runs a decision-forcing design interview — data model, operations, flag set, JSON output shape, failure modes — before a line of code gets written
+- Validates the contract: mandatory and conditional flags, exit code conventions, stderr discipline, and output that's parseable JSON by default so agents never parse prose
+- Scaffolds new tools from a PEP 723 template with argparse, `--format json/text/csv`, structured error output and stub tests
+- Detects O(n²) string concatenation, recompiled regexes and list-membership anti-patterns via AST analysis + optional cProfile profiling
 
-**Design interview**
-
-- Runs a decision-forcing interview to pin down the tool's data model, operations, flag set, JSON output shape, and failure modes before writing a line of code
-
-**Interface contract enforcement**
-
-- Validates mandatory flags (`--format`, `--quiet`), conditional flags (`--dry-run`, `--limit`, `--cursor`), exit code conventions, and stderr discipline
-- Ensures output is parseable JSON by default — agents should never need to parse human-readable text
-
-**Scaffolding**
-
-- Scaffolds new agent tools from a PEP 723 template with argparse, `--format json/text/csv`, structured error output, and stub tests
-
-**Performance auditing**
-
-- Detects O(n²) string concatenation, recompiled regexes, and list-membership anti-patterns via AST analysis + optional cProfile profiling
+> Python only. Agent tools in TypeScript, Bash or another language need a separate contract enforcer for that language's conventions — `skill-audit-ts` carries one for TypeScript.
 
 Scripts live in `skills/agent-tool-builder/scripts/` and accept `--json` for machine-readable output.
 
@@ -132,19 +102,14 @@ Scripts live in `skills/agent-tool-builder/scripts/` and accept `--json` for mac
 
 </details>
 
+---
 
 <details>
   <summary>create-agents-for-repo</summary>
 
 ### create-agents-for-repo
-This skill adds custom agents to the repository it is run on, and where appropriate wires them into the repo's skills and `CLAUDE.md` so that they run. This keeps verbose output out of the main context window and assigns work to cheaper models where possible. It requires Python `>=3.14` to run its integrated scripts, but will work regardless of the language of the target repo.
 
-Don't run `/create-agents-for-repo` in this repo. The skills here are intended to be portable and travel between repos; the subagents this writes don't. The subagents are tailored to the target repo, hardcoding the local toolchain (what linters to run, which trees hold specific, etc), so they don't travel well.
-
-**What it looks for**
-- Work a cheaper model does correctly because something external — an exit code, a schema, a diff — decides whether it succeeded
-- Work that needs judgment but produces bulky, disposable evidence the main context shouldn't keep
-- Existing agents that are miscast, unrestricted, or that nothing ever invokes
+Adds custom subagents to the repo it's run on and, where appropriate, wires them into that repo's skills and `CLAUDE.md` so they actually run. This keeps verbose output out of the main context window and moves work to cheaper models where something external — an exit code, a schema, a diff — decides whether it succeeded. It needs Python `>=3.14` for its own scripts; the target repo can be in any language.
 
 **What it writes**
 - `.claude/agents/*.md` with a narrowed tool grant, an explicit model, and a return contract that caps what comes back
@@ -153,41 +118,63 @@ Don't run `/create-agents-for-repo` in this repo. The skills here are intended t
 
 **How it runs**
 
-The candidate hunt and the review of that hunt are themselves delegated to parallel subagents — reading whole skill bodies and measuring how much each command prints is exactly the bulky, disposable work the skill tells everyone else to hand off. The reviewer is adversarial and separate from the hunters, and asks two questions of every candidate: would a subagent actually be *good* at this, and is it cheaper than the simplest thing that would work? A `-q` flag, a pre-commit hook, a Makefile target, or the built-in `Explore` agent all beat a bespoke agent when they suffice, and "SIMPLER: add `-q`" is a legitimate verdict.
+The candidate hunt and the review of that hunt are themselves delegated to parallel subagents. The reviewer is adversarial and separate from the hunters: would a subagent actually be *good* at this, and is it cheaper than the simplest thing that would work? A `-q` flag, a pre-commit hook, a Makefile target, or the built-in `Explore` agent all beat a bespoke agent when they suffice, and "SIMPLER: add `-q`" is a legitimate verdict. It proposes the whole batch and stops for approval before writing anything, lists what it rejected so the bar is visible, and asks separately about Opus agents — those buy context isolation but no cost saving.
 
-It then proposes the whole batch and stops for approval before writing anything, lists the candidates it rejected so the bar is visible, and asks separately about Opus agents — those buy context isolation but no cost saving, so it's your call.
-
+Don't run `/create-agents-for-repo` in this repo. The skills here are meant to travel between repos; the subagents it writes hardcode the local toolchain and deliberately don't.
 
 </details>
 
+---
 
 <details>
   <summary>obsidian, obsidian-metabind</summary>
 
 ### obsidian
+
 Works on an Obsidian vault as a set of files: notes, frontmatter (Properties), wikilinks, backlinks, `.canvas` and `.base`. It locates the vault root, parses and rewrites wikilinks properly (they carry pipes, heading refs and block refs, so regex doesn't cut it), edits frontmatter without disturbing key order, renames a note while fixing every inbound link, lists notes by tag or property, and validates canvas/base files.
 
 It stops at plugin syntax. `references/plugin-conventions.md` teaches it to *recognize* Dataview, Templater, Tasks, Excalidraw and Meta Bind so it leaves them byte-for-byte alone, and to hand off when a sibling skill exists.
 
 ### obsidian-metabind
-Reads, authors, audits and refactors [Meta Bind](https://www.moritzjung.dev/obsidian-meta-bind-plugin-docs/) syntax — the input fields, view fields, buttons and embeds that make a note interactive.
 
-**Why it's separate from `obsidian`.** Meta Bind's surface — 21 input field types, 17 input field arguments, 4 view field types, 14 button actions, a bind target grammar and two plugin APIs — is larger than all of `skills/obsidian/references/` put together. Neither skill invokes the other, so a vault with Meta Bind but no `obsidian` install still works.
+Reads, authors, audits and refactors [Meta Bind](https://www.moritzjung.dev/obsidian-meta-bind-plugin-docs/) syntax — the input fields, view fields, buttons and embeds that make a note interactive. It's separate from `obsidian` because Meta Bind's surface (21 input field types, 17 input field arguments, 4 view field types, 14 button actions, a bind target grammar and two plugin APIs) is larger than all of `skills/obsidian/references/` put together. Neither skill invokes the other, so a vault with Meta Bind but no `obsidian` install still works.
 
-**What it does**
 - `scan.py --list` inventories every declaration in the vault; `--check` validates them, `--strict` also flags bind targets naming a property that doesn't exist yet
 - `rename.py --property` retargets a renamed frontmatter key across inline fields, fenced blocks, `js-view` headers and button `updateMetadata` YAML; `--path` fixes cross-note bind targets after a note moves, which `obsidian`'s `rename_note.py` doesn't touch
 - `refresh_docs.py` regenerates `references/field-spec.json` from the plugin's own `FieldConfigs.ts` and `ButtonConfig.ts`, pinned to the version the vault actually has installed
 
-**Two things it deliberately won't do.** It never rewrites identifiers inside `js` or `inlineJS` code — it reports those sites for you to review, because pattern-rewriting arbitrary JS eventually corrupts working code. And it doesn't parse declarations with regex: argument values legitimately contain brackets and commas (`option(80, Griffon [flying])`), so a declaration's extent comes from its host code span or fence, mirroring the plugin's own parser.
+Two things it deliberately won't do: rewrite identifiers inside `js` or `inlineJS` code — it reports those sites for you to review, because pattern-rewriting arbitrary JS eventually corrupts working code — and parse declarations with regex, since argument values legitimately contain brackets and commas (`option(80, Griffon [flying])`), so a declaration's extent comes from its host code span or fence, mirroring the plugin's own parser.
 
 </details>
 
+---
+
+<details>
+  <summary>az</summary>
+
+### az
+
+Drives the Azure CLI — inspecting, deploying and troubleshooting resources, and answering inventory or security questions about a subscription. Two scripts do the orienting and the lookup; `az` itself does the work.
+
+- `az-preflight.py` — one call, always first. Returns CLI version and extensions, signed-in identity, tenant, active and other reachable subscriptions, resource groups, and **access posture** (`write` / `read-only` / `unknown`). Blockers carry the exact instruction for the user, so nothing gets guessed around
+- `az-help.py` — the installed CLI's own help, compacted ~8x. `--tree <group>` walks nested commands, which plain `az -h` can't: it reveals one level at a time, so finding `az webapp config ssl bind` otherwise costs three round trips
+
+The rest is operating discipline: project with `--query` (a bare `az webapp list` is tens of thousands of tokens), pass `-o` explicitly since the user's config can override the default, confirm every mutation before running it, honour a `read-only` posture rather than routing around an `AuthorizationFailed`, and never touch global state (`az account set`, `az configure`, unattended `az login`). References cover recipes, KQL for Resource Graph / Log Analytics / Application Insights, and error-code troubleshooting.
+
+| Script | Purpose |
+|---|---|
+| `az-preflight.py` | Session orientation — identity, subscriptions, access posture, blockers |
+| `az-help.py` | Compacted `az` help lookup; `--tree` for nested command groups |
+
+</details>
+
+---
 
 <details>
   <summary>architecture, plan, tdd, refactor</summary>
 
 ## These skills are designed to be used together
+
 The `architecture` and `tdd` skills have been adapted for my needs from Matt Pocock's [Skills for Agents](https://github.com/mattpocock/skills), check his repo out, it's awesome. The refactor skill is adapted from Addy Osmani's [Agent Skills](https://github.com/addyosmani/agent-skills), also good to review.
 
 They assume you are working in a python codebase - you'll need to update them for anything else. They also assume you are using: `pyright` for type safety, `pytest` for testing, and `ruff` for linting/sast/etc. These are all pretty solid choices.
@@ -201,15 +188,20 @@ The cycle for use should be:
 5. Optionally, `/architecture` to review an existing codebase for ADR violations, or look for deepening opportunities.
 
 </details>
+
 ---
 
 ## Installing
+
 <details>
   <summary>Install Details</summary>
+
 ### Option 1
+
 Use a recent version of the **GitHub CLI** and run `gh skill install rafaelh/skills <skillname>`. This will copy the skill into your target repo, or global directory (you'll be prompted for your choice). At a later date running `gh skill update rafaelh/skills <skillname>` will pull an updated version of this skill.
 
 ### Option 2
+
 This repo is a Claude Code plugin marketplace. From inside Claude Code, add the marketplace and install whichever skills you need:
 
 ```
@@ -217,22 +209,24 @@ This repo is a Claude Code plugin marketplace. From inside Claude Code, add the 
 /plugin install skill-audit@rafaelh
 /plugin install skill-audit-ts@rafaelh
 /plugin install agent-tool-builder@rafaelh
+/plugin install create-agents-for-repo@rafaelh
 /plugin install architecture@rafaelh
 /plugin install plan@rafaelh
 /plugin install tdd@rafaelh
 /plugin install refactor@rafaelh
 /plugin install obsidian@rafaelh
 /plugin install obsidian-metabind@rafaelh
+/plugin install az@rafaelh
 /reload-plugins
 ```
 
-Once installed, skills activate automatically based on context — `skill-audit` or `skill-audit-ts` when you ask Claude to audit a SKILL.md (pick based on whether your bundled scripts are Python or TypeScript); `agent-tool-builder` when you ask Claude to write or improve a Python script an agent will call. `skill-audit` and `skill-audit-ts` cover overlapping ground by design — their descriptions each carry an explicit "NOT for X — see Y" disambiguator so only one activates per request. `obsidian` and `obsidian-metabind` are disambiguated the same way: general vault work goes to the former, anything `INPUT[` / `VIEW[` / `BUTTON[` / ```meta-bind to the latter.
+Once installed, skills activate automatically based on context — `skill-audit` or `skill-audit-ts` when you ask Claude to audit a SKILL.md (pick based on whether your bundled scripts are Python or TypeScript); `agent-tool-builder` when you ask Claude to write or improve a Python script an agent will call. `skill-audit` and `skill-audit-ts` cover overlapping ground by design — their descriptions each carry an explicit "NOT for X — see Y" disambiguator so only one activates per request. `obsidian` and `obsidian-metabind` are disambiguated the same way: general vault work goes to the former, anything `INPUT[` / `VIEW[` / `BUTTON[` / a `meta-bind` fence to the latter.
 
 After installing `skill-audit-ts`, run `npm ci` once inside `skills/skill-audit-ts/` to resolve `tsx`/`typescript`/`vitest` from the committed lockfile.
 
 ## Requirements
 
-**skill-audit / agent-tool-builder (Python):**
+**skill-audit / agent-tool-builder / create-agents-for-repo / obsidian / obsidian-metabind / az (Python):**
 - Python 3.14+ (all bundled scripts are stdlib-only except where PEP 723 metadata declares third-party deps)
 - `ANTHROPIC_API_KEY` in environment (optional — enables exact token counts via the SDK)
 
@@ -240,6 +234,10 @@ After installing `skill-audit-ts`, run `npm ci` once inside `skills/skill-audit-
 - Node.js 18.3+ (20+ recommended), plus a one-time `npm ci` in the skill directory
 - `ANTHROPIC_API_KEY` in environment (optional — enables exact token counts via `@anthropic-ai/sdk`)
 
-**Both:**
+**az:**
+- The Azure CLI on PATH, and a signed-in session (`az login`) — `az-preflight.py` reports the install command and login instruction when either is missing
+
+**Both audit skills:**
 - Claude Code CLI (for trigger evals and description optimization)
+
 </details>
