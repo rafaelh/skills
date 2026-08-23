@@ -11,9 +11,10 @@ Example:
 """
 
 import fnmatch
+from pathlib import Path
 import sys
 import zipfile
-from pathlib import Path
+
 from scripts.quick_validate import validate_skill
 
 # Patterns to exclude when packaging skills.

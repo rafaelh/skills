@@ -6,15 +6,15 @@ for a set of queries. Outputs results as JSON.
 """
 
 import argparse
+from concurrent.futures import ProcessPoolExecutor, as_completed
 import json
 import os
+from pathlib import Path
 import select
 import subprocess
 import sys
 import time
 import uuid
-from concurrent.futures import ProcessPoolExecutor, as_completed
-from pathlib import Path
 
 from scripts.utils import parse_skill_md
 
@@ -161,9 +161,7 @@ def run_single_query(
                                 continue
                             tool_name = content_item.get("name", "")
                             tool_input = content_item.get("input", {})
-                            if tool_name == "Skill" and clean_name in tool_input.get("skill", ""):
-                                triggered = True
-                            elif tool_name == "Read" and clean_name in tool_input.get("file_path", ""):
+                            if (tool_name == "Skill" and clean_name in tool_input.get("skill", "")) or (tool_name == "Read" and clean_name in tool_input.get("file_path", "")):
                                 triggered = True
                             return triggered
 

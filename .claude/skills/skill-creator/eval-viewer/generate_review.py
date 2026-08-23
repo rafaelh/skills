@@ -14,18 +14,18 @@ No dependencies beyond the Python stdlib are required.
 
 import argparse
 import base64
+from functools import partial
+from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
 import mimetypes
 import os
+from pathlib import Path
 import re
 import signal
 import subprocess
 import sys
 import time
 import webbrowser
-from functools import partial
-from http.server import HTTPServer, BaseHTTPRequestHandler
-from pathlib import Path
 
 # Files to exclude from output listings
 METADATA_FILES = {"transcript.md", "user_notes.md", "metrics.json"}
@@ -447,8 +447,8 @@ def main() -> None:
         port = server.server_address[1]
 
     url = f"http://localhost:{port}"
-    print(f"\n  Eval Viewer")
-    print(f"  ─────────────────────────────────")
+    print("\n  Eval Viewer")
+    print("  ─────────────────────────────────")
     print(f"  URL:       {url}")
     print(f"  Workspace: {workspace}")
     print(f"  Feedback:  {feedback_path}")
@@ -456,7 +456,7 @@ def main() -> None:
         print(f"  Previous:  {args.previous_workspace} ({len(previous)} runs)")
     if benchmark_path:
         print(f"  Benchmark: {benchmark_path}")
-    print(f"\n  Press Ctrl+C to stop.\n")
+    print("\n  Press Ctrl+C to stop.\n")
 
     webbrowser.open(url)
 

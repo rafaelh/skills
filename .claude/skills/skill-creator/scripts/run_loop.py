@@ -8,12 +8,12 @@ overfitting.
 
 import argparse
 import json
+from pathlib import Path
 import random
 import sys
 import tempfile
 import time
 import webbrowser
-from pathlib import Path
 
 from scripts.generate_report import generate_html
 from scripts.improve_description import improve_description
@@ -188,7 +188,7 @@ def run_loop(
 
         # Improve the description based on train results
         if verbose:
-            print(f"\nImproving description...", file=sys.stderr)
+            print("\nImproving description...", file=sys.stderr)
 
         t0 = time.time()
         # Strip test scores from history so improvement model can't see them

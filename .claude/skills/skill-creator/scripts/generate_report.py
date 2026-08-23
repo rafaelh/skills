@@ -9,8 +9,8 @@ Distinguishes between train and test queries.
 import argparse
 import html
 import json
-import sys
 from pathlib import Path
+import sys
 
 
 def generate_html(data: dict, auto_refresh: bool = False, skill_name: str = "") -> str:

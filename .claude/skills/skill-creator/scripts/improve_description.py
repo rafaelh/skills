@@ -9,10 +9,10 @@ uses the session's Claude Code auth, no separate ANTHROPIC_API_KEY needed).
 import argparse
 import json
 import os
+from pathlib import Path
 import re
 import subprocess
 import sys
-from pathlib import Path
 
 from scripts.utils import parse_skill_md
 
