@@ -215,9 +215,3 @@ Use the commands you find there, scoped to the files you touched, then once acro
 ruff; running it anyway produces findings about code you did not write, against conventions the
 project never agreed to. One probe to establish a tool is absent is fine — working down a checklist
 of tools nobody set up is how a refactor pass turns into noise.
-
-Checklist:
-
-- [ ] All existing tests pass without modification
-- [ ] The project's own lint / format / type checks pass for the touched files, where configured
-- [ ] No dead code left behind (unused imports, unreachable branches)

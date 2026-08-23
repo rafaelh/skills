@@ -25,7 +25,15 @@ line-length = 100
 # comparable between rounds. Formatting them would change what the skill is measured on.
 # `evals/refactor/hidden/` is the same kind of artifact: a suite written against a
 # fixture, run only inside a throwaway copy of a graded run.
-extend-exclude = ["evals/*/fixtures/*", "**/evals/fixtures/*", "evals/refactor/hidden/*"]
+# `.claude/skills/skill-creator/` is Anthropic's own skill, vendored for running evals.
+# It is upstream code this repo does not own or edit, so it is held as it ships rather
+# than reformatted to this repo's rules.
+extend-exclude = [
+    "evals/*/fixtures/*",
+    "**/evals/fixtures/*",
+    "evals/refactor/hidden/*",
+    ".claude/skills/skill-creator/*",
+]
 
 [tool.ruff.lint]
 select = [
@@ -182,6 +190,8 @@ exclude = [
     ".venv",
     "evals/*/fixtures",
     "evals/refactor/hidden",
+    # Vendored upstream — see the ruff exclusion above.
+    ".claude/skills/skill-creator",
 ]
 venvPath = "."
 venv = ".venv"
