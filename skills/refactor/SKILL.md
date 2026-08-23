@@ -33,10 +33,18 @@ due to the refactor or the original code.
 
 **When NOT to use:**
 
-- Code is already clean and readable — don't simplify for the sake of it
+- Code is already clean and readable — don't simplify for the sake of it. "Already clean" is a
+  finding you reach by working Step 2's patterns over the code, not an impression you form while
+  reading it: name the duplication you went looking for and did not find. A pass that changes
+  nothing is a real answer, and so is a pass that changes one line.
 - You don't understand what the code does yet — comprehend before you simplify
 - The code is performance-critical and the "simpler" version would be measurably slower
-- You're about to rewrite the module entirely — simplifying throwaway code wastes effort
+- The module is being replaced — whether you are about to rewrite it, or a replacement has already
+  landed beside it. Read the neighbouring modules and the recent commits before you accept a
+  cleanup at face value: work on code that is scheduled for deletion is thrown away. Say what you
+  found and ask, rather than polishing it. Do not finish the migration either — moving the last
+  caller over and deleting the old module is a bigger change than the one you just declined, and
+  nobody asked for it.
 - The change moves code between architectural layers — that requires ADR review
 
 ## The Five Principles
@@ -105,9 +113,7 @@ Simplification has a failure mode: over-simplification. Watch for these traps:
 
 ### 5. Scope to What Changed
 
-Default to simplifying recently modified code. Avoid drive-by refactors of unrelated code unless
-explicitly asked to broaden scope. Unscoped simplification creates noise in diffs and risks
-unintended regressions.
+Default to recently modified code, and leave the rest alone unless you were asked to broaden scope.
 
 **Deletion test.** Before noting a piece of code as friction worth addressing, ask: "If I removed
 this, would complexity concentrate somewhere else?" If the answer is no, it's a wish-list item —
@@ -166,7 +172,7 @@ Scan for these patterns — each one is a concrete signal, not a vague smell:
 
 | Pattern | Signal | Simplification |
 |---------|--------|----------------|
-| Duplicated logic | Same 5+ lines in multiple places | Extract to a shared function |
+| Duplicated logic | The same block written out twice, in one file or across several — two lines is enough when they encode one decision | Extract to a shared function, or call the one that already exists |
 | Dead code | Unreachable branches, unused variables, commented-out blocks | Remove (after confirming it's truly dead) |
 | Unnecessary abstractions | Wrapper that adds no value | Inline the wrapper, call the underlying function directly |
 | Over-engineered patterns | Factory-for-a-factory, strategy-with-one-strategy | Replace with the simple direct approach |

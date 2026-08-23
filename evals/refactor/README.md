@@ -83,23 +83,27 @@ Each fixture plants three things a rubric can read:
 ## Running a round
 
 ```bash
-WS=/tmp/refactor-ws                   # anywhere outside this repo
-PY=.venv/bin/python                   # needs pytest — grade.py runs the fixture suites
+WS=~/.cache/claude-evals/refactor     # outside this repo, and kept: rounds 1 and 2 were
+PY=.venv/bin/python                   # staged under /tmp and can never be re-graded
 
-$PY evals/refactor/prepare.py "$WS" --iteration 2
+$PY evals/refactor/prepare.py "$WS" --iteration 3
 ```
 
-That prints the staged run directories as JSON — `$WS/iteration-2/eval-<id>-<name>/<arm>/run-1/`,
+That prints the staged run directories as JSON — `$WS/iteration-3/eval-<id>-<name>/<arm>/run-1/`,
 each with a git-initialised `repo/`, an empty `outputs/`, and the `eval_metadata.json` the runner
 and grader both read.
 
 ```bash
-find "$WS/iteration-2" -name eval_metadata.json -printf '%h\n' \
+find "$WS/iteration-3" -name eval_metadata.json -printf '%h\n' \
   | xargs -P 6 -L1 $PY evals/refactor/run_case.py --model sonnet
 
-find "$WS/iteration-2" -name eval_metadata.json -printf '%h\n' \
+find "$WS/iteration-3" -name eval_metadata.json -printf '%h\n' \
   | xargs -L1 $PY evals/refactor/grade.py
 ```
+
+`--runs K` repeats every cell. To repeat one case only — round 3 ran eval 5 three times, because
+decline-or-act is binary — stage with `--runs 1` and `cp -a` that case's `run-1` before anything
+runs; the copy is a staged run directory like any other.
 
 `run_case.py` takes one run directory and reads the arm and the case out of its
 `eval_metadata.json`; `--arm` overrides it, which is how an `old_skill` arm against a snapshot is
