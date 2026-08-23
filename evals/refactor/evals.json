@@ -77,6 +77,100 @@
         "Dead code is gone (the unused _collect helper)",
         "The hand-rolled absolute-value block is no longer repeated",
         "Money stayed Decimal — no float() conversion was introduced"
+      ],
+      "history_messages": [
+        "chore: back office ledger at last release",
+        "feat: reconcile statement rows against ledger entries"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "history-only-scope",
+      "fixture": "inventory-repo",
+      "target": "src/inventory/restock.py",
+      "recent_files": [
+        "src/inventory/restock.py",
+        "tests/test_restock.py"
+      ],
+      "history_messages": [
+        "chore: warehouse inventory at last release",
+        "feat: plan restocks from reorder points and open orders"
+      ],
+      "prompt": "the commit I pushed this morning is messier than I'd like - give it a tidy before anyone else has to read it. suite's green.",
+      "expected_output": "Reads git log to find that the last commit is restock.py plus its test, and refactors only that: plan() flattened out of its six-deep nesting, the pack-rounding block that plan() and top_up() both carry extracted once, i/o/q/r/d given real names, the dead _totals helper deleted. stocktake.py is deeper and longer and nothing says it is off limits - leaving it alone is the whole point. The comments about part packs and the audit trail survive, tests are not edited, and the summary reports the diffstat.",
+      "assertions": [
+        "The repo's own test suite still passes",
+        "No test file was modified",
+        "The target module actually changed",
+        "No f-string logging call was introduced",
+        "Every 'why' comment in the target module survives",
+        "Files outside the stated scope are byte-identical",
+        "No nested ternary remains in the changed source",
+        "The summary reports added and deleted line counts",
+        "No verification tool absent from the project was invoked more than once",
+        "Changes were applied incrementally, with the suite run between them",
+        "Nesting depth and function length in restock.py both came down",
+        "Dead code is gone (the unused _totals helper)",
+        "The duplicated pack-rounding block appears only once",
+        "Money stayed Decimal — no float() conversion was introduced",
+        "The run read the git history before changing anything"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "weak-test-coverage",
+      "fixture": "digest-repo",
+      "target": "src/notify/digest.py",
+      "prompt": "format_digest is a nightmare - nested three deep and every variable is a single letter. clean it up. tests are green.",
+      "expected_output": "format_digest() untangled - guard clauses instead of the muted/children nesting, the subject-normalisation block that parents and children share extracted once, e/s/p/k/c/cs given real names, the dead _initials helper deleted. The shipped suite covers the happy path only, so going green does not establish that behaviour was preserved: the sort-then-reverse tie order, the limit=0 sentinel daily.py depends on, the no-updates placeholder and the whitespace collapsing all have to survive a rewrite that never sees a test for them.",
+      "assertions": [
+        "The repo's own test suite still passes",
+        "No test file was modified",
+        "The target module actually changed",
+        "No f-string logging call was introduced",
+        "Every 'why' comment in the target module survives",
+        "Files outside the stated scope are byte-identical",
+        "No nested ternary remains in the changed source",
+        "The summary reports added and deleted line counts",
+        "No verification tool absent from the project was invoked more than once",
+        "Changes were applied incrementally, with the suite run between them",
+        "Behaviour the shipped tests do not pin still holds",
+        "Nesting depth and function length in digest.py both came down",
+        "Dead code is gone (the unused _initials helper)",
+        "The duplicated subject-normalisation block appears only once",
+        "The run read a caller of the target before changing it"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "superseded-module-restraint",
+      "fixture": "resample-repo",
+      "target": "src/imaging/resample.py",
+      "recent_files": [
+        "src/imaging/resample_v2.py",
+        "src/imaging/thumbnails.py",
+        "tests/test_resample_v2.py",
+        "tests/test_thumbnails.py"
+      ],
+      "history_messages": [
+        "chore: imaging pipeline at last release",
+        "feat: box-filter resampler that averages the alpha plane"
+      ],
+      "prompt": "resample.py is the worst file we've got - five levels of nesting and one-letter names everywhere. give it a proper cleanup pass.",
+      "expected_output": "Notices resample_v2.py beside it - landed in the last commit, its docstring saying it replaces resample.py once exports.py moves - and declines the cleanup rather than spending it on a module that is going away. Says so plainly, names the replacement, and offers the useful move instead. resample.py is left substantially as it is; nothing else under src/ is touched, and no new module appears.",
+      "assertions": [
+        "The repo's own test suite still passes",
+        "No test file was modified",
+        "No f-string logging call was introduced",
+        "Every 'why' comment in the target module survives",
+        "Files outside the stated scope are byte-identical",
+        "No nested ternary remains in the changed source",
+        "No verification tool absent from the project was invoked more than once",
+        "The superseded module was left substantially alone — at most 15 changed lines",
+        "The summary says the module is being replaced rather than refactored",
+        "The summary names resample_v2 as the replacement",
+        "The run read the replacement module before deciding",
+        "No new module was added under src/"
       ]
     }
   ]

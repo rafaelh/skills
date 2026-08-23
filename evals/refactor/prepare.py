@@ -39,19 +39,23 @@ def git(repo: Path, *args: str) -> None:
     subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True)
 
 
-def split_history(repo: Path, recent: list[str]) -> None:
+def split_history(repo: Path, recent: list[str], messages: list[str]) -> None:
     """Commit the fixture in two, so `git log` can say which files landed last.
 
     Scope-to-what-changed is the one principle a run cannot apply without history:
     told to tidy "the last thing I committed", it has to look the answer up rather
     than guess from how ugly a file is. `recent` lands in the second commit and
     everything else in the first.
+
+    The messages come from the case, because they are part of what a run reads: a
+    subject line that describes someone else's fixture is a signal pointing the
+    wrong way.
     """
     git(repo, "init", "-q")
     git(repo, "add", "-A", "--", *(f":!{path}" for path in recent))
-    git(repo, *GIT_ID, "commit", "-qm", "chore: back office ledger at last release")
+    git(repo, *GIT_ID, "commit", "-qm", messages[0])
     git(repo, "add", "-A")
-    git(repo, *GIT_ID, "commit", "-qm", "feat: reconcile statement rows against ledger entries")
+    git(repo, *GIT_ID, "commit", "-qm", messages[1])
 
 
 def stage(workspace: Path, iteration: int, runs: int, quiet: bool) -> int:
@@ -59,6 +63,12 @@ def stage(workspace: Path, iteration: int, runs: int, quiet: bool) -> int:
     staged: list[str] = []
     for case in cases:
         recent = [str(p) for p in cast("list[object]", case.get("recent_files", []))]
+        messages = [str(m) for m in cast("list[object]", case.get("history_messages", []))]
+        if recent and len(messages) != 2:
+            raise ValueError(
+                f"case '{case['name']}' sets recent_files, so it needs exactly two "
+                f"history_messages; got {len(messages)}"
+            )
         for arm in ARMS:
             for run in range(1, runs + 1):
                 target = run_dir(workspace, case, arm, iteration=iteration, run=run)
@@ -70,7 +80,7 @@ def stage(workspace: Path, iteration: int, runs: int, quiet: bool) -> int:
                     FIXTURES / str(case["fixture"]), target / "repo", git=not recent
                 )
                 if recent:
-                    split_history(repo, recent)
+                    split_history(repo, recent, messages)
                 write_eval_metadata(target, case, arm, {"target": case.get("target")})
                 staged.append(str(target))
                 if not quiet:
@@ -104,6 +114,9 @@ def main() -> int:
         return stage(args.workspace.expanduser().resolve(), args.iteration, args.runs, args.quiet)
     except FileNotFoundError as exc:
         emit_error("prepare.fixture.missing", str(exc), f"expected it under {FIXTURES}")
+        return 1
+    except ValueError as exc:
+        emit_error("prepare.case.invalid", str(exc), "fix the case in evals.json")
         return 1
     except (OSError, subprocess.CalledProcessError) as exc:
         emit_error("prepare.stage.failed", str(exc), "check the workspace path is writable")

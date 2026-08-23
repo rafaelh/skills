@@ -23,7 +23,9 @@ target-version = "py314"
 line-length = 100
 # Eval fixtures are snapshots of a target repo, held byte-identical so results stay
 # comparable between rounds. Formatting them would change what the skill is measured on.
-extend-exclude = ["evals/*/fixtures/*", "**/evals/fixtures/*"]
+# `evals/refactor/hidden/` is the same kind of artifact: a suite written against a
+# fixture, run only inside a throwaway copy of a graded run.
+extend-exclude = ["evals/*/fixtures/*", "**/evals/fixtures/*", "evals/refactor/hidden/*"]
 
 [tool.ruff.lint]
 select = [
@@ -158,7 +160,15 @@ force-sort-within-sections = true
 # game's tests as part of this repo's. `.claude/skills/` is symlinks back into
 # skills/, so collecting it would run every skill suite a second time — and, with
 # no __init__.py, collide on module basenames.
-norecursedirs = ["evals/*/fixtures", ".claude", ".venv", "node_modules"]
+norecursedirs = [
+    "evals/*/fixtures",
+    # Written against a fixture's `src/`, so it only imports inside a staged copy —
+    # grade.py runs it there, this repo's suite cannot.
+    "evals/refactor/hidden",
+    ".claude",
+    ".venv",
+    "node_modules",
+]
 
 [tool.pyright]
 pythonVersion = "3.14"
@@ -171,6 +181,7 @@ exclude = [
     "**/__pycache__",
     ".venv",
     "evals/*/fixtures",
+    "evals/refactor/hidden",
 ]
 venvPath = "."
 venv = ".venv"

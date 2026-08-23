@@ -4,10 +4,11 @@ A dated record of what this skill scored, so a future round can be compared agai
 read in isolation. Append rounds; don't rewrite them. The harness that produces these numbers lives
 beside this file — read [README.md](README.md) before re-measuring.
 
-Three evals, two arms each (`with_skill`, `without_skill`), one run per cell. One run per cell means
-the token and time figures are single observations, not distributions: treat a 20% swing as noise.
-Pass rates are the durable signal because every check is mechanical — files on disk, their AST, and
-one run of the fixture's own test suite.
+Two arms each (`with_skill`, `without_skill`), one run per cell. Rounds 1 and 2 ran three evals;
+rubric v3 takes it to six. One run per cell means the token and time figures are single
+observations, not distributions: treat a 20% swing as noise. Pass rates are the durable signal
+because every check is mechanical — files on disk, their AST, and one run of the fixture's own test
+suite (plus, in `digest-repo`, one the fixture does not ship).
 
 ## Rubric versions
 
@@ -15,6 +16,7 @@ one run of the fixture's own test suite.
 |---|---|---|
 | v1 | 8 shared + 5 (`pricing`), 5 (`toolkit`), 4 (`ledger`) | Round 1 |
 | v2 | 10 shared + the same per-fixture sets | Round 2, applied retroactively to round 1 |
+| v3 | v2 unchanged, plus three cases: 15 (`inventory`), 15 (`digest`), 12 (`resample`) | Round 3 |
 
 v1 saturated on first contact — 100% against 92%, with the entire gap resting on one check — so it
 measured almost nothing. v2 keeps all thirteen v1 checks as a regression floor and adds two that
@@ -25,6 +27,12 @@ punished).
 
 Round 1's v1 gradings are preserved as `grading-v1.json` beside each run. Under v2 round 1 becomes
 **93.2% with the skill against 86.4% without**.
+
+v3 adds no shared check and edits none, because rounds 1 and 2 kept no stored workspaces — a
+shared check added now could never be computed for them, and the cross-round comparison that
+`with_skill`'s 44/44 has to be read against would break. Everything new is per-fixture and lives on
+the three new fixtures, so rounds 1 and 2 remain gradable exactly as recorded. See
+[round-3-plan.md](round-3-plan.md).
 
 **Round 1 cannot answer the verification-waste check.** `_tool_summary` only began capturing Bash
 commands after that round, so round 1 records a bare `Bash` for every shell call. Those runs fail
