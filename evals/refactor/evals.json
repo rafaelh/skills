@@ -1,0 +1,74 @@
+{
+  "skill_name": "refactor",
+  "evals": [
+    {
+      "id": 0,
+      "name": "pricing-accumulated-complexity",
+      "fixture": "pricing-repo",
+      "target": "src/storefront/pricing.py",
+      "prompt": "pricing.py has got away from us over the last few releases - every promo we bolted on went straight into quote() and now nobody wants to touch it. tests are green. can you clean it up?",
+      "expected_output": "quote() and line_totals() untangled: guard clauses instead of four-deep nesting, the shared line-accumulation loop extracted once, real names for res/tmp/d/v/cat. The dead _legacy_round and unused math import go. The three comments explaining WHY (the cent-comparison incident, the CRM tier fallback, the coupon tie-break) survive; the narrating ones do not. legacy_invoice.py and catalog.py are not touched, tests are not edited, and the summary reports the diffstat.",
+      "assertions": [
+        "The repo's own test suite still passes",
+        "No test file was modified",
+        "The target module actually changed",
+        "No f-string logging call was introduced",
+        "Every 'why' comment in the target module survives",
+        "Files outside the stated scope are byte-identical",
+        "No nested ternary was introduced",
+        "The summary reports added and deleted line counts",
+        "Nesting depth and function length in pricing.py both came down",
+        "Dead code is gone (_legacy_round and the unused math import)",
+        "The duplicated line-accumulation loop appears only once",
+        "At least two of the five 'what' comments were deleted",
+        "Money stayed Decimal — no float() conversion was introduced"
+      ]
+    },
+    {
+      "id": 1,
+      "name": "already-clean-restraint",
+      "fixture": "toolkit-repo",
+      "target": "src/toolkit",
+      "prompt": "give the whole toolkit package a simplification pass — it's been growing for a while and I want it tightened up before the next release.",
+      "expected_output": "Reads the package, finds it already close to clean, and says so. At most a small scoped change — title_words() calling collapse_whitespace() instead of repeating it is the one real duplication. No renames of exported names, no invented abstraction, no new module, and the _sleep seam left alone because the tests monkeypatch it. The summary names what it deliberately did not change and why.",
+      "assertions": [
+        "The repo's own test suite still passes",
+        "No test file was modified",
+        "The target module actually changed",
+        "No f-string logging call was introduced",
+        "Every 'why' comment in the target module survives",
+        "Files outside the stated scope are byte-identical",
+        "No nested ternary was introduced",
+        "The summary reports added and deleted line counts",
+        "The diff stays small — at most 60 changed lines across src/",
+        "No public function was renamed or removed",
+        "The _sleep test seam was not inlined away",
+        "No new module was added under src/",
+        "The summary names something it deliberately left unchanged"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "post-green-scope",
+      "fixture": "ledger-repo",
+      "target": "src/ledger/reconcile.py",
+      "recent_files": ["src/ledger/reconcile.py", "tests/test_reconcile.py"],
+      "prompt": "just got the reconciliation matcher to green - that's step 4, refactor. it's the last thing I committed. tidy it up.",
+      "expected_output": "Uses git to see that the last commit is reconcile.py plus its test, and refactors only that: the five-deep matching loop flattened, the four hand-rolled absolute-value blocks collapsed, f/d/e/s/n/t given real names, the abandoned _collect helper deleted. posting.py and export.py are equally ugly and equally old — leaving them alone is the whole point. The comment explaining the tie-break ordering survives, tests are not edited, and the summary reports the diffstat.",
+      "assertions": [
+        "The repo's own test suite still passes",
+        "No test file was modified",
+        "The target module actually changed",
+        "No f-string logging call was introduced",
+        "Every 'why' comment in the target module survives",
+        "Files outside the stated scope are byte-identical",
+        "No nested ternary was introduced",
+        "The summary reports added and deleted line counts",
+        "Nesting depth and function length in reconcile.py both came down",
+        "Dead code is gone (the unused _collect helper)",
+        "The hand-rolled absolute-value block is no longer repeated",
+        "Money stayed Decimal — no float() conversion was introduced"
+      ]
+    }
+  ]
+}

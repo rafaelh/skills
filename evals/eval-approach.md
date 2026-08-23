@@ -15,7 +15,7 @@ What a run leaves behind decides how it is graded, and nothing else about the su
 
 | Kind | The run leaves | Graded from | Here |
 |---|---|---|---|
-| **Artifact** | Files in a staged repo | Diffs and file contents | `create-agents-for-repo/` |
+| **Artifact** | Files in a staged repo | Diffs and file contents | `create-agents-for-repo/`, `refactor/` |
 | **Conversation** | A transcript | Turns, questions, what was read | `plan/` |
 | **Trigger** | Nothing | Whether the skill activated at all | `obsidian-metabind/` |
 
@@ -34,6 +34,7 @@ evals/<skill>/
   personas/        briefs for a simulated user (conversation suites)
   prepare.py       stages a workspace (artifact suites)
   drive_*.py       runs the case to completion and records it (conversation suites)
+  run_case.py      drives one staged run to completion (artifact suites that need write tools)
   grade.py         scores one run directory, writes grading.json
 ```
 
@@ -110,9 +111,17 @@ prompt. Same model, tools, fixture, prompt and preamble either way.
 
 Runs go through `--safe-mode`, so no global `CLAUDE.md`, skills, MCP servers or hooks from whoever's
 laptop it is leak into a round. The `Skill` tool is blocked for the same reason: without it the
-`without_skill` arm can load the skill under test on its own and stop being a baseline. A third arm
-(`old_skill`, pointed at a snapshot) is available where a suite supports it, for measuring an edit
-rather than the skill's existence.
+`without_skill` arm can load the skill under test on its own and stop being a baseline. That block,
+with `Task`, `SlashCommand` and the web tools, is `ISOLATION_BLOCKED_TOOLS` in `shared/claude_cli.py`
+— the floor a suite starts from however much it then grants. A suite whose runs edit files grants
+`EDITING_TOOLS` on top and passes `permission_mode="acceptEdits"`, because nobody is at the terminal
+to answer a prompt and the run would otherwise stall until its timeout. A third arm (`old_skill`,
+pointed at a snapshot) is available where a suite supports it, for measuring an edit rather than the
+skill's existence.
+
+Whatever a suite tells both arms in its preamble stops being measurable. Say where the run is and
+how to invoke its tools; say nothing the skill itself is supposed to supply, or the baseline gets
+the behaviour for free and the check that grades it flatlines at 100% in both arms.
 
 ## The rubric
 

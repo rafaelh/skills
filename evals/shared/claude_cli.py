@@ -28,18 +28,20 @@ Json = dict[str, object]
 # What a run under test may reach for. Blocking Skill matters most: without it the
 # without_skill arm can load the skill on its own and stop being a baseline.
 READ_ONLY_TOOLS = ("Read", "Grep", "Glob")
+EDITING_TOOLS = ("Read", "Grep", "Glob", "Edit", "Write", "Bash")
+
+# Blocked in every arm whatever else a suite grants, because each of these is a way
+# back to the skill under test or to the wider machine. A suite that hands a run
+# write access still starts from this list.
+ISOLATION_BLOCKED_TOOLS = ("Task", "Skill", "SlashCommand", "WebFetch", "WebSearch")
 BLOCKED_TOOLS = (
     "Bash",
     "Write",
     "Edit",
     "MultiEdit",
     "NotebookEdit",
-    "Task",
-    "Skill",
-    "SlashCommand",
-    "WebFetch",
-    "WebSearch",
     "TodoWrite",
+    *ISOLATION_BLOCKED_TOOLS,
 )
 
 
@@ -68,13 +70,16 @@ class CliResult:
 
 
 def _tool_summary(name: str, tool_input: Json, root: Path) -> str:
-    for key in ("file_path", "path", "pattern"):
+    # `command` last and truncated: it is what a Bash call actually did, which is the
+    # difference between "ran the suite between edits" and "ran a linter that is not
+    # configured here" — invisible when only the tool name is recorded.
+    for key in ("file_path", "path", "pattern", "command"):
         value = tool_input.get(key)
         if isinstance(value, str):
             target = Path(value)
             if target.is_absolute() and target.is_relative_to(root):
                 value = str(target.relative_to(root))
-            return f"{name} {value}"
+            return f"{name} {value[:200].replace(chr(10), ' ')}"
     return name
 
 
@@ -97,6 +102,7 @@ def run_claude(
     session_id: str | None = None,
     allowed_tools: Sequence[str] | None = None,
     disallowed_tools: Sequence[str] = BLOCKED_TOOLS,
+    permission_mode: str | None = None,
     timeout: int = 600,
 ) -> CliResult:
     """One CLI turn. Returns the assistant's text plus what it cost to get it."""
@@ -118,6 +124,11 @@ def run_claude(
     ]
     if allowed_tools:
         argv += ["--allowed-tools", *allowed_tools]
+    if permission_mode:
+        # A suite that hands the run write tools also has to say edits are pre-approved:
+        # there is no one at the terminal to answer a permission prompt, and the run
+        # stalls until the timeout instead of failing.
+        argv += ["--permission-mode", permission_mode]
     if system_prompt:
         argv += ["--append-system-prompt", system_prompt]
     if session_id:

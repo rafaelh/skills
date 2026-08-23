@@ -108,6 +108,10 @@ ignore = [
 "evals/plan/*.py" = [
     "S603",    # subprocess argv is the resolved claude CLI plus harness-owned prompts
 ]
+"evals/refactor/*.py" = [
+    "S603",    # subprocess argv is sys.executable and a fixed git invocation, never user text
+    "S607",    # `git` comes from PATH by design — a staged fixture uses the dev's git
+]
 "evals/shared/*.py" = [
     "S603",    # subprocess argv is the resolved claude CLI plus harness-owned prompts
     "S607",    # `git` comes from PATH by design — a staged fixture uses the dev's git

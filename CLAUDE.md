@@ -31,9 +31,11 @@ hardcode the local toolchain.
 
 Eval harnesses live in `evals/<skill>/`, outside the shipped plugin, and all follow
 [eval-approach.md](evals/eval-approach.md) — read it before touching one. Three shapes, decided by
-what a run leaves behind: artifact (`create-agents-for-repo`, stages fixture repos and diffs them),
-conversation (`plan`, drives a simulated interview and grades the transcript), trigger
-(`obsidian-metabind`, a labeled query set for `eval_triggers.py`). `evals/shared/` holds the
+what a run leaves behind: artifact (`create-agents-for-repo` and `refactor`, stage fixture repos and
+diff them), conversation (`plan`, drives a simulated interview and grades the transcript), trigger
+(`obsidian-metabind`, a labeled query set for `eval_triggers.py`). `refactor` is the one that drives
+its own runs — a `run_case.py` granting Edit/Write/Bash inside the staged copy, rather than farming
+the arms to subagents. `evals/shared/` holds the
 plumbing they have in common — CLI invocation, the `grading.json` writer, the run-directory layout —
 imported flatly after a `sys.path` insert; suite-specific analysis stays in the suite.
 
