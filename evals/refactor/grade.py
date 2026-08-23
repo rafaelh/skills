@@ -68,6 +68,13 @@ LEFT_ALONE = re.compile(
     re.IGNORECASE,
 )
 
+# Tools a run reaches for when it is following a verification checklist rather than the
+# project in front of it. A fixture that configures none of these should see at most one
+# probe apiece — discovering a tool is absent is fair, working through the list is not.
+LINTERS = ("ruff", "pyright", "mypy", "black", "eslint", "prettier")
+CONFIG_FILES = ("pyproject.toml", "package.json", "setup.cfg", "tox.ini", ".ruff.toml")
+TEST_RUNNER = re.compile(r"\b(?:pytest|unittest|tox|nox)\b|\bnpm (?:run )?test\b")
+
 
 class Spec(NamedTuple):
     """What "the target", "out of scope" and "the why comments" mean for one fixture."""
@@ -225,6 +232,79 @@ def differing(fixture: Path, repo: Path, paths: tuple[str, ...]) -> list[str]:
     return out
 
 
+def tool_calls(run_dir: Path) -> list[tuple[str, str]]:
+    """`(tool, argument)` pairs from `outputs/tool-calls.txt`, oldest first."""
+    path = run_dir / "outputs" / "tool-calls.txt"
+    if not path.exists():
+        return []
+    calls: list[tuple[str, str]] = []
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if line:
+            name, _, arg = line.partition(" ")
+            calls.append((name, arg))
+    return calls
+
+
+def configured_tools(fixture: Path) -> set[str]:
+    """Which linters and type checkers the fixture actually sets up."""
+    text = ""
+    for name in CONFIG_FILES:
+        path = fixture / name
+        if path.exists():
+            text += path.read_text(encoding="utf-8")
+    return {tool for tool in LINTERS if f"[tool.{tool}]" in text or f'"{tool}"' in text}
+
+
+def grade_verification_waste(calls: list[tuple[str, str]], fixture: Path) -> Json:
+    """Did the run work through a checklist of tools this project does not have?
+
+    Runs recorded before `_tool_summary` captured Bash commands have nothing to read
+    here. Those fail with that said plainly rather than silently leaving the rubric a
+    check shorter than the round it is compared against.
+    """
+    text = "No verification tool absent from the project was invoked more than once"
+    commands = [arg for name, arg in calls if name == "Bash"]
+    if commands and not any(commands):
+        return expectation(text, False, "not computable — predates Bash command capture")
+    absent = sorted(set(LINTERS) - configured_tools(fixture))
+    counts = {tool: sum(1 for c in commands if re.search(rf"\b{tool}\b", c)) for tool in absent}
+    overused = {tool: n for tool, n in counts.items() if n > 1}
+    return expectation(
+        text,
+        not overused,
+        f"unconfigured tools invoked more than once: {overused or 'none'}; "
+        f"absent from this fixture: {absent}",
+    )
+
+
+def grade_incrementality(calls: list[tuple[str, str]]) -> Json:
+    """One change at a time, tests in between — Step 3, which no v1 check reached.
+
+    A run with a single mutation passes outright: `toolkit-repo`'s correct answer is one
+    edit, and a floor that demanded two cycles would fail the restraint case for being
+    right. Legacy runs, whose Bash commands were never recorded, count any Bash after a
+    mutation as the verification, which is how round 1 stays comparable.
+    """
+    text = "Changes were applied incrementally, with the suite run between them"
+    legacy = not any(arg for name, arg in calls if name == "Bash")
+    mutations = cycles = 0
+    pending = False
+    for name, arg in calls:
+        if name in ("Edit", "Write"):
+            mutations += 1
+            pending = True
+        elif name == "Bash" and pending and (legacy or TEST_RUNNER.search(arg)):
+            cycles += 1
+            pending = False
+    return expectation(
+        text,
+        mutations < 2 or cycles >= 2,
+        f"{mutations} mutation(s), {cycles} verify cycle(s)"
+        f"{' (legacy: any Bash counted as a test run)' if legacy else ''}",
+    )
+
+
 def run_tests(repo: Path) -> tuple[bool, str]:
     proc = subprocess.run(
         [sys.executable, "-m", "pytest", "-q"],
@@ -318,6 +398,13 @@ def grade(run_dir: Path, fixture: Path) -> list[Json]:
         f"added: {added_m.group(0) if added_m else 'MISSING'}; "
         f"deleted: {deleted_m.group(0) if deleted_m else 'MISSING'}",
     )
+
+    # 9 and 10 (rubric v2). The v1 checks saturated at 100%/92% in round 1, with the
+    # whole gap resting on assertion 8. These two target what round 1's artifacts showed
+    # the arms actually doing differently, which nothing was grading.
+    calls = tool_calls(run_dir)
+    expectations.append(grade_verification_waste(calls, fixture))
+    expectations.append(grade_incrementality(calls))
 
     if fixture.name == "pricing-repo":
         expectations.extend(grade_pricing(after_src, after_all, before_shape, after_shape))

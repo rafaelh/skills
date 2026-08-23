@@ -12,19 +12,24 @@ description: >
 
 ## Overview
 
-Simplify code by reducing complexity while preserving exact behavior. The goal is not fewer lines — it's code that is easier to read, understand, modify, and debug. Every simplification must pass a simple test: "Would a new team member understand this faster than the original?"
+Simplify code by reducing complexity while preserving exact behavior. The goal is not fewer lines —
+it's code that is easier to read, understand, modify, and debug. Every simplification must pass a
+simple test: "Would a new team member understand this faster than the original?"
 
 ## When to Use
 
-- After a feature is working and tests pass, but the implementation feels heavier than it needs to be
+- After a feature is working and tests pass, but the implementation feels heavier than it needs to
+  be
 - During code review when readability or complexity issues are flagged
 - When you encounter deeply nested logic, long functions, or unclear names
 - When refactoring code written under time pressure
 - When consolidating related logic scattered across files
 - After merging changes that introduced duplication or inconsistency
-- At step 4 of a TDD cycle (you've reached GREEN — if you arrived from `/tdd`, skip scope discussion and go straight to Step 2 below)
+- At step 4 of a TDD cycle (you've reached GREEN — if you arrived from `/tdd`, skip scope discussion
+  and go straight to Step 2 below)
 
-**Only start when all tests pass.** Never refactor on RED — you can't tell whether a failing test is due to the refactor or the original code.
+**Only start when all tests pass.** Never refactor on RED — you can't tell whether a failing test is
+due to the refactor or the original code.
 
 **When NOT to use:**
 
@@ -38,34 +43,30 @@ Simplify code by reducing complexity while preserving exact behavior. The goal i
 
 ### 1. Preserve Behavior Exactly
 
-Don't change what the code does — only how it expresses it. All inputs, outputs, side effects, error behavior, and edge cases must remain identical. If you're not sure a simplification preserves behavior, don't make it.
+Don't change what the code does — only how it expresses it. All inputs, outputs, side effects, error
+behavior, and edge cases must remain identical. If you're not sure a simplification preserves behavior, don't make it.
 
-Note: Guard clauses are valid only when behavior is preserved exactly — the same input must still reach the same outcome/exception as before. Restructuring conditionals is fine only when it does not change which exception is raised for any input.
+Note: Guard clauses are valid only when behavior is preserved exactly — the same input must still
+reach the same outcome/exception as before. Restructuring conditionals is fine only when it does not
+change which exception is raised for any input.
 
-```
-ASK BEFORE EVERY CHANGE:
-→ Does this produce the same output for every input?
-→ Does this maintain the same error behavior?
-→ Does this preserve the same side effects and ordering?
-→ Do all existing tests still pass without modification?
-```
+Error handling is behavior. Dropping a `try`/`except`, a fallback, or a warning because it makes the
+code cleaner is not simplification — it moves the failure somewhere harder to see. Same for a
+simplification that only passes once you edit a test: that is a behavior change wearing a refactor's
+clothes.
 
 ### 2. Follow Project Conventions
 
-Simplification means making code more consistent with the codebase, not imposing external preferences. Before simplifying:
+Simplification means making code more consistent with the codebase, not imposing external
+preferences. Read `CLAUDE.md` / `AGENTS.md` / `copilot-instructions.md`, then study how neighboring
+code already handles the same problem — import ordering and module system, logging calls (`%s`
+substitution, not f-strings), naming, error handling, how deep the type annotations go.
 
-```
-1. Read CLAUDE.md / AGENTS.md / copilot-instructions.md
-2. Study how neighboring code handles similar patterns
-3. Match the project's style for:
-   - Import ordering and module system
-   - Logging calls (%s substitution, not f-strings)
-   - Naming conventions
-   - Error handling patterns
-   - Type annotation depth
-```
+Simplification that breaks project consistency is not simplification — it's churn. Renaming things
+to match your own preferences rather than the project's is the most common form of it.
 
-Simplification that breaks project consistency is not simplification — it's churn.
+Types don't get you out of this: they document structure, not intent. A well-named function explains
+*why* in a way a signature cannot.
 
 ### 3. Prefer Clarity Over Cleverness
 
@@ -87,37 +88,40 @@ def get_status(item: Item) -> str:
     return "active"
 ```
 
-```python
-# UNCLEAR: Nested comprehension with implicit accumulation
-counts = {k: sum(1 for x in items if x.category == k) for k in {x.category for x in items}}
-
-# CLEAR: Explicit loop with named intermediate
-counts: dict[str, int] = {}
-for item in items:
-    counts[item.category] = counts.get(item.category, 0) + 1
-```
+The same applies to a comprehension that has to carry an accumulation, a filter and a nested scan at
+once: give the loop its name back.
 
 ### 4. Maintain Balance
 
 Simplification has a failure mode: over-simplification. Watch for these traps:
 
-- **Inlining too aggressively** — removing a helper that gave a concept a name makes the call site harder to read
-- **Combining unrelated logic** — two simple functions merged into one complex function is not simpler
-- **Removing "unnecessary" abstraction** — some abstractions exist for extensibility or testability, not complexity
+- **Inlining too aggressively** — removing a helper that gave a concept a name makes the call site
+  harder to read
+- **Combining unrelated logic** — two simple functions merged into one complex function is not
+  simpler
+- **Removing "unnecessary" abstraction** — some abstractions exist for extensibility or testability,
+  not complexity
 - **Optimizing for line count** — fewer lines is not the goal; easier comprehension is
 
 ### 5. Scope to What Changed
 
-Default to simplifying recently modified code. Avoid drive-by refactors of unrelated code unless explicitly asked to broaden scope. Unscoped simplification creates noise in diffs and risks unintended regressions.
+Default to simplifying recently modified code. Avoid drive-by refactors of unrelated code unless
+explicitly asked to broaden scope. Unscoped simplification creates noise in diffs and risks
+unintended regressions.
 
-**Deletion test.** Before noting a piece of code as friction worth addressing, ask: "If I removed this, would complexity concentrate somewhere else?" If the answer is no, it's a wish-list item — skip it. If yes, it's real friction worth fixing. Apply this filter to keep the refactor focused on genuine improvements rather than aesthetic preferences.
+**Deletion test.** Before noting a piece of code as friction worth addressing, ask: "If I removed
+this, would complexity concentrate somewhere else?" If the answer is no, it's a wish-list item —
+skip it. If yes, it's real friction worth fixing. Apply this filter to keep the refactor focused on
+genuine improvements rather than aesthetic preferences.
 
 
 ## The Simplification Process
 
 ### Step 1: Understand Before Touching (Chesterton's Fence)
 
-Before changing or removing anything, understand why it exists. This is Chesterton's Fence: if you see a fence across a road and don't understand why it's there, don't tear it down. First understand the reason, then decide if the reason still applies.
+Before changing or removing anything, understand why it exists. This is Chesterton's Fence: if you
+see a fence across a road and don't understand why it's there, don't tear it down. First understand
+the reason, then decide if the reason still applies.
 
 ```
 BEFORE SIMPLIFYING, ANSWER:
@@ -169,7 +173,8 @@ Scan for these patterns — each one is a concrete signal, not a vague smell:
 
 ### Step 3: Apply Changes Incrementally
 
-Make one simplification at a time. Run tests after each change. **Submit refactoring changes separately from feature or bug fix changes.** A PR that refactors and adds a feature is two PRs — split them.
+Make one simplification at a time. Run tests after each change. **Submit refactoring changes
+separately from feature or bug fix changes.**
 
 ```
 FOR EACH SIMPLIFICATION:
@@ -179,120 +184,40 @@ FOR EACH SIMPLIFICATION:
 4. If tests fail → revert and reconsider
 ```
 
-Avoid batching multiple simplifications into a single untested change. If something breaks, you need to know which simplification caused it.
+Avoid batching multiple simplifications into a single untested change. If something breaks, you need
+to know which simplification caused it.
 
-**The Rule of 500:** If a refactoring would touch more than 500 lines, invest in automation (codemods, sed scripts, AST transforms) rather than making the changes by hand. Manual edits at that scale are error-prone and exhausting to review.
+**The Rule of 500:** If a refactoring would touch more than 500 lines, invest in automation
+(codemods, sed scripts, AST transforms) rather than making the changes by hand. Manual edits at that
+scale are error-prone and exhausting to review.
 
 ### Step 4: Verify the Result
 
-After all simplifications, step back and evaluate the whole:
+**Always finish by running `git diff --stat`, and report both numbers.** Not "I simplified
+`quote()`" — the actual added and deleted line counts. A pass that only adds is a claim that
+nothing became obsolete: if that is genuinely true, say so; if it isn't, you have missed a deletion,
+so go and find it. This is a prompt to look, not a target to hit — a pass that adds lines and
+genuinely reads better is still a success (Principle 4).
 
-```
-COMPARE BEFORE AND AFTER:
-- Is the simplified version genuinely easier to understand?
-- Did you introduce any new patterns inconsistent with the codebase?
-- Is the diff clean and reviewable?
-- Would a teammate approve this change?
-```
+Then step back and read the whole diff as a reviewer would: is it genuinely easier to understand,
+does it introduce patterns the codebase doesn't use, would a teammate approve it? If the
+"simplified" version is harder to follow or harder to review, revert. Not every simplification
+attempt succeeds.
 
-If the "simplified" version is harder to understand or review, revert. Not every simplification attempt succeeds.
-
-**Report added vs deleted lines when you finish** (`git diff --stat`). A change that only adds is a claim that nothing became obsolete — if that's genuinely true, say so; if it isn't, you've missed a deletion, so go find it. This is a prompt to look, not a target to hit: a pass that adds lines and genuinely reads better is still a success (Principle 4).
-
-## Python-specific guidance
-
-```python
-# SIMPLIFY: Verbose dictionary building
-# Before
-result = {}
-for item in items:
-    result[item.id] = item.name
-# After
-result = {item.id: item.name for item in items}
-
-
-# SIMPLIFY: Nested conditionals with early return
-# Before
-def process(data):
-    if data is not None:
-        if data.is_valid():
-            if data.has_permission():
-                return do_work(data)
-            else:
-                raise PermissionError("No permission")
-        else:
-            raise ValueError("Invalid data")
-    else:
-        raise TypeError("Data is None")
-
-
-# After
-def process(data):
-    if data is None:
-        raise TypeError("Data is None")
-    if not data.is_valid():
-        raise ValueError("Invalid data")
-    if not data.has_permission():
-        raise PermissionError("No permission")
-    return do_work(data)
-
-
-# Note: This guard-clause rewrite is behavior-preserving because each input still maps
-# to the same result/exception as the nested version.
-```
-
-## Common Rationalizations
-
-| Rationalization | Reality |
-|---|---|
-| "It's working, no need to touch it" | Working code that's hard to read will be hard to fix when it breaks. Simplifying now saves time on every future change. |
-| "Fewer lines is always simpler" | A 1-line nested ternary is not simpler than a 5-line if/else. Simplicity is about comprehension speed, not line count. |
-| "I'll just quickly simplify this unrelated code too" | Unscoped simplification creates noisy diffs and risks regressions in code you didn't intend to change. Stay focused. |
-| "The types make it self-documenting" | Types document structure, not intent. A well-named function explains *why* better than a type signature explains *what*. |
-| "This abstraction might be useful later" | Don't preserve speculative abstractions. If it's not used now, it's complexity without value. Remove it and re-add when needed. |
-| "The original author must have had a reason" | Maybe. Check git blame — apply Chesterton's Fence. But accumulated complexity often has no reason; it's just the residue of iteration under pressure. |
-| "I'll refactor while adding this feature" | Separate refactoring from feature work. Mixed changes are harder to review, revert, and understand in history. |
-
-## Red Flags
-
-- Simplification that requires modifying tests to pass (you likely changed behavior)
-- "Simplified" code that is longer and harder to follow than the original
-- Renaming things to match your preferences rather than project conventions
-- Removing error handling because "it makes the code cleaner"
-- Simplifying code you don't fully understand
-- Batching many simplifications into one large, hard-to-review commit
-- Refactoring code outside the scope of the current task without being asked
 
 ## Verification
 
-Run these commands in order after completing a simplification pass:
+Run **the project's own checks** — not a standard list. Find them in this order: `CLAUDE.md` /
+`AGENTS.md`, then `README`, then `pyproject.toml` / `package.json` / `Makefile`, then the CI config.
+Use the commands you find there, scoped to the files you touched, then once across the suite.
 
-```bash
-# Lint and auto-fix (scope to the skill you changed)
-.venv/bin/ruff check --fix skills/<skill>/scripts/
-
-# Format
-.venv/bin/ruff format skills/<skill>/scripts/
-
-# Type-check
-.venv/bin/pyright skills/<skill>/scripts/<file>.py
-
-# Run affected tests (scope to the skill you changed)
-.venv/bin/pytest skills/<skill>/scripts/tests/
-
-# Full suite
-.venv/bin/pytest
-```
+**Skip what the project does not configure.** A repo with no `[tool.ruff]` section has not adopted
+ruff; running it anyway produces findings about code you did not write, against conventions the
+project never agreed to. One probe to establish a tool is absent is fine — working down a checklist
+of tools nobody set up is how a refactor pass turns into noise.
 
 Checklist:
 
 - [ ] All existing tests pass without modification
-- [ ] `ruff check` passes with no new issues
-- [ ] `ruff format --check` passes (no formatting drift)
-- [ ] `pyright` passes for the touched files
-- [ ] Each simplification is a reviewable, incremental change
-- [ ] The diff is clean — no unrelated changes mixed in
-- [ ] Simplified code follows project conventions (checked against CLAUDE.md / AGENTS.md)
-- [ ] No error handling was removed or weakened
-- [ ] No dead code was left behind (unused imports, unreachable branches)
-- [ ] A teammate or review agent would approve the change as a net improvement
+- [ ] The project's own lint / format / type checks pass for the touched files, where configured
+- [ ] No dead code left behind (unused imports, unreachable branches)

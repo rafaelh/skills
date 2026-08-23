@@ -87,14 +87,28 @@ of those would hand the `without_skill` arm the behaviour being measured.
 Eight apply everywhere, then four or five per fixture. Every check is mechanical; there is no
 grader model in this suite, because files answer these questions on their own.
 
-**Shared (1–8).** Tests still pass; no test file was edited; the target actually changed; no
+**Shared (1–10).** Tests still pass; no test file was edited; the target actually changed; no
 f-string logging call appeared; every *why* comment survived; nothing outside scope moved; no
-nested ternary remains; the summary reports both an added and a deleted line count.
+nested ternary remains; the summary reports both an added and a deleted line count; no tool the
+project does not configure was invoked more than once; changes were applied incrementally.
 
 Two of those carry the load. **Assertion 3 is the floor** — without it, every "did not do X" check
 below passes for free for a run that did nothing, which on `toolkit-repo` is otherwise worth 10 of
 13. **Assertion 8 wants both halves**: a run reporting only what it added has dodged exactly the
 question the skill's instruction asks.
+
+Assertions 9 and 10 arrived in rubric v2, after v1 saturated in round 1. Both read
+`outputs/tool-calls.txt` rather than the repo:
+
+- **9, verification waste** cross-checks Bash commands against the fixture's config files. One probe
+  per absent tool is fine — discovering `ruff` is not set up is reasonable; working through a
+  checklist of five is the behaviour that cost `toolkit-repo`'s run 2.3× the baseline's tokens for
+  an identical one-line diff. Runs recorded before `_tool_summary` captured Bash commands fail this
+  with `not computable`, rather than being quietly dropped from the denominator.
+- **10, incrementality** counts mutation→verify cycles. A run with fewer than two mutations passes
+  outright: `toolkit-repo`'s correct answer *is* one edit, and a floor demanding two cycles would
+  fail the restraint case for being right. This one is a guard, not a discriminator — it passed in
+  both arms in round 1, and its job is to catch a regression if the skill's Step 3 is ever trimmed.
 
 **Per fixture.**
 

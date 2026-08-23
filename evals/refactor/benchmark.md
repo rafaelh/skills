@@ -14,6 +14,23 @@ one run of the fixture's own test suite.
 | Version | Assertions | Introduced |
 |---|---|---|
 | v1 | 8 shared + 5 (`pricing`), 5 (`toolkit`), 4 (`ledger`) | Round 1 |
+| v2 | 10 shared + the same per-fixture sets | Round 2, applied retroactively to round 1 |
+
+v1 saturated on first contact — 100% against 92%, with the entire gap resting on one check — so it
+measured almost nothing. v2 keeps all thirteen v1 checks as a regression floor and adds two that
+read `outputs/tool-calls.txt` rather than the repo: **verification waste** (a tool the project does
+not configure, invoked more than once) and **incrementality** (mutation→verify cycles, with runs of
+fewer than two mutations passing outright so `toolkit-repo`'s correct single-edit answer is not
+punished).
+
+Round 1's v1 gradings are preserved as `grading-v1.json` beside each run. Under v2 round 1 becomes
+**93.2% with the skill against 86.4% without**.
+
+**Round 1 cannot answer the verification-waste check.** `_tool_summary` only began capturing Bash
+commands after that round, so round 1 records a bare `Bash` for every shell call. Those runs fail
+the check with `not computable — predates Bash command capture`, which keeps the denominator
+honest instead of quietly shortening the rubric. Round 1 still answers the incrementality check,
+because tool *names* are enough for it.
 
 ## Round 1 — 2026-08-23
 
@@ -76,6 +93,42 @@ the baseline did. The two-commit history `prepare.py` builds was never load-bear
 `pricing-repo` leaks less but still leaks: the prompt names `pricing.py`, so leaving
 `legacy_invoice.py` alone needs no judgement.
 
+## Haiku control — 2026-08-23
+
+Not a round: the same three evals and both arms on the **unedited** skill, with
+`--model claude-haiku-4-5-20251001` instead of Sonnet, graded under v2. Its pass rates are not
+comparable to the Sonnet rounds on the same axis — it exists to answer one question before the
+round-2 edits, namely whether the redundant prose is dead weight or scaffolding a weaker model
+leans on. The pre-committed rule was: gap ≥ 15pp means cut conservatively.
+
+| Eval | with_skill | without_skill |
+|---|---|---|
+| 0 pricing-accumulated-complexity | 87% (13/15) | 87% (13/15) |
+| 1 already-clean-restraint | 87% (13/15) | 87% (13/15) |
+| 2 post-green-scope | 79% (11/14) | 79% (11/14) |
+| **Mean** | **84.1%** (37/44) | **84.1%** (37/44) |
+
+**Gap: +0.0pp**, against Sonnet's +6.8pp under the same rubric. But the zero is a cancellation, not
+an absence — the arms differ on four individual checks, in both directions:
+
+| Check | Won by |
+|---|---|
+| Summary reports added and deleted line counts | with_skill (2 of 3 evals) |
+| Changes applied incrementally | with_skill (1 of 3) |
+| **No unconfigured tool invoked more than once** | **without_skill (3 of 3)** |
+
+Every `with_skill` run invoked `ruff` two or three times against fixtures that configure neither
+ruff nor pyright. **The skill's Verification section hands back exactly what its other instructions
+earn.** That is direct causal evidence for change 1, which round 1 could only infer from token
+counts — and it cost 2.0× the baseline's tokens to produce the same net score.
+
+| Cost | with_skill | without_skill |
+|---|---|---|
+| Tokens, mean | 888,721 | 442,888 |
+| Wall clock, mean | 89s | 71s |
+| Tool calls, mean | 26 | 15 |
+| Round cost | $0.62 | $0.38 |
+
 ### What round 2 should add
 
 Per [eval-approach.md](../eval-approach.md), keep all thirteen v1 checks as a regression floor and
@@ -103,3 +156,65 @@ this round incomparable:
   On both cases with real work the skill arm applied changes one at a time and ran the suite
   between them, exactly as Step 3 asks; the baseline wrote the file once and tested at the end.
   This is the clearest behavioural difference in the round and nothing in v1 grades it.
+
+## Round 2 — 2026-08-23
+
+Skill after the three round-1 edits: the hardcoded Verification commands replaced by a discovery
+order, the Common Rationalizations / Red Flags / Python-specific sections deleted with their two
+unique lines folded into Principles 1 and 2, and the diffstat instruction moved to the head of
+Step 4. `SKILL.md` went from 14,096 to 11,142 bytes, a **20% cut** (~740 tokens off every turn).
+Model pinned to `claude-sonnet-5` rather than the `sonnet` alias.
+
+| Eval | with_skill | without_skill |
+|---|---|---|
+| 0 pricing-accumulated-complexity | 100% (15/15) | 87% (13/15) |
+| 1 already-clean-restraint | 100% (15/15) | 93% (14/15) |
+| 2 post-green-scope | 100% (14/14) | 93% (13/14) |
+| **Mean** | **100%** (44/44) | **90.9%** (40/44) |
+
+### The cross-round comparison holds
+
+Round 2 used two arms compared against round 1, which risks model drift between rounds. It did not
+happen. Scoring **only the thirteen v1 checks**, so the not-computable artifact cannot distort it:
+
+| | Round 1 | Round 2 |
+|---|---|---|
+| with_skill, v1 checks only | 100.0% (38/38) | 100.0% (38/38) |
+| without_skill, v1 checks only | 92.1% (35/38) | 92.1% (35/38) |
+
+The baseline is identical to the check. The apparent +4.5pp baseline improvement on the full v2
+rubric is entirely the verification-waste check becoming computable, exactly as the round-1 note
+predicted — not the model moving.
+
+### Did the changes work?
+
+**Change 1 — yes, and it is the round's clearest result.** The verification-waste check goes
+`0/3 not computable` (round 1) and `0/3 pass` on the unedited skill under the Haiku control, to
+**3/3 pass** in round 2. No run invoked an unconfigured tool more than once. Within-round token
+ratio, which is immune to the run-to-run variance below, fell from **2.6× the baseline to 1.6×**.
+
+**Change 2 — safe.** Every v1 check held at 100% for `with_skill`. Nothing the cut removed was
+load-bearing.
+
+**Change 3 — held.** The diffstat check stayed 3/3.
+
+### Cost, and why not to read much into it
+
+| | Round 1 | Round 2 |
+|---|---|---|
+| with_skill, mean tokens | 690,291 | 583,559 (−15%) |
+| without_skill, mean tokens | 261,939 | 355,882 (+36%) |
+| with_skill, mean tool calls | 18 | 15 |
+
+The baseline burned 36% more tokens for an identical pass rate, which is the clearest possible
+demonstration that absolute token counts at one run per cell are noise. `eval-0`'s skill arm rose
+46% while `eval-2`'s fell 62%. Treat the −15% mean as directionally encouraging and nothing more;
+the ratio and the waste check are the load-bearing numbers.
+
+### What is still unmeasured
+
+The three round-1 recommendations for new *cases* all stand, and matter more now that the skill
+arm is at ceiling on every existing check: a scope case whose only signal is git history, a case
+whose tests are too weak to discharge "preserve behaviour exactly", and a case where the correct
+answer is "don't". `with_skill` at 44/44 means this rubric has no headroom left to detect the next
+improvement.
