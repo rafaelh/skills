@@ -1,0 +1,6 @@
+{
+  "name": "az",
+  "description": "Use the Azure CLI to inspect, manage, deploy, or troubleshoot Azure resources and investigate Azure security questions",
+  "version": "1.0.0",
+  "author": { "name": "Rafe Hart" }
+}

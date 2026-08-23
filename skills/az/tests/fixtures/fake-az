@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+"""Deterministic stand-in for the `az` binary, driven by a scenario file.
+
+Point AZ_CLI_BIN at this script and AZ_FAKE_SCENARIO at a JSON file shaped as:
+
+    [{"match": ["account", "show"], "returncode": 1, "stderr": "ERROR: ..."},
+     {"match": [], "returncode": 0, "stdout": "{}"}]
+
+The first entry whose `match` list is a subsequence-free prefix match of the
+argument vector wins, so an empty `match` acts as the catch-all default. This
+keeps the suite's tests black-box (they invoke the real script as a subprocess)
+without needing a live Azure tenant or network access.
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import sys
+
+
+def main() -> int:
+    scenario_path = os.environ.get("AZ_FAKE_SCENARIO")
+    if not scenario_path:
+        print("fake-az: AZ_FAKE_SCENARIO is not set", file=sys.stderr)
+        return 2
+    with open(scenario_path, encoding="utf-8") as handle:
+        scenario = json.load(handle)
+
+    args = [a for a in sys.argv[1:] if not a.startswith("-")]
+    for entry in scenario:
+        match = entry.get("match", [])
+        if args[: len(match)] == match:
+            if entry.get("stdout"):
+                print(entry["stdout"], end="")
+            if entry.get("stderr"):
+                print(entry["stderr"], end="", file=sys.stderr)
+            return int(entry.get("returncode", 0))
+    print("fake-az: no scenario entry matched " + " ".join(args), file=sys.stderr)
+    return 127
+
+
+if __name__ == "__main__":
+    sys.exit(main())

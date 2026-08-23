@@ -13,6 +13,8 @@ package = false
 dev = [
     "pyright>=1.1.411",
     "pytest>=9",
+    # obsidian and obsidian-metabind parse vault frontmatter and .base files with it
+    "pyyaml>=6",
     "ruff>=0.15",
 ]
 
@@ -116,6 +118,16 @@ ignore = [
     "PLC0415", # deferred imports in test methods are idiomatic pytest
 ]
 "skills/obsidian-metabind/scripts/tests/*.py" = [
+    "S101",    # assert is correct in tests
+    "S603",    # subprocess calls in tests use controlled, trusted input
+]
+"skills/az/scripts/_common.py" = [
+    "S603",    # subprocess invokes the `az` CLI with an argv built from tool flags, never a shell
+]
+"skills/az/scripts/az-help.py" = [
+    "ERA001",  # the two commented lines are sample `az -h` output documenting the regex above them
+]
+"skills/az/tests/*.py" = [
     "S101",    # assert is correct in tests
     "S603",    # subprocess calls in tests use controlled, trusted input
 ]

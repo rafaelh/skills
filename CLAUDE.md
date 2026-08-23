@@ -16,19 +16,20 @@ Script-bearing skills — held to the contracts below:
 
 | Skill | Language | Role |
 |---|---|---|
-| `skills/skill-audit` | Python | Audit / eval SKILL.md files whose bundled scripts are Python |
-| `skills/skill-audit-ts` | TypeScript | Same workflow, for skills whose scripts are TypeScript |
-| `skills/agent-tool-builder` | Python | Build & audit Python scripts that agents call as tools |
-| `skills/create-agents-for-repo` | Python | Fit `.claude/agents/*.md` subagents to a *target* repo, wire their call sites |
-| `skills/obsidian` | Python | An Obsidian vault: notes, frontmatter, wikilinks, canvas, bases |
-| `skills/obsidian-metabind` | Python | Meta Bind syntax in a vault: read, author, validate, refactor |
+| `skill-audit` | Python | Audit / eval SKILL.md files whose bundled scripts are Python |
+| `skill-audit-ts` | TypeScript | Same workflow, for skills whose scripts are TypeScript |
+| `agent-tool-builder` | Python | Build & audit Python scripts that agents call as tools |
+| `create-agents-for-repo` | Python | Fit `.claude/agents/*.md` subagents to a *target* repo, wire their call sites |
+| `obsidian` | Python | An Obsidian vault: notes, frontmatter, wikilinks, canvas, bases |
+| `obsidian-metabind` | Python | Meta Bind syntax in a vault: read, author, validate, refactor |
+| `az` | Python | Orient an Azure session, look up `az` command syntax |
 
 The rest (`architecture`, `plan`, `refactor`, `tdd`) are prose-only — no `scripts/`, so the
 agent-tool contract does not apply. `create-agents-for-repo` operates on a *consuming* repo rather
 than on skills: skills travel between repos, the subagents it writes deliberately do not — they
 hardcode the local toolchain.
 
-Two skills carry developer eval harnesses: `evals/create-agents-for-repo/` (fixture repos, staging,
+Eval harnesses: `evals/create-agents-for-repo/` (fixture repos, staging,
 grader) and `skills/plan/evals/`, which drives a simulated interview — a conversation leaves no
 artifact to diff; read its README first. `skills/obsidian-metabind/evals/` is just a labeled query
 set for `eval_triggers.py`.

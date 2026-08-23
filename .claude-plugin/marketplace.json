@@ -64,6 +64,12 @@
       "description": "Read, author, audit, and refactor Meta Bind syntax in an Obsidian vault — input fields, view fields, buttons, embeds, and the Meta Bind / JS Engine APIs",
       "source": "./skills/obsidian-metabind",
       "category": "development"
+    },
+    {
+      "name": "az",
+      "description": "Use the Azure CLI to inspect, manage, deploy, or troubleshoot Azure resources and investigate Azure security questions",
+      "source": "./skills/az",
+      "category": "development"
     }
   ]
 }

@@ -1,0 +1,53 @@
+[
+  {
+    "match": [
+      "config",
+      "get"
+    ],
+    "stdout": "{\"core\": [{\"name\": \"output\", \"value\": \"jsonc\"}]}"
+  },
+  {
+    "match": [
+      "version"
+    ],
+    "stdout": "{\"azure-cli\": \"2.87.0\", \"extensions\": {}}"
+  },
+  {
+    "match": [
+      "account",
+      "show"
+    ],
+    "stdout": "{\"id\": \"sub-1\", \"name\": \"Prod\", \"state\": \"Enabled\", \"tenantId\": \"tenant-1\", \"tenantDefaultDomain\": \"contoso.onmicrosoft.com\", \"environmentName\": \"AzureCloud\", \"user\": {\"name\": \"auditor@contoso.com\", \"type\": \"user\"}}"
+  },
+  {
+    "match": [
+      "account",
+      "list"
+    ],
+    "stdout": "[{\"id\": \"sub-1\", \"name\": \"Prod\", \"isDefault\": true, \"state\": \"Enabled\"}]"
+  },
+  {
+    "match": [
+      "ad",
+      "signed-in-user",
+      "show"
+    ],
+    "returncode": 1,
+    "stderr": "ERROR: (Authorization_RequestDenied) Insufficient privileges.\n"
+  },
+  {
+    "match": [
+      "role",
+      "assignment",
+      "list"
+    ],
+    "stdout": "[{\"role\": \"Reader\", \"scope\": \"/subscriptions/sub-1\"}, {\"role\": \"Security Reader\", \"scope\": \"/subscriptions/sub-1\"}]"
+  },
+  {
+    "match": [
+      "group",
+      "list"
+    ],
+    "stdout": "[\"rg-app\", \"rg-data\"]"
+  }
+]

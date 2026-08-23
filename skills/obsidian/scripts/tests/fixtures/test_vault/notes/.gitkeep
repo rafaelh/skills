@@ -1,0 +1,2 @@
+Empty on purpose: the locate_vault tests only need these directories to exist,
+and git will not track a directory without a file in it.

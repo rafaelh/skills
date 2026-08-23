@@ -1,0 +1,45 @@
+[
+  {
+    "match": [
+      "config",
+      "get"
+    ],
+    "stdout": "{}"
+  },
+  {
+    "match": [
+      "version"
+    ],
+    "stdout": "{\"azure-cli\": \"2.87.0\", \"extensions\": {}}"
+  },
+  {
+    "match": [
+      "account",
+      "show"
+    ],
+    "stdout": "{\"id\": \"sub-2\", \"name\": \"Locked\", \"state\": \"Enabled\", \"tenantId\": \"tenant-2\", \"tenantDefaultDomain\": null, \"environmentName\": \"AzureCloud\", \"user\": {\"name\": \"sp-app-id\", \"type\": \"servicePrincipal\"}}"
+  },
+  {
+    "match": [
+      "account",
+      "list"
+    ],
+    "stdout": "[{\"id\": \"sub-2\", \"name\": \"Locked\", \"isDefault\": true, \"state\": \"Enabled\"}]"
+  },
+  {
+    "match": [
+      "role",
+      "assignment",
+      "list"
+    ],
+    "returncode": 1,
+    "stderr": "ERROR: (AuthorizationFailed) does not have authorization to perform action\n"
+  },
+  {
+    "match": [
+      "group",
+      "list"
+    ],
+    "stdout": "[]"
+  }
+]
