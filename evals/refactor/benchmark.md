@@ -430,10 +430,12 @@ Two things the Sonnet round could not show:
 Step 2's tables are the next 23% of the file and the reason this control was run. The evidence is
 that the weaker model gains from the current skill roughly as much as the stronger one, which is
 the pattern you would expect if the prose is scaffolding rather than dead weight — but this control
-cannot say *which* prose, because it does not have an `old_skill` arm. Round 4's three-arm design
-(`old_skill` at `git show 63c1802:skills/refactor/SKILL.md`) is still the only way to answer it,
-and it should now be run on **both** models: a cut that is safe on Sonnet and costly on Haiku is
-exactly what a single-model round would miss.
+cannot say *which* prose, because it does not have an `old_skill` arm. A three-arm round is still
+the only way to answer it, and it should be run on **both** models: a cut that is safe on Sonnet
+and costly on Haiku is exactly what a single-model round would miss. See
+[round-4-plan.md](round-4-plan.md), which points the third arm at an ablation of the current file
+rather than at a git snapshot — a snapshot measures three rounds of edits at once and attributes
+none of them.
 
 ## Edits made after round 3 — 2026-08-24
 
@@ -453,6 +455,6 @@ other for less on eval 1 — because that is the tension the round found in a si
 measures whether the balance is right; a repeat of eval 1's do-nothing run, or eval 5 staying at
 1/3, says it is not.
 
-**Step 2's tables are still uncut**, as round 3's plan directed. Round 4 remains the three-arm round
-that decides them, with `old_skill` at `git show 63c1802:skills/refactor/SKILL.md` — note that the
-baseline for "the round-3 skill" is now `ee0fb13` plus these edits, not `ee0fb13` alone.
+**Step 2's tables are still uncut**, as round 3's plan directed. Round 4 decides them — see
+[round-4-plan.md](round-4-plan.md). Note that "the round-3 skill" now means `ee0fb13` plus these
+edits, not `ee0fb13` alone, so round 4's `with_skill` arm measures the edits as well.
