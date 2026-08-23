@@ -62,11 +62,21 @@ DELETED_COUNT = re.compile(
     r"|(?:deleted|removed)[:\s]+~?(\d+)",
     re.IGNORECASE,
 )
+# Restraint named in prose, in whatever register the run reached for. What is graded is
+# whether the run said it left something alone, not the wording — so the object of "left"
+# is allowed to be a phrase ("left everything else alone"), and the negation is allowed to
+# be about need ("doesn't need a pass") as well as about action. Widening this can only
+# turn a fail into a pass, which is what keeps earlier rounds comparable.
 LEFT_ALONE = re.compile(
-    r"left (?:it |them |that |these |those )?(?:alone|as[- ]is|unchanged|untouched)"
-    r"|already (?:clean|fine|good|simple|readable|idiomatic|well)"
-    r"|no changes? (?:needed|required|made)|not chang|did ?n[o']t (?:change|touch|need)"
-    r"|deliberately (?:left|kept)|chose not to|resisted|refrain",
+    r"(?:left|kept|leaving|keeping)\s+(?:\S+\s+){0,4}?"
+    r"(?:alone|as[- ]is|unchanged|untouched|intact|in place)"
+    r"|already\s+(?:be\s+|been\s+)?(?:clean|fine|good|simple|readable|idiomatic|well|tight"
+    r"|minimal|concise|clear|small|short|focused|right)"
+    r"|no changes?\s+(?:needed|required|made|warranted)"
+    r"|not chang|did ?n[o']t\s+(?:change|touch|need|make|alter|modify)"
+    r"|does ?n[o']t\s+(?:need|require|warrant)"
+    r"|nothing\s+(?:\S+\s+){0,2}?to\s+(?:change|simplify|fix|do|clean)"
+    r"|deliberately\s+(?:left|kept)|chose not to|opted not to|resisted|refrain",
     re.IGNORECASE,
 )
 

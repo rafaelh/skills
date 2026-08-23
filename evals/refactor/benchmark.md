@@ -23,6 +23,7 @@ re-score them.
 | v1 | 8 shared + 5 (`pricing`), 5 (`toolkit`), 4 (`ledger`) | Round 1 |
 | v2 | 10 shared + the same per-fixture sets | Round 2, applied retroactively to round 1 |
 | v3 | v2 unchanged, plus three cases: 15 (`inventory`), 15 (`digest`), 12 (`resample`) | Round 3 |
+| v3.1 | v3 unchanged; `LEFT_ALONE` widened after it false-negatived twice | After round 3 |
 
 v1 saturated on first contact — 100% against 92%, with the entire gap resting on one check — so it
 measured almost nothing. v2 keeps all thirteen v1 checks as a regression floor and adds two that
@@ -39,6 +40,15 @@ shared check added now could never be computed for them, and the cross-round com
 `with_skill`'s 44/44 has to be read against would break. Everything new is per-fixture and lives on
 the three new fixtures, so rounds 1 and 2 remain gradable exactly as recorded. See
 [round-3-plan.md](round-3-plan.md).
+
+**v3.1 adds and retires nothing** — it widens one proxy regex, `LEFT_ALONE`, which was failing
+summaries that plainly did the behaviour it grades ("left everything else alone" went unmatched
+because the object of "left" was a phrase). Widening a regex can only turn a fail into a pass, so
+the un-re-gradable rounds stay comparable: round 1 passed this check in both arms, and its single
+per-cell failure is recorded as assertion 8 throughout. Round 2's record does not break its four
+baseline failures down, so if one of them was this check its recorded 90.9% is a hair low under
+v3.1. Round 3's stored runs are re-graded below, with the v3 gradings kept beside them as
+`grading-v3.json`.
 
 **Round 1 cannot answer the verification-waste check.** `_tool_summary` only began capturing Bash
 commands after that round, so round 1 records a bare `Bash` for every shell call. Those runs fail
@@ -244,12 +254,15 @@ rubric can re-grade this round.
 | Eval | with_skill | without_skill |
 |---|---|---|
 | 0 pricing-accumulated-complexity | 93% (14/15) | 93% (14/15) |
-| 1 already-clean-restraint | 80% (12/15) | 80% (12/15) |
+| 1 already-clean-restraint | 87% (13/15) | 87% (13/15) |
 | 2 post-green-scope | 100% (14/14) | 86% (12/14) |
 | 3 history-only-scope | 93% (14/15) | 80% (12/15) |
 | 4 weak-test-coverage | 93% (14/15) | 80% (12/15) |
 | 5 superseded-module-restraint (×3) | 78% (28/36) | 67% (24/36) |
-| **Mean** | **87.3%** (96/110) | **78.2%** (86/110) |
+| **Mean** | **88.2%** (97/110) | **79.1%** (87/110) |
+
+Scored under **rubric v3.1**. Under v3 as first run it was 87.3% against 78.2%; the widened
+`LEFT_ALONE` gave one mark back to each arm on eval 1 and moved nothing else in either workspace.
 
 **The rubric has headroom again.** `with_skill` is below ceiling on all three new cases and on two
 of the three old ones, against a flat 44/44 in round 2. The pre-committed falsifier — "a second
@@ -310,18 +323,18 @@ Scoring only evals 0–2, the round-2-comparable subset:
 
 | | Round 2 | Round 3 |
 |---|---|---|
-| with_skill | 100.0% (44/44) | 90.9% (40/44) |
-| without_skill | 90.9% (40/44) | 86.4% (38/44) |
+| with_skill | 100.0% (44/44) | 93.2% (41/44) |
+| without_skill | 90.9% (40/44) | 88.6% (39/44) |
 
-All four `with_skill` losses are one run: **eval 1's skill arm made no change at all.** It read
-every file, declared "no duplication between modules", and declined — but `title_words()` still
-repeats `collapse_whitespace()`'s body, which is the fixture's one intended edit and which both
-arms found in round 1. That fails assertion 3 (the target actually changed), assertion 8, and the
-"names what it left alone" check. Its summary cites *the skill's "when not to use" guidance* as the
-reason. Read against eval 5, that is the same section producing a correct refusal on the case that
-wants one and a false refusal on the case that does not.
+Two of the three `with_skill` losses are one run: **eval 1's skill arm made no change at all.** It
+read every file, declared "no duplication between modules", and declined — but `title_words()`
+still repeats `collapse_whitespace()`'s body, which is the fixture's one intended edit and which
+both arms found in round 1. That fails assertion 3 (the target actually changed) and assertion 8.
+Its summary cites *the skill's "when not to use" guidance* as the reason. Read against
+eval 5, that is the same section producing a correct refusal on the case that wants one and a
+false refusal on the case that does not.
 
-The fourth loss is eval 0's incrementality check (2 mutations, 1 verify cycle) — also 3/5 in the
+The third loss is eval 0's incrementality check (2 mutations, 1 verify cycle) — also 3/5 in the
 baseline, so not arm-specific.
 
 **The checklist cut was safe by its pre-committed test.** Assertion 1 held at 8/8, assertion 2 at
@@ -345,10 +358,10 @@ directional at best.
 
 ### Rubric findings for round 4
 
-- **"The summary names something it deliberately left unchanged" is 0/2 and its regex is at
-  fault.** Eval 1's skill arm named `_sleep` and explained why it kept it; `LEFT_ALONE` misses
-  "doesn't need", "didn't make any changes", and "already at the … level". Widen it, and re-grade
-  this round's stored runs when you do.
+- **"The summary names something it deliberately left unchanged" has saturated, now that its regex
+  works.** It was 0/2 under v3 against two runs that plainly did the behaviour; under v3.1 it is
+  2/2. Both arms name what they left alone on `toolkit-repo`, so it is a regression floor, not a
+  discriminator.
 - **Verification waste has saturated.** Leave it as a floor; it can no longer separate arms on
   Sonnet.
 - **Eval 5 wants more runs, not more checks.** 1/3 versus 0/3 is a difference of one run.
@@ -371,6 +384,8 @@ on. Workspace kept at `~/.cache/claude-evals/refactor-haiku/iteration-3`.
 | 4 weak-test-coverage | 80% (12/15) | 80% (12/15) |
 | 5 superseded-module-restraint | 75% (9/12) | 58% (7/12) |
 | **Mean** | **84.9%** (73/86) | **79.1%** (68/86) |
+
+Unchanged by the v3.1 re-grade: both Haiku arms already matched `LEFT_ALONE` under v3.
 
 **Gap: +5.8pp**, where the stale control measured +0.0pp on the old skill. The zero was not a real
 absence, and it is gone: the edited skill helps Haiku on the same order as it helps Sonnet
@@ -423,13 +438,13 @@ exactly what a single-model round would miss.
 ## Edits made after round 3 — 2026-08-24
 
 Round 3's plan said "add nothing", on the grounds that there was no observed `with_skill` failure to
-fix. The round falsified that premise: `with_skill` lost fourteen checks. Four edits, each answering
+fix. The round falsified that premise: `with_skill` lost thirteen checks. Four edits, each answering
 a measured failure and each visible to a check that is currently failing. 10,855 → 11,564 bytes.
 
 | Edit | Answers | The check that will show it |
 |---|---|---|
 | "When NOT to use" — the rewrite bullet now covers a replacement that **has already landed**, prescribes saying so and asking, and rules out finishing the migration | Eval 5: five of six runs named the supersession in prose and refactored anyway; two deleted `resample_v2.py` | `resample`'s 15-line budget (1/3 → ?) |
-| "Already clean" is a finding from working Step 2's patterns, not an impression; a one-line pass is a real answer | Eval 1: the skill arm declined outright, claimed "no duplication", and missed `title_words()` repeating `collapse_whitespace()` | Assertion 3 and the `toolkit` summary check |
+| "Already clean" is a finding from working Step 2's patterns, not an impression; a one-line pass is a real answer | Eval 1: the skill arm declined outright, claimed "no duplication", and missed `title_words()` repeating `collapse_whitespace()` | Assertion 3 |
 | Duplicated-logic signal: "same 5+ lines in multiple places" → the same block twice, in one file or across several, two lines being enough | Evals 1 and 3: both missed duplications are shorter than five lines, one of them inside a single module | `inventory`'s pack-rounding check (0/2) |
 | Principle 5's scope paragraph cut to one line | Both arms read `git log` unprompted and both stayed in scope on the fixture built to require it | Assertion 6, as a regression floor |
 
