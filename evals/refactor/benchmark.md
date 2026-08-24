@@ -601,3 +601,32 @@ half-refactored, and retrying on top of that grades a different experiment.
 - **Incrementality is failing in every arm on both models** (Sonnet 12/15 `with_skill`, Haiku
   10/15) on "N mutations, 1 verify cycle". Three rounds of the same shape means reading the
   transcripts, not believing the number.
+
+## Edits made after round 4 — 2026-08-24
+
+Round 4 shipped the name-only ablation verbatim, wart included. Two changes on top of it, both
+inside Step 2 and both answering something the round can see. 9,462 → 9,507 bytes.
+
+| Edit | Answers | The check that will show it |
+|---|---|---|
+| The two comment bullets carry their direction again — `"what"` says *delete them*, `"why"` says *keep them; they carry intent the code can't express* | The shipped file lost the `keep` imperative and landed **11/18 on Haiku against a 12/18 baseline** — the round's only case of the skill scoring below the baseline on a principle it claims to teach | Assertion 5, on Haiku |
+| Step 2's lead-in cut to "Scan for these patterns:" | It promised "each one is a concrete signal, not a vague smell", which described the Signal column round 4 removed | Nothing — cosmetic, and recorded as such |
+
+The first edit is the narrower half of a table row, not a reversal of the cut: 45 bytes against the
+2,102 the round removed. Its evidence is one run at n=3, which on its own would not justify an
+edit — what justifies it is the mechanism. A bare "Comments explaining 'why'" under the heading
+*Scan for these patterns* reads as a thing to remove, which inverts the row's meaning. The
+ablation was generated mechanically and could not have known that.
+
+Sonnet is 18/18 on assertion 5 in every arm and cannot show this either way. Round 5 reads it on
+Haiku or not at all.
+
+**Not changed, and deliberately.** Step 3's incrementality prose is the largest remaining measured
+failure — 13/15 shipped against 13/15 baseline on Sonnet, 10/15 against 9/15 on Haiku, three
+rounds with no separation in any arm. It is the next ablation candidate, on round 4's evidence and
+by round 4's method, and rewriting it blind now would spend the question. Read the transcripts
+first: "5 mutations, 1 verify cycle" may be correct behaviour on fixtures this small, in which
+case the check is the thing to fix.
+
+So "the round-4 skill" means the ablation plus these two edits, and round 5's `with_skill` arm
+measures them.

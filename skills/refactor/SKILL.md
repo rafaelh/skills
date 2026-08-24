@@ -143,7 +143,7 @@ If you can't answer these, you're not ready to simplify. Read more context first
 
 ### Step 2: Identify Simplification Opportunities
 
-Scan for these patterns — each one is a concrete signal, not a vague smell:
+Scan for these patterns:
 
 **Structural complexity:**
 
@@ -161,8 +161,8 @@ Scan for these patterns — each one is a concrete signal, not a vague smell:
 - Generic names
 - Abbreviated names
 - Misleading names
-- Comments explaining "what"
-- Comments explaining "why"
+- Comments explaining "what" — delete them; the code already says it
+- Comments explaining "why" — keep them; they carry intent the code can't express
 
 **Redundancy:**
 
