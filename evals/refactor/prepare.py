@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Stage a workspace for one round of the refactor evals.
 
-    prepare.py <workspace> [--iteration N] [--runs K]
+    prepare.py <workspace> [--iteration N] [--runs K] [--arms a,b,c]
 
 Builds the standard layout — `<workspace>/iteration-<n>/eval-<id>-<name>/<arm>/run-<k>/`
 — with a git-initialised copy of each fixture under `repo/`, an empty `outputs/`, and the
@@ -27,6 +27,9 @@ sys.path.insert(0, str(HERE.parent / "shared"))
 from workspace import ARMS, load_cases, run_dir, stage_fixture, write_eval_metadata
 
 FIXTURES = HERE / "fixtures"
+
+# The arms run_case.py knows how to drive; `old_skill` takes its body from --skill.
+KNOWN_ARMS = (*ARMS, "old_skill")
 
 GIT_ID = ("-c", "user.name=eval", "-c", "user.email=eval@local")
 
@@ -58,7 +61,7 @@ def split_history(repo: Path, recent: list[str], messages: list[str]) -> None:
     git(repo, *GIT_ID, "commit", "-qm", messages[1])
 
 
-def stage(workspace: Path, iteration: int, runs: int, quiet: bool) -> int:
+def stage(workspace: Path, iteration: int, runs: int, arms: tuple[str, ...], quiet: bool) -> int:
     _, cases = load_cases(HERE / "evals.json")
     staged: list[str] = []
     for case in cases:
@@ -69,7 +72,7 @@ def stage(workspace: Path, iteration: int, runs: int, quiet: bool) -> int:
                 f"case '{case['name']}' sets recent_files, so it needs exactly two "
                 f"history_messages; got {len(messages)}"
             )
-        for arm in ARMS:
+        for arm in arms:
             for run in range(1, runs + 1):
                 target = run_dir(workspace, case, arm, iteration=iteration, run=run)
                 (target / "outputs").mkdir(parents=True, exist_ok=True)
@@ -90,7 +93,7 @@ def stage(workspace: Path, iteration: int, runs: int, quiet: bool) -> int:
             {
                 "workspace": str(workspace / f"iteration-{iteration}"),
                 "evals": len(cases),
-                "arms": list(ARMS),
+                "arms": list(arms),
                 "runs": staged,
             },
             indent=2,
@@ -107,11 +110,31 @@ def main() -> int:
     parser.add_argument("workspace", type=Path, help="Directory to build the round under.")
     parser.add_argument("--iteration", type=int, default=1, help="Round number (default: 1).")
     parser.add_argument("--runs", type=int, default=1, help="Repeats of each cell (default: 1).")
+    # shared/workspace.ARMS is the two-arm default every suite starts from. A third arm is
+    # this suite's business — an ablation of the skill measured against the whole file —
+    # so it is a flag here rather than a change to the shared layout.
+    parser.add_argument(
+        "--arms",
+        default=",".join(ARMS),
+        help=f"Comma-separated arms to stage (default: {','.join(ARMS)}).",
+    )
     parser.add_argument("--quiet", action="store_true", help="Suppress informational stderr.")
     args = parser.parse_args()
 
+    arms = tuple(a.strip() for a in str(args.arms).split(",") if a.strip())
+    unknown = [a for a in arms if a not in KNOWN_ARMS]
+    if not arms or unknown:
+        emit_error(
+            "prepare.arms.invalid",
+            f"unknown arm(s): {', '.join(unknown) or '(none given)'}",
+            f"pick from {', '.join(KNOWN_ARMS)}",
+        )
+        return 1
+
     try:
-        return stage(args.workspace.expanduser().resolve(), args.iteration, args.runs, args.quiet)
+        return stage(
+            args.workspace.expanduser().resolve(), args.iteration, args.runs, arms, args.quiet
+        )
     except FileNotFoundError as exc:
         emit_error("prepare.fixture.missing", str(exc), f"expected it under {FIXTURES}")
         return 1

@@ -4,12 +4,13 @@ A dated record of what this skill scored, so a future round can be compared agai
 read in isolation. Append rounds; don't rewrite them. The harness that produces these numbers lives
 beside this file — read [README.md](README.md) before re-measuring.
 
-Two arms each (`with_skill`, `without_skill`), one run per cell except round 3's eval 5, which ran
-three per arm. Rounds 1 and 2 ran three evals; rubric v3 takes it to six. One run per cell means
-the token and time figures are single observations, not distributions: treat a 20% swing as noise.
-Pass rates are the durable signal because every check is mechanical — files on disk, their AST,
-and one run of the fixture's own test suite (plus, in `digest-repo`, one the fixture does not
-ship).
+Two arms each (`with_skill`, `without_skill`) through round 3, one run per cell except round 3's
+eval 5, which ran three per arm. Round 4 adds a third arm — an ablation of the skill — and runs
+three per cell on both models, so it is the first round whose figures are distributions rather
+than single observations. Rounds 1 and 2 ran three evals; rubric v3 takes it to six. At one run
+per cell, treat a 20% swing in tokens or time as noise. Pass rates are the durable signal because
+every check is mechanical — files on disk, their AST, and one run of the fixture's own test suite
+(plus, in `digest-repo`, one the fixture does not ship).
 
 Rounds 1 and 2 kept no workspace and cannot be re-graded. From round 3 the workspace is kept
 outside the repo — `~/.cache/claude-evals/refactor/iteration-<n>` for the Sonnet rounds and
@@ -458,3 +459,145 @@ measures whether the balance is right; a repeat of eval 1's do-nothing run, or e
 **Step 2's tables are still uncut**, as round 3's plan directed. Round 4 decides them — see
 [round-4-plan.md](round-4-plan.md). Note that "the round-3 skill" now means `ee0fb13` plus these
 edits, not `ee0fb13` alone, so round 4's `with_skill` arm measures the edits as well.
+
+## Round 4 — 2026-08-24
+
+The round that decides Step 2's tables. Three arms × six evals × three runs × two models = **108
+runs**, rubric frozen at v3.1, no fixture touched. The third arm is not a git snapshot but
+`ablations/step2-names-only.md`, an ablation of the live `SKILL.md`: Step 2's 17 pattern names
+survive as a bare list and the Signal and Simplification columns go, 11,564 → 9,462 bytes in a
+single diff hunk. Workspaces kept at `~/.cache/claude-evals/refactor/iteration-4` and
+`refactor-haiku/iteration-4`. See [round-4-plan.md](round-4-plan.md) for the thresholds, which
+were committed to before the round ran.
+
+**Sonnet** (`claude-sonnet-5`):
+
+| Eval | with_skill | old_skill (ablation) | without_skill |
+|---|---|---|---|
+| 0 pricing-accumulated-complexity | 91% (41/45) | 98% (44/45) | 93% (42/45) |
+| 1 already-clean-restraint | 100% (45/45) | 100% (45/45) | 91% (41/45) |
+| 2 post-green-scope | 100% (42/42) | 100% (42/42) | 90% (38/42) |
+| 3 history-only-scope | 96% (43/45) | 98% (44/45) | 87% (39/45) |
+| 4 weak-test-coverage | 96% (43/45) | 93% (42/45) | 91% (41/45) |
+| 5 superseded-module-restraint | 100% (36/36) | 100% (36/36) | 67% (24/36) |
+| **Mean** | **96.9%** (250/258) | **98.1%** (253/258) | **87.2%** (225/258) |
+
+**Haiku** (`claude-haiku-4-5-20251001`):
+
+| Eval | with_skill | old_skill (ablation) | without_skill |
+|---|---|---|---|
+| 0 pricing-accumulated-complexity | 89% (40/45) | 84% (38/45) | 84% (38/45) |
+| 1 already-clean-restraint | 98% (44/45) | 98% (44/45) | 78% (35/45) |
+| 2 post-green-scope | 90% (38/42) | 93% (39/42) | 81% (34/42) |
+| 3 history-only-scope | 82% (37/45) | 78% (35/45) | 80% (36/45) |
+| 4 weak-test-coverage | 78% (35/45) | 84% (38/45) | 80% (36/45) |
+| 5 superseded-module-restraint | 92% (33/36) | 89% (32/36) | 69% (25/36) |
+| **Mean** | **88.0%** (227/258) | **87.6%** (226/258) | **79.1%** (204/258) |
+
+### The tables came out
+
+The pre-committed rule was: cut them if the ablation is within **2pp** on both models and no
+table-mapped check regresses by more than one run on either. **Both conditions hold.** The
+ablation is **+1.2pp** on Sonnet and **−0.4pp** on Haiku, and every regression among the fourteen
+table-mapped checks is exactly one run.
+
+| Table-mapped check | Sonnet with → abl | Haiku with → abl |
+|---|---|---|
+| `pricing` depth and length | 3/3 → 3/3 | 3/3 → **2/3** |
+| `pricing` dead code | 3/3 → 3/3 | 2/3 → 2/3 |
+| `pricing` duplicated accumulation loop | 3/3 → 3/3 | 3/3 → 3/3 |
+| `pricing` two of five 'what' comments deleted | **2/3 → 3/3** | 3/3 → **2/3** |
+| `ledger` depth and length | 3/3 → 3/3 | 0/3 → **1/3** |
+| `ledger` dead code | 3/3 → 3/3 | 3/3 → 3/3 |
+| `ledger` absolute-value block | 3/3 → 3/3 | 3/3 → 3/3 |
+| `inventory` depth and length | 3/3 → 3/3 | 3/3 → **2/3** |
+| `inventory` dead code | 3/3 → 3/3 | 3/3 → 3/3 |
+| `inventory` pack-rounding duplication | **1/3 → 2/3** | 1/3 → **0/3** |
+| `digest` depth and length | 3/3 → 3/3 | 3/3 → 3/3 |
+| `digest` dead code | 2/3 → **1/3** | 0/3 → **1/3** |
+| `digest` subject-normalisation duplication | 3/3 → 3/3 | 3/3 → 3/3 |
+| 'why' comments survive (all evals) | 18/18 → 18/18 | 12/18 → **11/18** |
+
+Read honestly, the two models disagree in direction and neither disagreement is large. On Sonnet
+the ablation nets +1 run across these checks; on Haiku it nets −3, spread over five checks that
+each lost one. The rule was written to be decided per check and per model, the burden of proof was
+placed on keeping 2,102 characters that cost tokens on every turn, and nothing cleared it. **The
+cut is shipped**: `skills/refactor/SKILL.md` is now byte-identical to the measured ablation, 11,564
+→ 9,462 bytes.
+
+Two rows are worth naming because they lost real content and did not visibly cost anything. The
+`why`-comment row no longer says *keep these* — it is now the bare phrase "Comments explaining
+'why'" — and the check that grades it held at 18/18 on Sonnet and moved one run on Haiku. The
+duplication row lost the "two lines is enough" threshold added two days earlier in response to a
+measured failure, and `inventory`'s duplication check went **up** one run on Sonnet and down one
+on Haiku. The plan called that row the uncomfortable one; the discomfort was not vindicated.
+
+**One wart shipped with it.** Step 2's lead-in still reads "each one is a concrete signal, not a
+vague smell", which described the Signal column that is now gone. It stays as measured — editing
+prose the round did not test would put an unmeasured change into the file the round exists to
+justify. Fix it in round 5, where a check can see it.
+
+### The drift control fired on Sonnet
+
+`without_skill` was **87.2%** against round 3's **79.1%**, +8.1pp and far outside the 3pp band. Part
+of that is weighting: round 3's mean counted eval 5 three times and every other eval once, and eval
+5 is where the baseline is worst. Re-weighted to one run per eval, round 3's baseline is 82.6%, so
+the like-for-like drift is **+4.6pp** — still outside the band. Per eval, the baseline is unchanged
+on eval 0 (93% → 93%) and eval 5 (67% → 67%) and up four to eleven points on evals 1–4, which at
+one run per cell is one or two checks each. Round 3's baseline was a single observation per cell,
+and this is what that costs.
+
+**So every cross-round claim in this round is void**, as the plan pre-committed. What survives is
+within-round: the arm gap is **+9.7pp** on Sonnet (round 3: +9.1pp) and **+8.9pp** on Haiku
+(round 3: +5.8pp), measured at three runs per cell rather than one. Haiku's baseline landed on
+**79.1%**, identical to round 3's to the decimal, which is the drift control doing its job on the
+model that has one.
+
+### The four edits met their targets, unattributably
+
+All three pre-committed targets on Sonnet `with_skill` are met: eval 5's 15-line budget **3/3**
+(round 3: 1/3), eval 1's assertion 3 **3/3** (0/1), `inventory`'s duplication check **1/3** (0/1).
+The over-correction falsifier did not fire — it required eval 5's budget at 0/3 with assertion 3 at
+3/3, and both are 3/3, so the two bullets that pull against each other are not pulling anything
+over. But every one of those comparisons is to round 3, and round 3's Sonnet baseline is the thing
+that moved. The edits are consistent with having worked; this round cannot say they did.
+
+**Principle 5's cut was safe** by its own test: assertion 6 is 18/18 and eval 3's git-history check
+3/3 in Sonnet `with_skill`.
+
+### Cost
+
+| | Sonnet | Haiku |
+|---|---|---|
+| with_skill | $5.56 | $1.64 |
+| old_skill | $5.28 | $1.82 |
+| without_skill | $4.57 | $1.33 |
+| Round | **$15.41** | **$4.79** |
+
+$20.20 for 108 runs against the plan's $19 estimate, about 40 minutes of wall clock at `-P 6`.
+
+The one cost the cut carries is on the weaker model: Haiku's ablation arm burned **449k tokens per
+run against 367k** with the full tables, and 16.6 tool calls against 14.1, for the same pass rate.
+Sonnet shows the opposite and smaller effect (363k against 371k). A model that is not told what the
+simplification *is* appears to go and find out, which is worth watching in round 5 rather than
+concluding from one round.
+
+**Four Haiku `eval-0` cells were lost to API errors** (`server_error`, then `rate_limit` on the
+first retry) and re-run. Each retry re-staged the fixture first: a failed run leaves the repo
+half-refactored, and retrying on top of that grades a different experiment.
+
+### Rubric findings for round 5
+
+- **Sonnet is saturating again.** 8 failed checks in 258 for `with_skill`, 5 in 258 for the
+  ablation, and ceilings on evals 1, 2 and 5. The headroom round 3 bought lasted one round.
+- **Eval 5 is solved on Sonnet** — 36/36 in both skill arms, and the 15-line budget 3/3 where round
+  3 managed 1/3. It still discriminates on Haiku (2/3 against 0/3), so keep it as a floor and stop
+  reading it as the hard case.
+- **Between the two skill arms, almost nothing moves by more than one run.** The single exception
+  across both models is Haiku's "read a caller of the target before changing it", **1/3 with the
+  tables against 3/3 without** — a Step 1 check, not a table-mapped one, and the largest
+  skill-arm difference in the round runs against the prose that was cut. One check at n=3 is not a
+  finding; it is the first thing to look at if round 5 revisits Step 1.
+- **Incrementality is failing in every arm on both models** (Sonnet 12/15 `with_skill`, Haiku
+  10/15) on "N mutations, 1 verify cycle". Three rounds of the same shape means reading the
+  transcripts, not believing the number.

@@ -1,0 +1,54 @@
+--- skills/refactor/SKILL.md	2026-08-24 13:46:54.271134938 +1000
++++ evals/refactor/ablations/step2-names-only.md	2026-08-24 13:49:47.482718773 +1000
+@@ -147,35 +147,29 @@
+
+ **Structural complexity:**
+
+-| Pattern | Signal | Simplification |
+-|---------|--------|----------------|
+-| Deep nesting (3+ levels) | Hard to follow control flow | Extract conditions into guard clauses or helper functions |
+-| Long functions (50+ lines) | Multiple responsibilities | Split into focused functions with descriptive names |
+-| Nested ternaries | Requires mental stack to parse | Replace with if/else chains or lookup dicts |
+-| Boolean parameter flags | `do_thing(True, False, True)` | Replace with keyword-only arguments, an enum, or separate functions |
+-| Repeated conditionals | Same `if` check in multiple places | Extract to a well-named predicate function |
+-| Shallow modules | Thin pass-through that just delegates to another function without adding any logic | Inline the pass-through, or deepen it by moving caller-side logic inside |
+-| Feature envy | A function that repeatedly accesses another object's data | Move the logic to where the data lives |
+-| Primitive obsession | Raw `str`/`dict` used everywhere to represent a concept that has validation rules | Introduce a Pydantic model or named type to carry the concept and its constraints |
++- Deep nesting (3+ levels)
++- Long functions (50+ lines)
++- Nested ternaries
++- Boolean parameter flags
++- Repeated conditionals
++- Shallow modules
++- Feature envy
++- Primitive obsession
+
+ **Naming and readability:**
+
+-| Pattern | Signal | Simplification |
+-|---------|--------|----------------|
+-| Generic names | `data`, `result`, `temp`, `val`, `item` | Rename to describe the content: `user_profile`, `validation_errors` |
+-| Abbreviated names | `usr`, `cfg`, `btn`, `evt` | Use full words unless the abbreviation is universal (`id`, `url`, `api`) |
+-| Misleading names | Function named `get` that also mutates state | Rename to reflect actual behavior |
+-| Comments explaining "what" | `# increment counter` above `count += 1` | Delete the comment — the code is clear enough |
+-| Comments explaining "why" | `# Retry because the API is flaky under load` | Keep these — they carry intent the code can't express |
++- Generic names
++- Abbreviated names
++- Misleading names
++- Comments explaining "what"
++- Comments explaining "why"
+
+ **Redundancy:**
+
+-| Pattern | Signal | Simplification |
+-|---------|--------|----------------|
+-| Duplicated logic | The same block written out twice, in one file or across several — two lines is enough when they encode one decision | Extract to a shared function, or call the one that already exists |
+-| Dead code | Unreachable branches, unused variables, commented-out blocks | Remove (after confirming it's truly dead) |
+-| Unnecessary abstractions | Wrapper that adds no value | Inline the wrapper, call the underlying function directly |
+-| Over-engineered patterns | Factory-for-a-factory, strategy-with-one-strategy | Replace with the simple direct approach |
++- Duplicated logic
++- Dead code
++- Unnecessary abstractions
++- Over-engineered patterns
+
+ ### Step 3: Apply Changes Incrementally

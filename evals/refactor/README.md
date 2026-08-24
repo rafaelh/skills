@@ -20,6 +20,8 @@ the repo root config.
 | `prepare.py` | Stages a workspace: fixture copies, `git init`, empty output dirs |
 | `run_case.py` | Drives one staged run to completion and records what it left |
 | `grade.py` | Scores one run against the assertions, writes `grading.json` |
+| `aggregate.py` | Rolls a graded round up into the tables a benchmark entry is written from |
+| `ablations/` | Deliberately cut copies of `SKILL.md`, for an `old_skill` arm to measure |
 | `benchmark.md` | Dated record of past rounds and rubric versions |
 
 Unlike `create-agents-for-repo`, this suite drives its own runs rather than farming them to
@@ -106,11 +108,52 @@ decline-or-act is binary — stage with `--runs 1` and `cp -a` that case's `run-
 runs; the copy is a staged run directory like any other.
 
 `run_case.py` takes one run directory and reads the arm and the case out of its
-`eval_metadata.json`; `--arm` overrides it, which is how an `old_skill` arm against a snapshot is
-run. It writes `outputs/summary.md` (the run's own narration, which assertion 8 is graded from),
-`outputs/tool-calls.txt`, and `timing.json`.
+`eval_metadata.json`; `--arm` overrides it. It writes `outputs/summary.md` (the run's own
+narration, which assertion 8 is graded from), `outputs/tool-calls.txt`, and `timing.json`.
 
-Grade sequentially rather than with `-P`: `grade.py` runs a pytest suite per call.
+Grade sequentially rather than with `-P`: `grade.py` runs a pytest suite per call. Then
+
+```bash
+$PY evals/refactor/aggregate.py "$WS/iteration-3"
+```
+
+prints the per-eval table, the checks that separated the arms, and the cost block as markdown,
+ready to paste into `benchmark.md`. `--all-checks` includes the ones that moved nothing (the
+regression floors), `--json` gives the same numbers for a script.
+
+### Three arms
+
+`--arms` stages more than the default two, and `--skill` points an arm at a different file — a
+git snapshot, or an ablation from `ablations/`:
+
+```bash
+$PY evals/refactor/prepare.py "$WS" --iteration 4 --runs 3 \
+  --arms with_skill,old_skill,without_skill
+```
+
+`old_skill` run directories need `--skill` and the other two must not get it, so the round runs in
+two passes rather than one `xargs`:
+
+```bash
+find "$WS/iteration-4" -name eval_metadata.json -printf '%h\n' | grep -v /old_skill/ \
+  | xargs -P 6 -L1 $PY evals/refactor/run_case.py --model sonnet
+
+find "$WS/iteration-4" -path '*/old_skill/*' -name eval_metadata.json -printf '%h\n' \
+  | xargs -P 6 -L1 $PY evals/refactor/run_case.py --model sonnet \
+      --skill evals/refactor/ablations/step2-names-only.md
+```
+
+A second model is a second workspace, not a second arm: `aggregate.py` reports the model rather
+than averaging over it, and a round's pass rates are only comparable within one.
+
+An ablation is generated from the live `SKILL.md` and must differ from it in exactly one hunk —
+otherwise the arm measures something other than the cut:
+
+```bash
+diff -u skills/refactor/SKILL.md evals/refactor/ablations/step2-names-only.md
+```
+
+The stored `.diff` beside each ablation is that check's output at the time the round ran.
 
 Both arms get the identical preamble in `run_case.py`, and it is deliberately terse. It says where
 the run is and how to invoke pytest, and nothing about diffstats, scope or restraint — naming any
