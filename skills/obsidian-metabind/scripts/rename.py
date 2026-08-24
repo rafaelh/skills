@@ -11,9 +11,9 @@
 bind targets and button `updateMetadata` bindTarget lines alike.
 
 --path rewrites the *file* half of bind targets pointing at a note
-(`INPUT[text:other note#select]`). The obsidian skill's rename_note.py fixes
-wikilinks but is blind to bind targets, so renaming a note otherwise breaks
-every field aimed at it silently. Run this alongside it.
+(`INPUT[text:other note#select]`). Tools that fix wikilinks on a rename are
+blind to bind targets, so renaming a note otherwise breaks every field aimed
+at it silently. Run this alongside whatever moved the note.
 
 This tool rewrites references only — it never moves or renames a file. Because
 it is normally run *after* the note has already moved, --path accepts an OLD

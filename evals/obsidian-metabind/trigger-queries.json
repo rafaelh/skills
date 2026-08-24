@@ -62,17 +62,17 @@
   {
     "query": "Rename Other Note.md to Reference Note.md and fix every link to it",
     "should_trigger": false,
-    "notes": "Near-miss: this is the obsidian skill's rename_note.py, not bind targets."
+    "notes": "Near-miss: renaming a note and its links is ordinary vault work, not bind targets."
   },
   {
     "query": "Add tags and aliases to the frontmatter of these three notes",
     "should_trigger": false,
-    "notes": "Near-miss: plain frontmatter editing belongs to the obsidian skill."
+    "notes": "Near-miss: plain frontmatter editing is ordinary vault work."
   },
   {
     "query": "Find all the broken wikilinks in my vault",
     "should_trigger": false,
-    "notes": "Near-miss: vault-level link audit, obsidian skill."
+    "notes": "Near-miss: a vault-level link audit is ordinary vault work."
   },
   {
     "query": "Write a dataview query that lists every note tagged #project",
@@ -92,7 +92,7 @@
   {
     "query": "Validate this .canvas file for me",
     "should_trigger": false,
-    "notes": "Near-miss: canvas validation is the obsidian skill's."
+    "notes": "Near-miss: canvas validation is ordinary vault work."
   },
   {
     "query": "I'm writing an Obsidian plugin and need to call Meta Bind's TypeScript API from my own code",

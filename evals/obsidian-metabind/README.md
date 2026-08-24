@@ -14,8 +14,8 @@ other rubric.
 Each entry is `{query, should_trigger, notes}`; `notes` says what the query is testing, which is
 what tells you whether a failure is the description's fault or the query's. The set is deliberately
 mixed: explicit syntax (`INPUT[toggle:done]`), the plugin by name, intent with no Meta Bind
-vocabulary at all ("make this note interactive"), and near-misses that belong to the sibling
-`obsidian` skill and must **not** trigger.
+vocabulary at all ("make this note interactive"), and near-misses that are ordinary vault work
+and must **not** trigger.
 
 ## Running it
 
@@ -37,10 +37,10 @@ these queries, which is exactly the failure this set exists to catch.
 
 ## When you change the description
 
-`obsidian-metabind` and `obsidian` overlap by design, so the description ends with an explicit
-disambiguator pointing Meta Bind syntax here and general vault work there. Both halves are measured
-by this set: keep the negative queries passing, not just the positive ones. `detect_skill_overlap.py`
-flags sibling pairs that lose their disambiguator.
+The description ends with an explicit disambiguator holding this skill to Meta Bind syntax and
+off general vault work. Both halves are measured by this set: keep the negative queries passing,
+not just the positive ones — they are what stops the skill activating on any note that happens to
+live in a vault.
 
 Record a round in a `benchmark.md` beside this file, the way the other suites do — pass rates by
 split, the description that produced them, and the date.

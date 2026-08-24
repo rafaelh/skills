@@ -1,6 +1,6 @@
 ---
 name: obsidian-metabind
-description: Use this skill when reading, authoring, auditing, or refactoring Meta Bind syntax in an Obsidian vault — input fields, view fields, buttons, embeds, and the Meta Bind / JS Engine APIs. Trigger on `INPUT[`, `VIEW[`, `BUTTON[`, ```meta-bind, ```meta-bind-button, ```meta-bind-js-view, ```js-engine, "Meta Bind", "metabind", or the obsidian-meta-bind-plugin folder. Also trigger when Meta Bind isn't named — "make this note interactive", "add an input field to this note", "bind this checkbox to frontmatter", "a button that increments a property", "why isn't my slider rendering", "my select doesn't render inline", "I renamed a property and the fields broke". Scripts to inventory every declaration, validate them against the plugin's own generated field/argument/action tables, and retarget bind targets after a rename. NOT for general vault work — wikilinks, frontmatter, canvas, bases, renaming notes — use the obsidian skill for that. NOT for Meta Bind's settings UI or for plugin development against its TypeScript API.
+description: Use this skill when reading, authoring, auditing, or refactoring Meta Bind syntax in an Obsidian vault — input fields, view fields, buttons, embeds, and the Meta Bind / JS Engine APIs. Trigger on `INPUT[`, `VIEW[`, `BUTTON[`, ```meta-bind, ```meta-bind-button, ```meta-bind-js-view, ```js-engine, "Meta Bind", "metabind", or the obsidian-meta-bind-plugin folder. Also trigger when Meta Bind isn't named — "make this note interactive", "add an input field to this note", "bind this checkbox to frontmatter", "a button that increments a property", "why isn't my slider rendering", "my select doesn't render inline", "I renamed a property and the fields broke". Scripts to inventory every declaration, validate them against the plugin's own generated field/argument/action tables, and retarget bind targets after a rename. NOT for general vault work — wikilinks, frontmatter, canvas, bases, renaming notes. NOT for Meta Bind's settings UI or for plugin development against its TypeScript API.
 ---
 
 # Meta Bind
@@ -25,10 +25,10 @@ The user wants you to:
 - Fix bind targets after renaming a frontmatter property or a note
 - Write JS against the Meta Bind or JS Engine API
 
-For wikilinks, frontmatter editing, canvas, bases, or renaming the note itself, that is the
-`obsidian` skill. The two are independent — neither calls the other — but they compose: run
-`rename_note.py` from `obsidian` to move a note, then `rename.py --path` from here to fix the bind
-targets that point at it, which `rename_note.py` does not touch.
+Wikilinks, frontmatter editing, canvas, bases, and renaming the note itself are outside this
+skill — work on those files directly. The ordering that matters when a note moves: move it first,
+then run `rename.py --path` from here to fix the bind targets that pointed at it, which renaming a
+file never touches.
 
 ## Workflow
 
@@ -95,8 +95,7 @@ python3 scripts/rename.py --path 'Other Note' 'Reference Note'
 `--dry-run` first.
 
 It rewrites references only — it never moves or renames a file, and `--path` accepts an `OLD` that
-no longer exists on disk, so it composes with the `obsidian` skill's `rename_note.py` in either
-order.
+no longer exists on disk, so it can run before or after the note itself is moved.
 
 ### 5. Refresh the tables when the plugin version moves
 

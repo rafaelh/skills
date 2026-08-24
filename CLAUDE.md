@@ -20,7 +20,6 @@ Script-bearing skills — held to the contracts below:
 | `skill-audit-ts` | TypeScript | Same workflow, for skills whose scripts are TypeScript |
 | `agent-tool-builder` | Python | Build & audit Python scripts that agents call as tools |
 | `create-agents-for-repo` | Python | Fit `.claude/agents/*.md` subagents to a *target* repo, wire their call sites |
-| `obsidian` | Python | An Obsidian vault: notes, frontmatter, wikilinks, canvas, bases |
 | `obsidian-metabind` | Python | Meta Bind syntax in a vault: read, author, validate, refactor |
 | `az` | Python | Orient an Azure session, look up `az` command syntax |
 
@@ -31,13 +30,13 @@ hardcode the local toolchain.
 
 Eval harnesses live in `evals/<skill>/`, outside the shipped plugin, and all follow
 [eval-approach.md](evals/eval-approach.md) — read it before touching one. Three shapes, decided by
-what a run leaves behind: artifact (`create-agents-for-repo` and `refactor`, stage fixture repos and
-diff them), conversation (`plan`, drives a simulated interview and grades the transcript), trigger
-(`obsidian-metabind`, a labeled query set for `eval_triggers.py`). `refactor` is the one that drives
-its own runs — a `run_case.py` granting Edit/Write/Bash inside the staged copy, rather than farming
-the arms to subagents. `evals/shared/` holds the
-plumbing they have in common — CLI invocation, the `grading.json` writer, the run-directory layout —
-imported flatly after a `sys.path` insert; suite-specific analysis stays in the suite.
+what a run leaves behind: artifact (`create-agents-for-repo` and `refactor`, stage fixture repos
+and diff them), conversation (`plan`, drives a simulated interview and grades the transcript),
+trigger (`obsidian-metabind`, a labeled query set for `eval_triggers.py`). `refactor` is the one
+that drives its own runs — a `run_case.py` granting Edit/Write/Bash inside the staged copy, rather
+than farming the arms to subagents. `evals/shared/` holds the plumbing they have in common — CLI
+invocation, the `grading.json` writer, the run-directory layout, the round aggregator — imported
+flatly after a `sys.path` insert; suite-specific analysis stays in the suite.
 
 ## Commands
 
@@ -99,11 +98,9 @@ the spec for new scripts: run `validate_agent_tool.py` and `perf_check.py` on th
 moving those breaks the Python audit workflow. `skill-audit-ts` deliberately has **no** such
 dependency — it folds in its own equivalents so it runs on machines without Python.
 
-`obsidian` and `obsidian-metabind` are an explicit **non**-dependency: neither invokes the other,
-and `obsidian-metabind`'s `parser.py` re-implements vault walking rather than import it, so a vault
-with Meta Bind but no `obsidian` install still works. Both ship a flat `refresh_docs.py`, so each
-`tests/conftest.py` reclaims its own bare module names from `sys.modules`; `.claude` is in
-`norecursedirs` so symlinks aren't collected twice.
+`obsidian-metabind` stands alone: its `parser.py` walks the vault itself rather than importing a
+sibling, so it needs nothing else installed. `.claude` is in `norecursedirs` so its symlinked
+scripts aren't collected twice.
 
 ### Python/TypeScript parity
 

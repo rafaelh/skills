@@ -13,7 +13,7 @@ package = false
 dev = [
     "pyright>=1.1.411",
     "pytest>=9",
-    # obsidian and obsidian-metabind parse vault frontmatter and .base files with it
+    # obsidian-metabind parses vault frontmatter with it
     "pyyaml>=6",
     "ruff>=0.15",
 ]
@@ -134,11 +134,6 @@ ignore = [
 "skills/agent-tool-builder/tests/*.py" = [
     "S101",    # assert is correct in tests
     "S603",    # subprocess calls in tests use controlled, trusted input
-]
-"skills/obsidian/scripts/tests/*.py" = [
-    "S101",    # assert is correct in tests
-    "S603",    # subprocess calls in tests use controlled, trusted input
-    "PLC0415", # deferred imports in test methods are idiomatic pytest
 ]
 "skills/obsidian-metabind/scripts/tests/*.py" = [
     "S101",    # assert is correct in tests

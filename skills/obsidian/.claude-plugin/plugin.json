@@ -1,6 +1,0 @@
-{
-  "name": "obsidian",
-  "description": "Work with an Obsidian vault: notes, frontmatter, wikilinks, backlinks, canvas and base files",
-  "version": "1.0.0",
-  "author": { "name": "Rafe Hart" }
-}

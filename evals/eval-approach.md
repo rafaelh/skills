@@ -163,6 +163,7 @@ script puts `evals/shared` on `sys.path` because it is run by path, not as a pac
 | `claude_cli.py` | One CLI turn in and out: `run_claude`, the tool allow/block lists, `--safe-mode`, token accounting, `extract_json_array` |
 | `grading.py` | `expectation`, the `grading.json` writer, and `judge` — the model-graded half, including the index alignment that fails a skipped statement instead of dropping it from the denominator |
 | `workspace.py` | The run-directory layout, fixture staging, case lookup, and the `eval_metadata.json` / `timing.json` writers |
+| `aggregate.py` | Rolls a graded round up into the per-eval, per-check and cost tables a benchmark entry is written from |
 
 What deliberately stays in a suite: the grader prompt (it has to describe what the grader is
 reading), every mechanical check, and any analysis of the artifact under test — `plan`'s

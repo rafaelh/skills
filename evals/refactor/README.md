@@ -20,7 +20,6 @@ the repo root config.
 | `prepare.py` | Stages a workspace: fixture copies, `git init`, empty output dirs |
 | `run_case.py` | Drives one staged run to completion and records what it left |
 | `grade.py` | Scores one run against the assertions, writes `grading.json` |
-| `aggregate.py` | Rolls a graded round up into the tables a benchmark entry is written from |
 | `ablations/` | Deliberately cut copies of `SKILL.md`, for an `old_skill` arm to measure |
 | `benchmark.md` | Dated record of past rounds and rubric versions |
 
@@ -114,7 +113,7 @@ narration, which assertion 8 is graded from), `outputs/tool-calls.txt`, and `tim
 Grade sequentially rather than with `-P`: `grade.py` runs a pytest suite per call. Then
 
 ```bash
-$PY evals/refactor/aggregate.py "$WS/iteration-3"
+$PY evals/shared/aggregate.py "$WS/iteration-3"
 ```
 
 prints the per-eval table, the checks that separated the arms, and the cost block as markdown,

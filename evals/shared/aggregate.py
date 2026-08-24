@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Roll a graded refactor round up into the tables a benchmark entry is written from.
+"""Roll a graded round up into the tables a benchmark entry is written from.
 
     aggregate.py <iteration-dir> [--all-checks] [--format text|json]
 
@@ -8,10 +8,15 @@ emits three things: the per-eval pass rate by arm, the per-check arm comparison,
 cost block. Output is markdown, so a round can be pasted into `benchmark.md` rather than
 transcribed.
 
+Suite-agnostic: it reads only the three files every run leaves — `grading.json`,
+`eval_metadata.json`, `timing.json` — so any suite following the layout in
+`workspace.py` can be aggregated with it. Analysis that needs to know what the artifact
+*is* stays in the suite's own `grade.py`.
+
 A round is one model. Two models are two workspaces and two invocations — the model is
 recorded in `timing.json` and reported, not aggregated across.
 
-Developer harness, not something an agent calls — see README.md.
+Developer harness, not something an agent calls — see ../eval-approach.md.
 """
 
 # agent-tool: false
@@ -230,7 +235,7 @@ def as_json(evals: EvalCells, arms: dict[str, Cell], context: Json) -> Json:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Aggregate a graded refactor round into benchmark tables.",
+        description="Aggregate a graded eval round into benchmark tables.",
         epilog="example:  aggregate.py ~/.cache/claude-evals/refactor/iteration-4",
     )
     parser.add_argument("root", type=Path, help="Iteration directory holding the graded runs.")
