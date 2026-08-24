@@ -1,6 +1,8 @@
 ---
 name: plan
-description: Interview the user relentlessly about a plan or design until reaching shared understanding, resolving each branch of the decision tree. Use when the user wants to plan something, stress-test a plan, get questioned on their design.
+description: Interview the user relentlessly about a plan or design until reaching shared
+understanding, resolving each branch of the decision tree. Use when the user wants to plan
+something, stress-test a plan, get questioned on their design.
 ---
 
 Interview the user until every real decision in the plan has an explicit answer.
