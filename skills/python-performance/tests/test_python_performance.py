@@ -607,6 +607,100 @@ def test_membership_seq_flagged(tmp_path: Path) -> None:
     assert "membership-seq" in _categories(payload)
 
 
+def test_list_concat_loop_flagged(tmp_path: Path) -> None:
+    """'result = result + [x]' copies the whole list every iteration — O(n²)."""
+    payload = _analyze(
+        tmp_path,
+        "list_concat.py",
+        """\
+        def build(items):
+            result = []
+            for x in items:
+                result = result + [x]
+            return result
+        """,
+    )
+    assert "list-concat-loop" in _categories(payload)
+    assert _lines(payload, "list-concat-loop") == [4]
+
+
+def test_list_concat_both_directions_flagged(tmp_path: Path) -> None:
+    """'[x] + result' is the same quadratic cost, just prepends."""
+    payload = _analyze(
+        tmp_path,
+        "list_concat_rev.py",
+        """\
+        def build(items):
+            result = []
+            for x in items:
+                result = [x] + result
+            return result
+        """,
+    )
+    assert _lines(payload, "list-concat-loop") == [4]
+
+
+def test_list_iadd_not_flagged(tmp_path: Path) -> None:
+    """'+=' on a list dispatches to extend — amortised O(1), not quadratic."""
+    payload = _analyze(
+        tmp_path,
+        "list_iadd.py",
+        """\
+        def build(items):
+            result = []
+            for x in items:
+                result += [x]
+            return result
+        """,
+    )
+    assert "list-concat-loop" not in _categories(payload)
+
+
+def test_list_append_not_flagged_as_concat(tmp_path: Path) -> None:
+    payload = _analyze(
+        tmp_path,
+        "list_append.py",
+        """\
+        def build(items):
+            result = []
+            for x in items:
+                result.append(x)
+            return result
+        """,
+    )
+    assert "list-concat-loop" not in _categories(payload)
+
+
+def test_list_remove_in_loop_flagged(tmp_path: Path) -> None:
+    payload = _analyze(
+        tmp_path,
+        "list_remove.py",
+        """\
+        def clean(items, bad):
+            for b in bad:
+                items.remove(b)
+            return items
+        """,
+    )
+    assert "list-remove-in-loop" in _categories(payload)
+    assert _lines(payload, "list-remove-in-loop") == [3]
+    issue = _issues(payload, "list-remove-in-loop")[0]
+    assert issue["severity"] == "HIGH"
+
+
+def test_list_remove_outside_loop_not_flagged(tmp_path: Path) -> None:
+    payload = _analyze(
+        tmp_path,
+        "list_remove_ok.py",
+        """\
+        def clean(items):
+            items.remove("x")
+            return items
+        """,
+    )
+    assert "list-remove-in-loop" not in _categories(payload)
+
+
 # --- self-explaining output -------------------------------------------------
 
 

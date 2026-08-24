@@ -212,6 +212,16 @@ _CHECKS: dict[str, Check] = {
         "Use a bytearray, which resizes amortised-O(1): buf = bytearray() then buf += chunk. Or "
         "collect the chunks and b''.join(parts).",
     ),
+    "list-concat-loop": Check(
+        "Quadratic list building via +",
+        "HIGH",
+        "'result = result + [item]' creates a brand-new list and copies every element "
+        "accumulated so far, plus the new one, on every iteration — the same O(n²) shape as "
+        "string concatenation. Unlike '+=' on a list, which dispatches to list.extend() and is "
+        "amortised O(1), the plain '+' operator always allocates a fresh list.",
+        "Use result.append(item), or result += [item] (which is extend, not concat). If building "
+        "from scratch, a list comprehension avoids the question entirely.",
+    ),
     "list-as-queue": Check(
         "List used as a queue",
         "HIGH",
@@ -313,6 +323,17 @@ _CHECKS: dict[str, Check] = {
         "contents each time too, which costs more than the open did.",
         "Open and parse once before the loop, then reuse the result. If each iteration genuinely "
         "reads a different file, this finding is expected and the cost is inherent.",
+    ),
+    "list-remove-in-loop": Check(
+        "Linear removal inside a loop",
+        "HIGH",
+        "list.remove(x) scans from the left until it finds x, then shifts every element after "
+        "it down one slot — O(n) per call. Inside a loop over the same or a related list that "
+        "is O(n²), the same cost shape as pop(0). Filtering a list by removing unwanted items "
+        "one at a time is the most common trigger.",
+        "Build a new list with a comprehension: kept = [x for x in items if x not in unwanted]. "
+        "If the removals are by value from a set of targets, 'items = [x for x in items if x "
+        "not in discard_set]' does it in one O(n) pass.",
     ),
     "sort-in-loop": Check(
         "Sorting inside a loop",
@@ -886,6 +907,13 @@ class PerfVisitor(ast.NodeVisitor):
                 kind = self._buffers.get(target.id) or _buffer_kind(other)
                 if kind and self._depth > 0:
                     self._flag_concat(node, kind, f"'{target.id} = {target.id} + ...'")
+                elif self._depth > 0 and isinstance(other, ast.List):
+                    self._flag(
+                        node,
+                        "list-concat-loop",
+                        f"'{target.id} = {target.id} + [...]' — creates a new list every iteration",
+                        "Use .append() or += (which calls extend) instead of +",
+                    )
             elif seed:
                 self._buffers[target.id] = seed
             else:
@@ -932,6 +960,7 @@ class PerfVisitor(ast.NodeVisitor):
             self._check_sort_in_loop(node, f)
             self._check_setdefault_mutable(node, f)
             self._check_list_as_queue(node, f)
+            self._check_list_remove_in_loop(node, f)
             self._check_deepcopy_in_loop(node, f)
             self._check_subprocess_in_loop(node, f)
         self.generic_visit(node)
@@ -967,6 +996,21 @@ class PerfVisitor(ast.NodeVisitor):
                         "Use collections.deque and popleft() — O(1) at both ends",
                     )
         self.generic_visit(node)
+
+    def _check_list_remove_in_loop(self, node: ast.Call, f: ast.expr) -> None:
+        if (
+            isinstance(f, ast.Attribute)
+            and f.attr == "remove"
+            and isinstance(f.value, ast.Name)
+            and len(node.args) == 1
+            and not node.keywords
+        ):
+            self._flag(
+                node,
+                "list-remove-in-loop",
+                f"{f.value.id}.remove() in a loop — O(n) scan + shift per call, O(n²) total",
+                "Build a new list with a comprehension, or collect indices and remove in bulk",
+            )
 
     def _check_deepcopy_in_loop(self, node: ast.Call, f: ast.expr) -> None:
         if _called_name(f) == "deepcopy":
