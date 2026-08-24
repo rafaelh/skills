@@ -52,7 +52,8 @@ due to the refactor or the original code.
 ### 1. Preserve Behavior Exactly
 
 Don't change what the code does — only how it expresses it. All inputs, outputs, side effects, error
-behavior, and edge cases must remain identical. If you're not sure a simplification preserves behavior, don't make it.
+behavior, and edge cases must remain identical. If you're not sure a simplification preserves
+behavior, don't make it.
 
 Note: Guard clauses are valid only when behavior is preserved exactly — the same input must still
 reach the same outcome/exception as before. Restructuring conditionals is fine only when it does not

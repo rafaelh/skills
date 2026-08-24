@@ -13,7 +13,7 @@ description: Use this skill when the user wants to build features or fix bugs us
 
 **Bad tests** are coupled to implementation. They mock internal collaborators, test private methods, or verify through external means (like querying a database directly instead of using the interface). The warning sign: your test breaks when you refactor, but behavior hasn't changed. If you rename an internal function and tests fail, those tests were testing implementation, not behavior.
 
-Load [tests.md](tests.md) when you need examples of good vs. bad tests. Load [mocking.md](mocking.md) when deciding what to mock.
+Load [references/tests.md](references/tests.md) when you need examples of good vs. bad tests. Load [references/mocking.md](references/mocking.md) when deciding what to mock.
 
 ## Anti-Pattern: Horizontal Slices
 
@@ -59,8 +59,8 @@ Before writing any code:
 
 - [ ] Confirm with user what interface changes are needed
 - [ ] Confirm with user which behaviors to test, as a numbered list they approve — you can't test everything, so prioritize critical paths and complex logic. One behavior gets one test; input variants are `parametrize` cases on that test, not additional tests.
-- [ ] Identify opportunities for [deep modules](deep-modules.md) (small interface, deep implementation)
-- [ ] Design interfaces for [testability](interface-design.md)
+- [ ] Identify opportunities for [deep modules](references/deep-modules.md) (small interface, deep implementation)
+- [ ] Design interfaces for [testability](references/interface-design.md)
 - [ ] List the behaviors to test (not implementation steps)
 - [ ] Get user approval on the plan
 
@@ -97,7 +97,7 @@ Rules:
 
 ### 4. Refactor the Implementation
 
-After all tests pass, look for [refactor candidates](refactoring.md):
+After all tests pass, look for [refactor candidates](references/refactoring.md):
 
 - [ ] Extract duplication
 - [ ] Deepen modules (move complexity behind simple interfaces)
