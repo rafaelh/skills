@@ -64,6 +64,12 @@
       "description": "Use the Azure CLI to inspect, manage, deploy, or troubleshoot Azure resources and investigate Azure security questions",
       "source": "./skills/az",
       "category": "development"
+    },
+    {
+      "name": "python-performance",
+      "description": "Find and fix Python performance problems — static analysis of cost-growth patterns, plus runtime profiling",
+      "source": "./skills/python-performance",
+      "category": "development"
     }
   ]
 }

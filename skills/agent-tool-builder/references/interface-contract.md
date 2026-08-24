@@ -13,10 +13,9 @@ Full specification for Python scripts designed to be called by AI agents.
 | `2` | System/infrastructure error | Network failure, DB unreachable, file missing, credentials invalid, unexpected exception |
 | `3` | Not found / empty result | Query succeeded but nothing matched; resource does not exist |
 
-**Why `3` matters:** Without a dedicated not-found exit code, the agent must
-parse output text to distinguish "found nothing" from "hit an error". That
-coupling is fragile and breaks whenever output format changes. Exit `3` is the
-contract signal: "I ran successfully; there's just nothing here."
+**Why `3` matters:** Without a dedicated not-found exit code, the agent must parse output text to
+distinguish "found nothing" from "hit an error". That coupling is fragile and breaks whenever output
+format changes. Exit `3` is the contract signal: "I ran successfully; there's just nothing here."
 
 ### Conditional (add only when meaningfully distinct from `1`/`2`)
 
@@ -25,18 +24,17 @@ contract signal: "I ran successfully; there's just nothing here."
 | `4` | Permission denied | Credentials are valid but lack scope for this operation. Distinct from `2` because the agent shouldn't retry — it should surface the issue or escalate. |
 | `5` | Conflict | Resource already exists (uniqueness constraint) or precondition failed (etag mismatch). Distinct from `1` because the input was syntactically valid; the agent's recovery is usually "fetch existing, merge, retry" rather than "fix args and retry". |
 
-Don't reach for `4`/`5` reflexively. A login-required tool might genuinely need
-`4`; a `--name` lookup that returns nothing should use `3`, not `4`. Most tools
-will only use `0/1/2/3`.
+Don't reach for `4`/`5` reflexively. A login-required tool might genuinely need `4`; a `--name`
+lookup that returns nothing should use `3`, not `4`. Most tools will only use `0/1/2/3`.
 
 ### Every exit must explain itself
 
-The exit code is a *branch hint*, not the message. The script — never the
-SKILL.md — carries the meaning of its own exits. A caller that sees only the
-script's output must be able to act correctly without knowing what `3` means.
+The exit code is a *branch hint*, not the message. The script — never the SKILL.md — carries the
+meaning of its own exits. A caller that sees only the script's output must be able to act correctly
+without knowing what `3` means.
 
-So on every non-zero exit, say what happened and what to do next, in the
-structured stderr line (see "Structured error on stderr"):
+So on every non-zero exit, say what happened and what to do next, in the structured stderr line
+(see "Structured error on stderr"):
 
 ```
 $ fetch_record.py --id rec_99          # exit 3
@@ -44,20 +42,18 @@ $ fetch_record.py --id rec_99          # exit 3
  "hint": "list ids with --query '' --limit 20", "input": {"id": "rec_99"}}
 ```
 
-Exit `3` is not an error, but it still gets a line: what was searched, and what
-to vary. Exit `0` self-describes too when the result is not the obvious one —
-a dry-run, a truncated page, a create that was a no-op — via `dry_run`,
-`meta.truncated`, `"created": false` in the payload.
+Exit `3` is not an error, but it still gets a line: what was searched, and what to vary. Exit `0`
+self-describes too when the result is not the obvious one — a dry-run, a truncated page, a create
+that was a no-op — via `dry_run`, `meta.truncated`, `"created": false` in the payload.
 
-**Why this belongs in the script:** an exit-code table in SKILL.md costs tokens
-on every load, for every script, whether or not the tool is called — and it
-drifts the moment the script gains a code. Guidance that ships in the message
-costs nothing until the exit actually happens, and cannot drift. A SKILL.md that
-documents its scripts' exit codes is a sign the messages are too thin; fix the
+**Why this belongs in the script:** an exit-code table in SKILL.md costs tokens on every load, for
+every script, whether or not the tool is called — and it drifts the moment the script gains a code.
+Guidance that ships in the message costs nothing until the exit actually happens, and cannot drift.
+A SKILL.md that documents its scripts' exit codes is a sign the messages are too thin; fix the
 script, then delete the table.
 
-Test it by reading a failing run cold: if you can't tell what to do next without
-consulting the table above, the message is underspecified.
+Test it by reading a failing run cold: if you can't tell what to do next without consulting the
+table above, the message is underspecified.
 
 ## Standard flags
 
@@ -106,19 +102,16 @@ consulting the table above, the message is underspecified.
 Beyond the envelope shape below, three rules govern *what goes inside* the
 records:
 
-1. **Flat over nested.** `{"user_id": "u_1", "user_name": "Sara"}` is
-   addressable in one hop; `{"user": {"id": "u_1", "name": "Sara"}}` makes
-   the agent reason about nesting depth. Nest only when the structure is
-   genuinely hierarchical (order line items, file tree).
-2. **Consistent units and types across a tool suite.** If one tool returns
-   `received_at` as ISO-8601, every sibling tool must too. Durations: pick
-   seconds and stick with it. Sizes: bytes. IDs: same prefix scheme. Encode
-   the convention in the suite's `_common.py` so it's enforced at the
-   formatter, not by per-tool review.
-3. **Stable key presence.** A field that's sometimes present and sometimes
-   absent forces the agent to write `result.get("x", default)` everywhere.
-   Always include the key with `null` when the value is missing, unless the
-   field is genuinely a polymorphic discriminator.
+1. **Flat over nested.** `{"user_id": "u_1", "user_name": "Sara"}` is addressable in one hop;
+  `{"user": {"id": "u_1", "name": "Sara"}}` makes the agent reason about nesting depth. Nest only
+   when the structure is genuinely hierarchical (order line items, file tree).
+2. **Consistent units and types across a tool suite.** If one tool returns `received_at` as
+   ISO-8601, every sibling tool must too. Durations: pick seconds and stick with it. Sizes: bytes.
+   IDs: same prefix scheme. Encode the convention in the suite's `_common.py` so it's enforced at
+   the formatter, not by per-tool review.
+3. **Stable key presence.** A field that's sometimes present and sometimes absent forces the agent
+   to write `result.get("x", default)` everywhere. Always include the key with `null` when the value
+   is missing, unless the field is genuinely a polymorphic discriminator.
 
 ### List / search result
 
@@ -194,13 +187,13 @@ On any non-zero exit, write **one line of JSON** to **stderr**:
   (permission denied, malformed ID, validation failure). The agent uses this
   to decide between retry and surface-to-user.
 
-**Never write error JSON to stdout.** The agent unconditionally parses stdout
-as the result payload. A stray error message there causes a parse failure.
+**Never write error JSON to stdout.** The agent unconditionally parses stdouta s the result payload.
+A stray error message there causes a parse failure.
 
 ## Streaming output (JSONL)
 
-When the result set is large enough that buffering into one `{"data": [...]}`
-array would blow memory (>10k records, or unbounded streams), emit JSON Lines:
+When the result set is large enough that buffering into one `{"data": [...]}` array would blow
+memory (>10k records, or unbounded streams), emit JSON Lines:
 
 ```jsonl
 {"id": "rec_1", "name": "..."}
@@ -221,11 +214,10 @@ Rules:
 
 ## Confirmation bypass and TTY detection
 
-Greenfield agent tools should have **no prompts at all** — the "no `input()`"
-rule in [agent_tool.py.template](../assets/templates/agent_tool.py.template)
-already handles this. But when adapting an existing human-facing CLI to be
-agent-callable, you may inherit a `"Are you sure? [y/N]"` prompt. Two
-guardrails are non-negotiable:
+Greenfield agent tools should have **no prompts at all** — the "no `input()`" rule in
+[agent_tool.py.template](../assets/templates/agent_tool.py.template) already handles this. But when
+adapting an existing human-facing CLI to be agent-callable, you may inherit a
+`"Are you sure? [y/N]"` prompt. Two guardrails are non-negotiable:
 
 1. **A `--yes` (or `--force`) flag** the agent can pass to skip the prompt:
 
@@ -237,8 +229,8 @@ guardrails are non-negotiable:
    )
    ```
 
-2. **TTY auto-detection** so an unflagged invocation from a subprocess doesn't
-   hang waiting for input that will never come:
+2. **TTY auto-detection** so an unflagged invocation from a subprocess doesn't hang waiting for
+   input that will never come:
 
    ```python
    import sys
@@ -250,13 +242,12 @@ guardrails are non-negotiable:
            return EXIT_USER_ERROR
    ```
 
-   When `stdin` isn't a terminal (subprocess invocation, pipe), the prompt is
-   skipped entirely — the script either proceeds (if you trust the implicit
-   confirmation) or returns `EXIT_USER_ERROR` with a hint to pass `--yes`.
+   When `stdin` isn't a terminal (subprocess invocation, pipe), the prompt is skipped entirely — the
+   script either proceeds (if you trust the implicit confirmation) or returns `EXIT_USER_ERROR` with
+   a hint to pass `--yes`.
 
-The worst failure mode for an agent tool is one that hangs indefinitely with
-no signal — worse than crashing, because the harness can't tell whether to
-wait longer or kill the process.
+The worst failure mode for an agent tool is one that hangs indefinitely with no signal — worse than
+crashing, because the harness can't tell whether to wait longer or kill the process.
 
 ## Argument validation order
 
@@ -291,8 +282,8 @@ result = fetch(limit=20, cursor="abc123")
 # → meta.next_cursor = null  (last page)
 ```
 
-Cursor tokens must be passed through verbatim. Don't decode, transform, or
-validate the cursor format on the client side.
+Cursor tokens must be passed through verbatim. Don't decode, transform, or validate the cursor
+format on the client side.
 
 ### Offset-based (fallback)
 
@@ -301,8 +292,8 @@ result = fetch(limit=20, offset=0)  # page 1
 result = fetch(limit=20, offset=20)  # page 2
 ```
 
-Offset-based pagination is prone to missing/duplicating records on concurrent
-writes. Prefer cursor when the backend supports it.
+Offset-based pagination is prone to missing/duplicating records on concurrent writes. Prefer cursor
+when the backend supports it.
 
 ## `--fields` implementation
 
@@ -319,8 +310,8 @@ if fields:
     records = [{k: v for k, v in r.items() if k in fields} for r in records]
 ```
 
-Always include `id` in every response even if the caller did not request it —
-the agent needs it for follow-up operations.
+Always include `id` in every response even if the caller did not request it — the agent needs it for
+follow-up operations.
 
 ## Top-level exception handler
 
@@ -340,6 +331,6 @@ def main(argv=None):
         return EXIT_SYSTEM_ERROR
 ```
 
-An unhandled exception that prints a Python traceback to stderr is parseable by
-a human but confusing to an agent. The structured error JSON gives the agent a
-consistent format to report upstream.
+An unhandled exception that prints a Python traceback to stderr is parseable by a human but
+confusing to an agent. The structured error JSON gives the agent a consistent format to report
+upstream.

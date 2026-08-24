@@ -8,8 +8,8 @@ scripts run in place by path, nothing publishes to PyPI or npm.
 
 `skills/` is the single source for every skill; each is a published plugin listed in
 `.claude-plugin/marketplace.json`. `.claude/skills/` symlinks the subset active while working *in*
-this repo. `.gitignore` excludes `.claude/*` but re-includes `.claude/skills/`, so those symlinks
-are tracked source and local settings are not. The one non-symlink is `run-skills/`, the repo's
+this repo. `.gitignore` excludes `.claude/*` but re-includes `.claude/skills/`, so the symlinks are
+tracked and local settings are not. The one non-symlink is `run-skills/`, the repo's
 own smoke driver — deliberately not a published plugin.
 
 Script-bearing skills — held to the contracts below:
@@ -22,13 +22,14 @@ Script-bearing skills — held to the contracts below:
 | `create-agents-for-repo` | Python | Fit `.claude/agents/*.md` subagents to a *target* repo, wire their call sites |
 | `obsidian-metabind` | Python | Meta Bind syntax in a vault: read, author, validate, refactor |
 | `az` | Python | Orient an Azure session, look up `az` command syntax |
+| `python-performance` | Python | Slow Python: self-explaining static checks + cProfile |
 
 The rest (`architecture`, `plan`, `refactor`, `tdd`) are prose-only — no `scripts/`, so the
 agent-tool contract does not apply. `create-agents-for-repo` operates on a *consuming* repo rather
 than on skills: skills travel between repos, the subagents it writes deliberately do not — they
 hardcode the local toolchain.
 
-Eval harnesses live in `evals/<skill>/`, outside the shipped plugin, and all follow
+Eval harnesses live in `evals/<skill>/`, outside the shipped plugin, and follow
 [eval-approach.md](evals/eval-approach.md) — read it before touching one. Three shapes, decided by
 what a run leaves behind: artifact (`create-agents-for-repo` and `refactor`, stage fixture repos
 and diff them), conversation (`plan`, drives a simulated interview and grades the transcript),
@@ -97,6 +98,10 @@ the spec for new scripts: run `validate_agent_tool.py` and `perf_check.py` on th
 `perf_check.py` by relative path and links to `agent-tool-builder/references/perf-findings.md`;
 moving those breaks the Python audit workflow. `skill-audit-ts` deliberately has **no** such
 dependency — it folds in its own equivalents so it runs on machines without Python.
+
+`python-performance` deliberately forks `agent-tool-builder`'s `perf_check.py`, folding
+`perf-findings.md` into the script so findings explain themselves and scoring severity by cost
+growth, not per-call agent overhead. Don't mirror changes — `skill-audit` calls the original.
 
 `obsidian-metabind` stands alone: its `parser.py` walks the vault itself rather than importing a
 sibling, so it needs nothing else installed. `.claude` is in `norecursedirs` so its symlinked

@@ -100,6 +100,16 @@ ignore = [
     "S603",    # subprocess argv is a fixed git invocation over a resolved path, never user text
     "S607",    # `git` is resolved from PATH by design — the tool runs wherever the user's git is
 ]
+"skills/python-performance/scripts/perf_check.py" = [
+    "ERA001",  # noqa comments are intentional
+    "RUF001",  # × in user-facing messages is intentional (multiplication sign)
+    "N802",    # visit_* method names are required by ast.NodeVisitor API
+    "TRY300",  # return before except is intentional — matches skill-audit pattern
+]
+"skills/python-performance/tests/*.py" = [
+    "S101",    # assert is correct in tests
+    "S603",    # subprocess calls in tests use controlled, trusted input
+]
 "skills/agent-tool-builder/scripts/perf_check.py" = [
     "ERA001",  # noqa comments are intentional
     "RUF001",  # × in user-facing messages is intentional (multiplication sign)

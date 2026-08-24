@@ -165,6 +165,28 @@ The rest is operating discipline: project with `--query` (a bare `az webapp list
 ---
 
 <details>
+  <summary>python-performance</summary>
+
+### python-performance
+
+Finds and fixes slow Python. One script does both halves of the job: static analysis of the patterns whose cost grows with the input, and a cProfile run for when nothing static explains it.
+
+- Flags the shapes that actually dominate Python slowness — quadratic string and bytes concatenation, a list drained with `pop(0)`, linear-scan membership tests, `sorted(...)[:n]` to answer a top-n question, `list(rows)[:10]` over a generator, regexes and `open()` and sorts repeated inside loops, `iterrows()` on a DataFrame, and a costly module-scope import that only one function uses
+- **Every finding explains itself.** Each carries the cost mechanism, the measured impact where one has been benchmarked, and the specific rewrite — so there's no companion document to load and nothing to interpret from a bare category name. `--explain` prints the same detail for every check, plus the patterns it deliberately stays quiet about and why (cached method lookups, `itertools.groupby`, `itertools.tee`)
+- Findings are grouped by category and severity, so a file with twenty occurrences of one problem reads as one explained problem, not twenty lines of noise
+- `--profile <script.py> -- <args>` runs cProfile sorted by cumulative time with the script's own frames highlighted, for when the static pass comes back clean
+
+> Deliberately thin on prose. Profiling and benchmarking are things a capable agent already knows how to do; the skill exists to make sure the cheap check happens first and the fix gets measured, not to re-teach `timeit`.
+
+| Script | Purpose |
+|---|---|
+| `perf_check.py` | Self-explaining AST performance checker (`--explain` for the full check list) + cProfile profiling |
+
+</details>
+
+---
+
+<details>
   <summary>architecture, plan, tdd, refactor</summary>
 
 ## These skills are designed to be used together
@@ -210,6 +232,7 @@ This repo is a Claude Code plugin marketplace. From inside Claude Code, add the 
 /plugin install refactor@rafaelh
 /plugin install obsidian-metabind@rafaelh
 /plugin install az@rafaelh
+/plugin install python-performance@rafaelh
 /reload-plugins
 ```
 
@@ -219,7 +242,7 @@ After installing `skill-audit-ts`, run `npm ci` once inside `skills/skill-audit-
 
 ## Requirements
 
-**skill-audit / agent-tool-builder / create-agents-for-repo / obsidian-metabind / az (Python):**
+**skill-audit / agent-tool-builder / create-agents-for-repo / obsidian-metabind / az / python-performance (Python):**
 - Python 3.14+ (all bundled scripts are stdlib-only except where PEP 723 metadata declares third-party deps)
 - `ANTHROPIC_API_KEY` in environment (optional — enables exact token counts via the SDK)
 
