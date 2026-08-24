@@ -69,8 +69,9 @@ az ... --only-show-errors                               # drop deprecation banne
 Pass `-o` explicitly on any command whose output you read. JSON is only the *fallback* default:
 `core.output` in the user's `~/.azure/config` or `AZURE_CORE_OUTPUT` overrides it globally, so under
 a `table` or `yaml` default a command you meant to parse returns text and still exits `0`. That
-setting is the user's own preference for their interactive shell — never change it. Preflight reports it as `config.output_default`, flagged when it is not JSON-shaped (`json` and `jsonc` both parse;
-`az` drops the colour when stdout is not a terminal).
+setting is the user's own preference for their interactive shell — never change it. Preflight
+reports it as `config.output_default`, flagged when it is not JSON-shaped (`json` and `jsonc` both
+parse; `az` drops the colour when stdout is not a terminal).
 
 Never paste a raw `az ... list` dump into the conversation. Project first, then show the user a
 table.
