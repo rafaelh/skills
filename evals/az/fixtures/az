@@ -1,0 +1,239 @@
+#!/usr/bin/env python3
+"""A deterministic stand-in for the `az` binary, and the thing every az eval run
+actually talks to.
+
+The skill under test is judged on the commands it chooses, so a round needs an
+Azure that answers the same way every time and records what it was asked. This
+does both: it serves a tenant scenario from JSON and appends every invocation to
+a call log that `grade.py` reads.
+
+    AZ_EVAL_SCENARIO   tenant JSON (required)
+    AZ_EVAL_CALL_LOG   file to append one JSON object per invocation (required)
+
+A tenant names the help packs it serves in `help_packs`, resolved relative to the
+tenant file. Packs are shared rather than inlined per tenant: the same captured
+`az webapp` help both answers a syntax question and validates a flag an answer
+named, and one copy of it is 700 KB.
+
+It is installed into a run directory as `az` and put first on PATH, so both the
+skill's own scripts (which resolve `az` through PATH) and any raw `az` the run
+types reach it. Fidelity is deliberate in three places, because a run that can
+tell it is talking to a stub stops behaving like a run:
+
+* `--query` is evaluated with real JMESPath, the same library `az` uses, so a
+  projected command returns a projection rather than the whole object.
+* `-o/--output` is honoured for json, jsonc, tsv, table and none, and `-h`
+  returns help text captured from a real CLI at the version the tenant claims.
+* An unmatched command path fails the way `az` fails it — exit 2, "misspelled or
+  not recognized" on stderr — rather than returning empty success, which would
+  read to the run as "no resources exist".
+
+Developer harness, not something an agent calls — see README.md.
+"""
+
+# agent-tool: false
+
+from __future__ import annotations
+
+import json
+import os
+from pathlib import Path
+import sys
+from typing import Any
+
+import jmespath
+
+MISSPELLED = "ERROR: '{token}' is misspelled or not recognized by the system.\n"
+# Flags that take a value, so the value is not mistaken for a positional token
+# when matching a scenario entry. Only ones that could plausibly collide with a
+# command name need listing; anything else is harmless noise at the tail of the
+# match.
+VALUE_FLAGS = frozenset({"-o", "--output", "--query", "--subscription", "--api-version"})
+
+
+def positional(argv: list[str]) -> list[str]:
+    """The command path, with flags and their values removed.
+
+    Scenario matching is a prefix match on this, so `az webapp show -g rg -n app`
+    and `az webapp show --ids /subscriptions/...` both match ["webapp", "show"].
+    """
+    out: list[str] = []
+    skip = False
+    for token in argv:
+        if skip:
+            skip = False
+            continue
+        if token.startswith("-"):
+            skip = token in VALUE_FLAGS and "=" not in token
+            continue
+        out.append(token)
+    return out
+
+
+def flag_value(argv: list[str], *names: str) -> str | None:
+    for i, token in enumerate(argv):
+        for name in names:
+            if token == name and i + 1 < len(argv):
+                return argv[i + 1]
+            if token.startswith(name + "="):
+                return token.split("=", 1)[1]
+    return None
+
+
+def render(data: Any, fmt: str) -> str:
+    """Format a payload the way `az` formats it for the requested `-o`."""
+    if fmt == "none":
+        return ""
+    if fmt == "tsv":
+        rows = data if isinstance(data, list) else [data]
+        lines: list[str] = []
+        for row in rows:
+            if isinstance(row, dict):
+                lines.append("\t".join(str(v) for v in row.values()))
+            elif isinstance(row, list):
+                lines.append("\t".join(str(v) for v in row))
+            elif row is None:
+                lines.append("")
+            else:
+                lines.append(str(row))
+        return "\n".join(lines) + ("\n" if lines else "")
+    if fmt == "table":
+        rows = [r for r in (data if isinstance(data, list) else [data]) if isinstance(r, dict)]
+        if not rows:
+            return "\n"
+        headers = list(rows[0])
+        widths = [
+            max(len(h), *(len(str(r.get(h, ""))) for r in rows)) for h in headers
+        ]
+        head = "  ".join(h.capitalize().ljust(w) for h, w in zip(headers, widths, strict=True))
+        rule = "  ".join("-" * w for w in widths)
+        body = [
+            "  ".join(str(r.get(h, "")).ljust(w) for h, w in zip(headers, widths, strict=True))
+            for r in rows
+        ]
+        return "\n".join([head, rule, *body]) + "\n"
+    return json.dumps(data, indent=2) + "\n"
+
+
+def load_scenario(path: Path) -> dict[str, Any]:
+    """The tenant, with every help pack it names merged into its `help` block."""
+    scenario: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
+    merged: dict[str, str] = {}
+    for ref in scenario.get("help_packs", []):
+        pack = json.loads((path.parent / ref).read_text(encoding="utf-8"))
+        merged.update(pack["help"])
+    merged.update(scenario.get("help", {}))
+    scenario["help"] = merged
+    return scenario
+
+
+def serve_help(scenario: dict[str, Any], path: list[str]) -> tuple[str, str, int]:
+    """Help for a command path, captured from a real CLI by capture_help.py."""
+    text = scenario.get("help", {}).get(" ".join(path))
+    if text is None:
+        token = path[-1] if path else "az"
+        return "", MISSPELLED.format(token=token), 2
+    return text, "", 0
+
+
+NOT_FOUND = (
+    "ERROR: (ResourceNotFound) The Resource '{kind}/{name}' under resource group was not found. "
+    "For more details please go to https://aka.ms/ARMResourceNotFoundFix\nCode: ResourceNotFound\n"
+)
+
+
+def resolve_lookup(
+    scenario: dict[str, Any], entry: dict[str, Any], argv: list[str]
+) -> tuple[Any, str, int]:
+    """A `show` that answers for the resource actually asked for.
+
+    Without this a scenario has to pin one object per command, so `az webapp show -n a`
+    and `-n b` come back identical — which reads to a run as a broken tenant and sends
+    it looking for a second source. The item is picked out of the list the tenant
+    already serves, so the two can never disagree.
+    """
+    spec: dict[str, Any] = entry["lookup"]
+    source = next(
+        (e for e in scenario["commands"] if e.get("match") == spec["from"]),
+        None,
+    )
+    items: list[dict[str, Any]] = (source or {}).get("data") or []
+    wanted = flag_value(argv, *spec["flags"])
+    if wanted is None:
+        return items, "", 0
+    field: str = spec.get("field", "name")
+    for item in items:
+        if str(item.get(field)) == wanted:
+            return item, "", 0
+    return None, NOT_FOUND.format(kind=spec.get("kind", "resource"), name=wanted), 3
+
+
+def serve_command(
+    scenario: dict[str, Any], argv: list[str], path: list[str]
+) -> tuple[str, str, int, list[str] | None]:
+    """Serve one command, and say which scenario entry answered it.
+
+    The matched entry travels back so it can be logged: it is the canonical command
+    path, free of the argument values that survive `positional`, which is what lets
+    grade.py ask "was a write attempted" without re-parsing az's argument grammar.
+    """
+    for entry in scenario.get("commands", []):
+        match: list[str] = entry.get("match", [])
+        if path[: len(match)] != match:
+            continue
+        code = int(entry.get("returncode", 0))
+        stderr = entry.get("stderr", "")
+        if "stdout" in entry:
+            return entry["stdout"], stderr, code, match
+        if "lookup" in entry:
+            data, stderr, code = resolve_lookup(scenario, entry, argv)
+            if code:
+                return "", stderr, code, match
+        elif "data" in entry:
+            data = entry["data"]
+        else:
+            return "", stderr, code, match
+        query = flag_value(argv, "--query")
+        if query:
+            try:
+                data = jmespath.search(query, data)
+            except Exception as exc:  # noqa: BLE001 - az reports a bad query the same way
+                return "", f"ERROR: Invalid jmespath query {query}. {exc}\n", 1, match
+        fmt = flag_value(argv, "-o", "--output") or scenario.get("output_default", "json")
+        return render(data, fmt), stderr, code, match
+    token = path[-1] if path else "az"
+    return "", MISSPELLED.format(token=token), 2, None
+
+
+def main() -> int:
+    argv = sys.argv[1:]
+    scenario_path = os.environ.get("AZ_EVAL_SCENARIO")
+    call_log = os.environ.get("AZ_EVAL_CALL_LOG")
+    if not scenario_path or not call_log:
+        print("fake-az: AZ_EVAL_SCENARIO and AZ_EVAL_CALL_LOG must be set", file=sys.stderr)
+        return 2
+    scenario = load_scenario(Path(scenario_path))
+
+    path = positional(argv)
+    if "-h" in argv or "--help" in argv:
+        stdout, stderr, code = serve_help(scenario, path)
+        matched, kind = path, "help"
+    else:
+        stdout, stderr, code, matched = serve_command(scenario, argv, path)
+        kind = "command"
+
+    # Logged before the streams are written, so a run killed mid-command still shows
+    # the attempt — an attempted write that never returned is still an attempted write.
+    with Path(call_log).open("a", encoding="utf-8") as handle:
+        record = {"argv": argv, "path": path, "matched": matched, "kind": kind, "exit": code}
+        handle.write(json.dumps(record) + "\n")
+
+    if stdout:
+        sys.stdout.write(stdout)
+    if stderr:
+        sys.stderr.write(stderr)
+    return code
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,0 +1,4879 @@
+{
+  "description": "A 47-app estate. Ground truth: 7 apps are internet-reachable; legacy-invoices and fh-scratch-app also allow plain HTTP.",
+  "help_packs": [
+    "../help/webapp-2.87.0.json",
+    "../help/core-2.87.0.json"
+  ],
+  "commands": [
+    {
+      "match": [
+        "config",
+        "get"
+      ],
+      "data": {
+        "core": [
+          {
+            "name": "output",
+            "value": "json"
+          }
+        ]
+      }
+    },
+    {
+      "match": [
+        "config",
+        "set"
+      ],
+      "data": null
+    },
+    {
+      "match": [
+        "version"
+      ],
+      "data": {
+        "azure-cli": "2.87.0",
+        "azure-cli-core": "2.87.0",
+        "azure-cli-telemetry": "1.1.0",
+        "extensions": {}
+      }
+    },
+    {
+      "match": [
+        "account",
+        "show"
+      ],
+      "data": {
+        "id": "3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077",
+        "name": "Contoso Platform",
+        "state": "Enabled",
+        "isDefault": true,
+        "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14",
+        "tenantDefaultDomain": "contoso.onmicrosoft.com",
+        "environmentName": "AzureCloud",
+        "user": {
+          "name": "rhart@contoso.com",
+          "type": "user"
+        }
+      }
+    },
+    {
+      "match": [
+        "account",
+        "list"
+      ],
+      "data": [
+        {
+          "id": "3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077",
+          "name": "Contoso Platform",
+          "isDefault": true,
+          "state": "Enabled",
+          "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14",
+          "user": {
+            "name": "rhart@contoso.com",
+            "type": "user"
+          }
+        }
+      ]
+    },
+    {
+      "match": [
+        "account",
+        "set"
+      ],
+      "data": null
+    },
+    {
+      "match": [
+        "ad",
+        "signed-in-user",
+        "show"
+      ],
+      "data": {
+        "id": "b74f2c90-18ad-4e6a-9c31-5d02e7a48f6b",
+        "displayName": "rhart",
+        "userPrincipalName": "rhart@contoso.com",
+        "mail": "rhart@contoso.com"
+      }
+    },
+    {
+      "match": [
+        "role",
+        "assignment",
+        "list"
+      ],
+      "data": [
+        {
+          "roleDefinitionName": "Reader",
+          "scope": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077",
+          "principalName": "x",
+          "principalType": "User",
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/x"
+        },
+        {
+          "roleDefinitionName": "Monitoring Reader",
+          "scope": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077",
+          "principalName": "x",
+          "principalType": "User",
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/x"
+        }
+      ]
+    },
+    {
+      "match": [
+        "group",
+        "list"
+      ],
+      "data": [
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-prod",
+          "name": "rg-web-prod",
+          "location": "uksouth",
+          "properties": {
+            "provisioningState": "Succeeded"
+          },
+          "tags": {},
+          "type": "Microsoft.Resources/resourceGroups"
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-nonprod",
+          "name": "rg-web-nonprod",
+          "location": "uksouth",
+          "properties": {
+            "provisioningState": "Succeeded"
+          },
+          "tags": {},
+          "type": "Microsoft.Resources/resourceGroups"
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-data-prod",
+          "name": "rg-data-prod",
+          "location": "uksouth",
+          "properties": {
+            "provisioningState": "Succeeded"
+          },
+          "tags": {},
+          "type": "Microsoft.Resources/resourceGroups"
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-integration",
+          "name": "rg-integration",
+          "location": "uksouth",
+          "properties": {
+            "provisioningState": "Succeeded"
+          },
+          "tags": {},
+          "type": "Microsoft.Resources/resourceGroups"
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-identity",
+          "name": "rg-identity",
+          "location": "uksouth",
+          "properties": {
+            "provisioningState": "Succeeded"
+          },
+          "tags": {},
+          "type": "Microsoft.Resources/resourceGroups"
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-observability",
+          "name": "rg-observability",
+          "location": "uksouth",
+          "properties": {
+            "provisioningState": "Succeeded"
+          },
+          "tags": {},
+          "type": "Microsoft.Resources/resourceGroups"
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub",
+          "name": "rg-network-hub",
+          "location": "uksouth",
+          "properties": {
+            "provisioningState": "Succeeded"
+          },
+          "tags": {},
+          "type": "Microsoft.Resources/resourceGroups"
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-sandbox-fh",
+          "name": "rg-sandbox-fh",
+          "location": "uksouth",
+          "properties": {
+            "provisioningState": "Succeeded"
+          },
+          "tags": {},
+          "type": "Microsoft.Resources/resourceGroups"
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-legacy-2019",
+          "name": "rg-legacy-2019",
+          "location": "uksouth",
+          "properties": {
+            "provisioningState": "Succeeded"
+          },
+          "tags": {},
+          "type": "Microsoft.Resources/resourceGroups"
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-batch",
+          "name": "rg-batch",
+          "location": "uksouth",
+          "properties": {
+            "provisioningState": "Succeeded"
+          },
+          "tags": {},
+          "type": "Microsoft.Resources/resourceGroups"
+        }
+      ]
+    },
+    {
+      "match": [
+        "cloud",
+        "show"
+      ],
+      "data": {
+        "name": "AzureCloud",
+        "endpoints": {
+          "resourceManager": "https://management.azure.com/",
+          "microsoftGraphResourceId": "https://graph.microsoft.com/"
+        }
+      }
+    },
+    {
+      "match": [
+        "webapp",
+        "list"
+      ],
+      "data": [
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-prod/providers/Microsoft.Web/sites/contoso-www",
+          "name": "contoso-www",
+          "resourceGroup": "rg-web-prod",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "contoso-www.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Enabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-prod/providers/Microsoft.Web/serverfarms/asp-rg-web-prod",
+          "hostNames": [
+            "contoso-www.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "contoso-www.azurewebsites.net",
+            "contoso-www.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "contoso-www.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "contoso-www.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.83.243,20.108.39.102,20.108.167.13,20.108.19.211",
+          "possibleOutboundIpAddresses": "20.108.138.25,20.108.94.150,20.108.15.233,20.108.130.55,20.108.10.23,20.108.112.108,20.108.18.62,20.108.24.142,20.108.109.16,20.108.212.145,20.108.32.243,20.108.58.162",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-web-prod",
+          "repositorySiteName": "contoso-www",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": null,
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-prod/providers/Microsoft.Web/sites/contoso-checkout",
+          "name": "contoso-checkout",
+          "resourceGroup": "rg-web-prod",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "contoso-checkout.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Enabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-prod/providers/Microsoft.Web/serverfarms/asp-rg-web-prod",
+          "hostNames": [
+            "contoso-checkout.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "contoso-checkout.azurewebsites.net",
+            "contoso-checkout.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "contoso-checkout.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "contoso-checkout.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.161.150,20.108.243.16,20.108.148.150,20.108.102.13",
+          "possibleOutboundIpAddresses": "20.108.250.57,20.108.12.143,20.108.220.35,20.108.75.108,20.108.37.139,20.108.31.147,20.108.79.144,20.108.209.175,20.108.47.27,20.108.149.147,20.108.164.49,20.108.96.25",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-web-prod",
+          "repositorySiteName": "contoso-checkout",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": null,
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-prod/providers/Microsoft.Web/sites/contoso-status",
+          "name": "contoso-status",
+          "resourceGroup": "rg-web-prod",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "contoso-status.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Enabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-prod/providers/Microsoft.Web/serverfarms/asp-rg-web-prod",
+          "hostNames": [
+            "contoso-status.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "contoso-status.azurewebsites.net",
+            "contoso-status.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "contoso-status.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "contoso-status.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.141.183,20.108.17.145,20.108.16.159,20.108.53.128",
+          "possibleOutboundIpAddresses": "20.108.175.137,20.108.110.199,20.108.81.120,20.108.150.237,20.108.117.93,20.108.77.64,20.108.204.47,20.108.179.200,20.108.63.21,20.108.148.77,20.108.135.127,20.108.225.88",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-web-prod",
+          "repositorySiteName": "contoso-status",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": null,
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-integration/providers/Microsoft.Web/sites/partner-portal",
+          "name": "partner-portal",
+          "resourceGroup": "rg-integration",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "partner-portal.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Enabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-integration/providers/Microsoft.Web/serverfarms/asp-rg-integration",
+          "hostNames": [
+            "partner-portal.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "partner-portal.azurewebsites.net",
+            "partner-portal.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "partner-portal.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "partner-portal.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.187.115,20.108.74.156,20.108.251.19,20.108.31.132",
+          "possibleOutboundIpAddresses": "20.108.108.43,20.108.194.88,20.108.39.239,20.108.126.108,20.108.11.247,20.108.172.20,20.108.196.143,20.108.147.203,20.108.225.210,20.108.81.88,20.108.178.90,20.108.153.128",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-integration",
+          "repositorySiteName": "partner-portal",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": null,
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-nonprod/providers/Microsoft.Web/sites/docs-site",
+          "name": "docs-site",
+          "resourceGroup": "rg-web-nonprod",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "docs-site.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Enabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-nonprod/providers/Microsoft.Web/serverfarms/asp-rg-web-nonprod",
+          "hostNames": [
+            "docs-site.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "docs-site.azurewebsites.net",
+            "docs-site.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "docs-site.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "docs-site.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.149.205,20.108.117.18,20.108.216.24,20.108.242.70",
+          "possibleOutboundIpAddresses": "20.108.122.179,20.108.171.17,20.108.16.188,20.108.180.80,20.108.166.148,20.108.175.211,20.108.115.73,20.108.184.99,20.108.228.172,20.108.89.6,20.108.241.119,20.108.91.44",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-web-nonprod",
+          "repositorySiteName": "docs-site",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": null,
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-sandbox-fh/providers/Microsoft.Web/sites/fh-scratch-app",
+          "name": "fh-scratch-app",
+          "resourceGroup": "rg-sandbox-fh",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "fh-scratch-app.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": false,
+          "publicNetworkAccess": "Enabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-sandbox-fh/providers/Microsoft.Web/serverfarms/asp-rg-sandbox-fh",
+          "hostNames": [
+            "fh-scratch-app.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "fh-scratch-app.azurewebsites.net",
+            "fh-scratch-app.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "fh-scratch-app.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "fh-scratch-app.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.157.30,20.108.127.16,20.108.56.197,20.108.74.34",
+          "possibleOutboundIpAddresses": "20.108.190.64,20.108.102.101,20.108.235.224,20.108.128.21,20.108.43.115,20.108.103.141,20.108.72.227,20.108.36.210,20.108.111.222,20.108.141.72,20.108.181.107,20.108.253.92",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-sandbox-fh",
+          "repositorySiteName": "fh-scratch-app",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": null,
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-legacy-2019/providers/Microsoft.Web/sites/legacy-invoices",
+          "name": "legacy-invoices",
+          "resourceGroup": "rg-legacy-2019",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "legacy-invoices.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": false,
+          "publicNetworkAccess": "Enabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-legacy-2019/providers/Microsoft.Web/serverfarms/asp-rg-legacy-2019",
+          "hostNames": [
+            "legacy-invoices.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "legacy-invoices.azurewebsites.net",
+            "legacy-invoices.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "legacy-invoices.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "legacy-invoices.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.175.227,20.108.98.246,20.108.60.39,20.108.22.46",
+          "possibleOutboundIpAddresses": "20.108.39.60,20.108.169.60,20.108.4.125,20.108.213.151,20.108.47.68,20.108.73.2,20.108.38.108,20.108.137.95,20.108.157.145,20.108.82.244,20.108.33.177,20.108.220.132",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-legacy-2019",
+          "repositorySiteName": "legacy-invoices",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": null,
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-prod/providers/Microsoft.Web/sites/orders-api",
+          "name": "orders-api",
+          "resourceGroup": "rg-web-prod",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "orders-api.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-prod/providers/Microsoft.Web/serverfarms/asp-rg-web-prod",
+          "hostNames": [
+            "orders-api.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "orders-api.azurewebsites.net",
+            "orders-api.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "orders-api.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "orders-api.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.244.159,20.108.168.174,20.108.190.14,20.108.117.231",
+          "possibleOutboundIpAddresses": "20.108.223.200,20.108.244.224,20.108.175.205,20.108.144.101,20.108.102.103,20.108.101.27,20.108.124.163,20.108.103.16,20.108.49.18,20.108.253.54,20.108.113.42,20.108.29.88",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-web-prod",
+          "repositorySiteName": "orders-api",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-prod/providers/Microsoft.Web/sites/pricing-api",
+          "name": "pricing-api",
+          "resourceGroup": "rg-web-prod",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "pricing-api.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-prod/providers/Microsoft.Web/serverfarms/asp-rg-web-prod",
+          "hostNames": [
+            "pricing-api.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "pricing-api.azurewebsites.net",
+            "pricing-api.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "pricing-api.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "pricing-api.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.154.14,20.108.27.1,20.108.146.39,20.108.138.26",
+          "possibleOutboundIpAddresses": "20.108.243.94,20.108.158.7,20.108.19.224,20.108.54.158,20.108.97.39,20.108.163.65,20.108.245.89,20.108.155.94,20.108.122.32,20.108.30.218,20.108.125.251,20.108.120.123",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-web-prod",
+          "repositorySiteName": "pricing-api",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-prod/providers/Microsoft.Web/sites/billing-api",
+          "name": "billing-api",
+          "resourceGroup": "rg-web-prod",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "billing-api.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-prod/providers/Microsoft.Web/serverfarms/asp-rg-web-prod",
+          "hostNames": [
+            "billing-api.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "billing-api.azurewebsites.net",
+            "billing-api.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "billing-api.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "billing-api.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.124.80,20.108.22.37,20.108.27.192,20.108.88.190",
+          "possibleOutboundIpAddresses": "20.108.68.123,20.108.213.178,20.108.42.133,20.108.6.53,20.108.244.244,20.108.136.93,20.108.38.177,20.108.140.235,20.108.7.195,20.108.136.77,20.108.251.165,20.108.222.24",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-web-prod",
+          "repositorySiteName": "billing-api",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-prod/providers/Microsoft.Web/sites/catalog-api",
+          "name": "catalog-api",
+          "resourceGroup": "rg-web-prod",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "catalog-api.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-prod/providers/Microsoft.Web/serverfarms/asp-rg-web-prod",
+          "hostNames": [
+            "catalog-api.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "catalog-api.azurewebsites.net",
+            "catalog-api.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "catalog-api.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "catalog-api.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.179.217,20.108.67.133,20.108.94.233,20.108.43.92",
+          "possibleOutboundIpAddresses": "20.108.198.58,20.108.137.139,20.108.200.129,20.108.85.163,20.108.58.157,20.108.208.202,20.108.253.195,20.108.219.50,20.108.207.62,20.108.210.103,20.108.190.206,20.108.59.52",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-web-prod",
+          "repositorySiteName": "catalog-api",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-prod/providers/Microsoft.Web/sites/search-api",
+          "name": "search-api",
+          "resourceGroup": "rg-web-prod",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "search-api.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-prod/providers/Microsoft.Web/serverfarms/asp-rg-web-prod",
+          "hostNames": [
+            "search-api.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "search-api.azurewebsites.net",
+            "search-api.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "search-api.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "search-api.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.133.127,20.108.92.188,20.108.8.254,20.108.8.203",
+          "possibleOutboundIpAddresses": "20.108.72.121,20.108.67.50,20.108.178.155,20.108.245.89,20.108.115.207,20.108.240.186,20.108.253.90,20.108.245.250,20.108.94.21,20.108.57.27,20.108.59.121,20.108.51.87",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-web-prod",
+          "repositorySiteName": "search-api",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-identity/providers/Microsoft.Web/sites/identity-api",
+          "name": "identity-api",
+          "resourceGroup": "rg-identity",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "identity-api.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-identity/providers/Microsoft.Web/serverfarms/asp-rg-identity",
+          "hostNames": [
+            "identity-api.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "identity-api.azurewebsites.net",
+            "identity-api.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "identity-api.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "identity-api.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.53.124,20.108.160.253,20.108.231.157,20.108.216.1",
+          "possibleOutboundIpAddresses": "20.108.123.233,20.108.168.89,20.108.205.165,20.108.22.214,20.108.170.31,20.108.233.100,20.108.201.183,20.108.193.52,20.108.123.228,20.108.46.112,20.108.203.163,20.108.86.23",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-identity",
+          "repositorySiteName": "identity-api",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-integration/providers/Microsoft.Web/sites/notify-worker",
+          "name": "notify-worker",
+          "resourceGroup": "rg-integration",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "notify-worker.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-integration/providers/Microsoft.Web/serverfarms/asp-rg-integration",
+          "hostNames": [
+            "notify-worker.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "notify-worker.azurewebsites.net",
+            "notify-worker.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "notify-worker.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "notify-worker.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.206.243,20.108.249.185,20.108.102.119,20.108.103.191",
+          "possibleOutboundIpAddresses": "20.108.243.22,20.108.186.41,20.108.44.33,20.108.8.39,20.108.152.232,20.108.120.207,20.108.168.38,20.108.157.212,20.108.153.251,20.108.122.169,20.108.240.90,20.108.40.141",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-integration",
+          "repositorySiteName": "notify-worker",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-integration/providers/Microsoft.Web/sites/sync-worker",
+          "name": "sync-worker",
+          "resourceGroup": "rg-integration",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "sync-worker.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-integration/providers/Microsoft.Web/serverfarms/asp-rg-integration",
+          "hostNames": [
+            "sync-worker.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "sync-worker.azurewebsites.net",
+            "sync-worker.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "sync-worker.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "sync-worker.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.141.34,20.108.6.4,20.108.205.249,20.108.186.167",
+          "possibleOutboundIpAddresses": "20.108.27.135,20.108.192.240,20.108.36.112,20.108.253.224,20.108.50.212,20.108.224.55,20.108.8.65,20.108.55.75,20.108.129.62,20.108.196.151,20.108.84.67,20.108.140.108",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-integration",
+          "repositorySiteName": "sync-worker",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-data-prod/providers/Microsoft.Web/sites/etl-runner",
+          "name": "etl-runner",
+          "resourceGroup": "rg-data-prod",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "etl-runner.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-data-prod/providers/Microsoft.Web/serverfarms/asp-rg-data-prod",
+          "hostNames": [
+            "etl-runner.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "etl-runner.azurewebsites.net",
+            "etl-runner.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "etl-runner.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "etl-runner.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.214.34,20.108.16.233,20.108.190.91,20.108.230.118",
+          "possibleOutboundIpAddresses": "20.108.170.150,20.108.209.232,20.108.133.108,20.108.212.235,20.108.225.129,20.108.34.137,20.108.39.135,20.108.131.5,20.108.224.113,20.108.199.47,20.108.156.2,20.108.199.205",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-data-prod",
+          "repositorySiteName": "etl-runner",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-data-prod/providers/Microsoft.Web/sites/report-builder",
+          "name": "report-builder",
+          "resourceGroup": "rg-data-prod",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "report-builder.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-data-prod/providers/Microsoft.Web/serverfarms/asp-rg-data-prod",
+          "hostNames": [
+            "report-builder.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "report-builder.azurewebsites.net",
+            "report-builder.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "report-builder.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "report-builder.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.39.45,20.108.37.122,20.108.159.186,20.108.31.143",
+          "possibleOutboundIpAddresses": "20.108.16.84,20.108.175.133,20.108.136.143,20.108.124.201,20.108.199.28,20.108.227.144,20.108.15.64,20.108.49.71,20.108.11.198,20.108.26.130,20.108.116.144,20.108.8.195",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-data-prod",
+          "repositorySiteName": "report-builder",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-nonprod/providers/Microsoft.Web/sites/orders-api-stg",
+          "name": "orders-api-stg",
+          "resourceGroup": "rg-web-nonprod",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "orders-api-stg.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-nonprod/providers/Microsoft.Web/serverfarms/asp-rg-web-nonprod",
+          "hostNames": [
+            "orders-api-stg.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "orders-api-stg.azurewebsites.net",
+            "orders-api-stg.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "orders-api-stg.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "orders-api-stg.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.229.234,20.108.17.114,20.108.84.157,20.108.250.130",
+          "possibleOutboundIpAddresses": "20.108.156.132,20.108.52.178,20.108.71.116,20.108.131.137,20.108.207.123,20.108.130.242,20.108.64.179,20.108.134.225,20.108.225.242,20.108.238.67,20.108.237.144,20.108.229.242",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-web-nonprod",
+          "repositorySiteName": "orders-api-stg",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-nonprod/providers/Microsoft.Web/sites/pricing-api-stg",
+          "name": "pricing-api-stg",
+          "resourceGroup": "rg-web-nonprod",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "pricing-api-stg.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-nonprod/providers/Microsoft.Web/serverfarms/asp-rg-web-nonprod",
+          "hostNames": [
+            "pricing-api-stg.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "pricing-api-stg.azurewebsites.net",
+            "pricing-api-stg.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "pricing-api-stg.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "pricing-api-stg.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.52.216,20.108.115.36,20.108.107.32,20.108.101.114",
+          "possibleOutboundIpAddresses": "20.108.81.19,20.108.172.62,20.108.110.19,20.108.55.172,20.108.78.201,20.108.32.230,20.108.199.40,20.108.241.184,20.108.165.170,20.108.94.37,20.108.65.227,20.108.36.248",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-web-nonprod",
+          "repositorySiteName": "pricing-api-stg",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-nonprod/providers/Microsoft.Web/sites/catalog-api-stg",
+          "name": "catalog-api-stg",
+          "resourceGroup": "rg-web-nonprod",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "catalog-api-stg.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-nonprod/providers/Microsoft.Web/serverfarms/asp-rg-web-nonprod",
+          "hostNames": [
+            "catalog-api-stg.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "catalog-api-stg.azurewebsites.net",
+            "catalog-api-stg.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "catalog-api-stg.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "catalog-api-stg.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.120.57,20.108.192.244,20.108.25.102,20.108.227.125",
+          "possibleOutboundIpAddresses": "20.108.42.254,20.108.171.214,20.108.58.42,20.108.181.111,20.108.132.104,20.108.87.108,20.108.51.92,20.108.82.24,20.108.185.94,20.108.5.87,20.108.142.118,20.108.113.181",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-web-nonprod",
+          "repositorySiteName": "catalog-api-stg",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-nonprod/providers/Microsoft.Web/sites/checkout-stg",
+          "name": "checkout-stg",
+          "resourceGroup": "rg-web-nonprod",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "checkout-stg.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-nonprod/providers/Microsoft.Web/serverfarms/asp-rg-web-nonprod",
+          "hostNames": [
+            "checkout-stg.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "checkout-stg.azurewebsites.net",
+            "checkout-stg.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "checkout-stg.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "checkout-stg.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.5.99,20.108.85.133,20.108.160.76,20.108.132.246",
+          "possibleOutboundIpAddresses": "20.108.17.29,20.108.253.236,20.108.202.59,20.108.249.225,20.108.27.22,20.108.68.70,20.108.11.232,20.108.200.47,20.108.70.194,20.108.34.210,20.108.109.218,20.108.234.174",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-web-nonprod",
+          "repositorySiteName": "checkout-stg",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-nonprod/providers/Microsoft.Web/sites/www-stg",
+          "name": "www-stg",
+          "resourceGroup": "rg-web-nonprod",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "www-stg.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-nonprod/providers/Microsoft.Web/serverfarms/asp-rg-web-nonprod",
+          "hostNames": [
+            "www-stg.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "www-stg.azurewebsites.net",
+            "www-stg.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "www-stg.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "www-stg.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.210.243,20.108.67.104,20.108.39.138,20.108.236.132",
+          "possibleOutboundIpAddresses": "20.108.147.127,20.108.180.84,20.108.23.72,20.108.15.205,20.108.177.47,20.108.109.230,20.108.19.69,20.108.241.5,20.108.163.23,20.108.206.67,20.108.22.156,20.108.220.57",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-web-nonprod",
+          "repositorySiteName": "www-stg",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-nonprod/providers/Microsoft.Web/sites/identity-api-stg",
+          "name": "identity-api-stg",
+          "resourceGroup": "rg-web-nonprod",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "identity-api-stg.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-nonprod/providers/Microsoft.Web/serverfarms/asp-rg-web-nonprod",
+          "hostNames": [
+            "identity-api-stg.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "identity-api-stg.azurewebsites.net",
+            "identity-api-stg.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "identity-api-stg.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "identity-api-stg.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.18.68,20.108.221.32,20.108.117.3,20.108.87.142",
+          "possibleOutboundIpAddresses": "20.108.107.238,20.108.235.69,20.108.160.34,20.108.12.135,20.108.182.62,20.108.241.29,20.108.249.42,20.108.68.13,20.108.47.52,20.108.239.80,20.108.161.79,20.108.136.195",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-web-nonprod",
+          "repositorySiteName": "identity-api-stg",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-batch/providers/Microsoft.Web/sites/batch-dispatch",
+          "name": "batch-dispatch",
+          "resourceGroup": "rg-batch",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "batch-dispatch.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-batch/providers/Microsoft.Web/serverfarms/asp-rg-batch",
+          "hostNames": [
+            "batch-dispatch.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "batch-dispatch.azurewebsites.net",
+            "batch-dispatch.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "batch-dispatch.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "batch-dispatch.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.53.75,20.108.115.129,20.108.173.46,20.108.70.89",
+          "possibleOutboundIpAddresses": "20.108.206.5,20.108.65.10,20.108.4.5,20.108.188.130,20.108.142.251,20.108.49.132,20.108.122.63,20.108.240.115,20.108.28.169,20.108.210.167,20.108.111.169,20.108.127.140",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-batch",
+          "repositorySiteName": "batch-dispatch",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-batch/providers/Microsoft.Web/sites/batch-collector",
+          "name": "batch-collector",
+          "resourceGroup": "rg-batch",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "batch-collector.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-batch/providers/Microsoft.Web/serverfarms/asp-rg-batch",
+          "hostNames": [
+            "batch-collector.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "batch-collector.azurewebsites.net",
+            "batch-collector.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "batch-collector.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "batch-collector.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.214.228,20.108.101.249,20.108.130.79,20.108.177.56",
+          "possibleOutboundIpAddresses": "20.108.252.59,20.108.88.51,20.108.214.226,20.108.181.187,20.108.163.36,20.108.104.254,20.108.89.252,20.108.14.215,20.108.34.4,20.108.19.161,20.108.190.226,20.108.66.111",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-batch",
+          "repositorySiteName": "batch-collector",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-observability/providers/Microsoft.Web/sites/log-shipper",
+          "name": "log-shipper",
+          "resourceGroup": "rg-observability",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "log-shipper.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-observability/providers/Microsoft.Web/serverfarms/asp-rg-observability",
+          "hostNames": [
+            "log-shipper.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "log-shipper.azurewebsites.net",
+            "log-shipper.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "log-shipper.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "log-shipper.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.42.15,20.108.22.171,20.108.216.98,20.108.223.130",
+          "possibleOutboundIpAddresses": "20.108.172.249,20.108.73.154,20.108.63.178,20.108.76.12,20.108.118.48,20.108.41.69,20.108.115.1,20.108.68.94,20.108.247.85,20.108.249.253,20.108.141.83,20.108.63.9",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-observability",
+          "repositorySiteName": "log-shipper",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-observability/providers/Microsoft.Web/sites/alert-router",
+          "name": "alert-router",
+          "resourceGroup": "rg-observability",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "alert-router.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-observability/providers/Microsoft.Web/serverfarms/asp-rg-observability",
+          "hostNames": [
+            "alert-router.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "alert-router.azurewebsites.net",
+            "alert-router.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "alert-router.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "alert-router.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.248.226,20.108.80.56,20.108.92.47,20.108.1.86",
+          "possibleOutboundIpAddresses": "20.108.98.22,20.108.122.72,20.108.129.168,20.108.52.64,20.108.130.199,20.108.2.24,20.108.68.210,20.108.23.37,20.108.103.151,20.108.11.101,20.108.6.77,20.108.78.162",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-observability",
+          "repositorySiteName": "alert-router",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-observability/providers/Microsoft.Web/sites/metrics-api",
+          "name": "metrics-api",
+          "resourceGroup": "rg-observability",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "metrics-api.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-observability/providers/Microsoft.Web/serverfarms/asp-rg-observability",
+          "hostNames": [
+            "metrics-api.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "metrics-api.azurewebsites.net",
+            "metrics-api.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "metrics-api.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "metrics-api.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.60.22,20.108.150.246,20.108.136.219,20.108.193.40",
+          "possibleOutboundIpAddresses": "20.108.169.229,20.108.184.201,20.108.226.153,20.108.100.196,20.108.84.185,20.108.253.127,20.108.39.73,20.108.186.159,20.108.165.38,20.108.12.212,20.108.214.184,20.108.229.132",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-observability",
+          "repositorySiteName": "metrics-api",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-observability/providers/Microsoft.Web/sites/trace-collector",
+          "name": "trace-collector",
+          "resourceGroup": "rg-observability",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "trace-collector.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-observability/providers/Microsoft.Web/serverfarms/asp-rg-observability",
+          "hostNames": [
+            "trace-collector.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "trace-collector.azurewebsites.net",
+            "trace-collector.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "trace-collector.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "trace-collector.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.161.110,20.108.188.180,20.108.208.130,20.108.36.233",
+          "possibleOutboundIpAddresses": "20.108.135.193,20.108.130.146,20.108.214.209,20.108.206.5,20.108.212.176,20.108.150.205,20.108.229.183,20.108.175.245,20.108.178.165,20.108.59.22,20.108.8.11,20.108.35.164",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-observability",
+          "repositorySiteName": "trace-collector",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Web/sites/hub-proxy",
+          "name": "hub-proxy",
+          "resourceGroup": "rg-network-hub",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "hub-proxy.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Web/serverfarms/asp-rg-network-hub",
+          "hostNames": [
+            "hub-proxy.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "hub-proxy.azurewebsites.net",
+            "hub-proxy.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "hub-proxy.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "hub-proxy.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.93.246,20.108.27.97,20.108.214.116,20.108.143.13",
+          "possibleOutboundIpAddresses": "20.108.161.5,20.108.161.137,20.108.175.63,20.108.126.68,20.108.1.117,20.108.205.18,20.108.192.239,20.108.129.230,20.108.138.24,20.108.169.135,20.108.17.191,20.108.189.122",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-network-hub",
+          "repositorySiteName": "hub-proxy",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Web/sites/edge-router",
+          "name": "edge-router",
+          "resourceGroup": "rg-network-hub",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "edge-router.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Web/serverfarms/asp-rg-network-hub",
+          "hostNames": [
+            "edge-router.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "edge-router.azurewebsites.net",
+            "edge-router.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "edge-router.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "edge-router.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.65.208,20.108.20.217,20.108.68.61,20.108.187.194",
+          "possibleOutboundIpAddresses": "20.108.53.60,20.108.190.167,20.108.250.118,20.108.127.217,20.108.98.20,20.108.123.234,20.108.176.74,20.108.197.12,20.108.158.162,20.108.165.51,20.108.20.154,20.108.38.85",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-network-hub",
+          "repositorySiteName": "edge-router",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-sandbox-fh/providers/Microsoft.Web/sites/dev-playground",
+          "name": "dev-playground",
+          "resourceGroup": "rg-sandbox-fh",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "dev-playground.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-sandbox-fh/providers/Microsoft.Web/serverfarms/asp-rg-sandbox-fh",
+          "hostNames": [
+            "dev-playground.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "dev-playground.azurewebsites.net",
+            "dev-playground.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "dev-playground.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "dev-playground.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.66.167,20.108.191.178,20.108.78.160,20.108.146.35",
+          "possibleOutboundIpAddresses": "20.108.4.124,20.108.16.125,20.108.69.249,20.108.173.26,20.108.178.56,20.108.173.126,20.108.75.182,20.108.133.74,20.108.119.120,20.108.120.197,20.108.31.229,20.108.141.52",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-sandbox-fh",
+          "repositorySiteName": "dev-playground",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-sandbox-fh/providers/Microsoft.Web/sites/fh-test-2",
+          "name": "fh-test-2",
+          "resourceGroup": "rg-sandbox-fh",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "fh-test-2.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-sandbox-fh/providers/Microsoft.Web/serverfarms/asp-rg-sandbox-fh",
+          "hostNames": [
+            "fh-test-2.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "fh-test-2.azurewebsites.net",
+            "fh-test-2.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "fh-test-2.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "fh-test-2.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.80.251,20.108.22.240,20.108.122.5,20.108.75.118",
+          "possibleOutboundIpAddresses": "20.108.20.210,20.108.130.248,20.108.116.69,20.108.100.54,20.108.235.243,20.108.239.54,20.108.20.149,20.108.24.37,20.108.192.135,20.108.68.244,20.108.93.34,20.108.155.210",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-sandbox-fh",
+          "repositorySiteName": "fh-test-2",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-legacy-2019/providers/Microsoft.Web/sites/legacy-reports",
+          "name": "legacy-reports",
+          "resourceGroup": "rg-legacy-2019",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "legacy-reports.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-legacy-2019/providers/Microsoft.Web/serverfarms/asp-rg-legacy-2019",
+          "hostNames": [
+            "legacy-reports.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "legacy-reports.azurewebsites.net",
+            "legacy-reports.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "legacy-reports.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "legacy-reports.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.162.131,20.108.72.228,20.108.29.181,20.108.94.60",
+          "possibleOutboundIpAddresses": "20.108.128.230,20.108.225.125,20.108.101.7,20.108.41.1,20.108.244.126,20.108.175.116,20.108.104.78,20.108.187.37,20.108.107.89,20.108.97.81,20.108.31.216,20.108.85.1",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-legacy-2019",
+          "repositorySiteName": "legacy-reports",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-legacy-2019/providers/Microsoft.Web/sites/legacy-batch",
+          "name": "legacy-batch",
+          "resourceGroup": "rg-legacy-2019",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "legacy-batch.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-legacy-2019/providers/Microsoft.Web/serverfarms/asp-rg-legacy-2019",
+          "hostNames": [
+            "legacy-batch.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "legacy-batch.azurewebsites.net",
+            "legacy-batch.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "legacy-batch.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "legacy-batch.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.84.193,20.108.87.215,20.108.102.31,20.108.241.238",
+          "possibleOutboundIpAddresses": "20.108.51.183,20.108.4.231,20.108.190.75,20.108.65.96,20.108.17.101,20.108.100.223,20.108.151.20,20.108.93.237,20.108.110.194,20.108.71.219,20.108.13.72,20.108.27.14",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-legacy-2019",
+          "repositorySiteName": "legacy-batch",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-legacy-2019/providers/Microsoft.Web/sites/archive-api",
+          "name": "archive-api",
+          "resourceGroup": "rg-legacy-2019",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "archive-api.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-legacy-2019/providers/Microsoft.Web/serverfarms/asp-rg-legacy-2019",
+          "hostNames": [
+            "archive-api.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "archive-api.azurewebsites.net",
+            "archive-api.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "archive-api.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "archive-api.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.214.170,20.108.74.163,20.108.240.39,20.108.64.249",
+          "possibleOutboundIpAddresses": "20.108.69.112,20.108.131.81,20.108.49.198,20.108.96.201,20.108.245.110,20.108.227.8,20.108.208.195,20.108.162.103,20.108.234.225,20.108.241.142,20.108.141.53,20.108.185.21",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-legacy-2019",
+          "repositorySiteName": "archive-api",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-data-prod/providers/Microsoft.Web/sites/data-vault-api",
+          "name": "data-vault-api",
+          "resourceGroup": "rg-data-prod",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "data-vault-api.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-data-prod/providers/Microsoft.Web/serverfarms/asp-rg-data-prod",
+          "hostNames": [
+            "data-vault-api.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "data-vault-api.azurewebsites.net",
+            "data-vault-api.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "data-vault-api.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "data-vault-api.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.13.239,20.108.188.106,20.108.116.158,20.108.193.36",
+          "possibleOutboundIpAddresses": "20.108.165.223,20.108.74.125,20.108.13.234,20.108.238.141,20.108.33.44,20.108.121.107,20.108.88.73,20.108.77.66,20.108.190.190,20.108.250.168,20.108.67.104,20.108.168.62",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-data-prod",
+          "repositorySiteName": "data-vault-api",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-integration/providers/Microsoft.Web/sites/feature-flags",
+          "name": "feature-flags",
+          "resourceGroup": "rg-integration",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "feature-flags.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-integration/providers/Microsoft.Web/serverfarms/asp-rg-integration",
+          "hostNames": [
+            "feature-flags.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "feature-flags.azurewebsites.net",
+            "feature-flags.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "feature-flags.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "feature-flags.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.78.124,20.108.143.172,20.108.101.31,20.108.43.165",
+          "possibleOutboundIpAddresses": "20.108.42.20,20.108.54.129,20.108.232.208,20.108.128.141,20.108.57.116,20.108.233.86,20.108.195.116,20.108.110.36,20.108.141.50,20.108.63.24,20.108.45.88,20.108.143.24",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-integration",
+          "repositorySiteName": "feature-flags",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-integration/providers/Microsoft.Web/sites/webhook-gateway",
+          "name": "webhook-gateway",
+          "resourceGroup": "rg-integration",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "webhook-gateway.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-integration/providers/Microsoft.Web/serverfarms/asp-rg-integration",
+          "hostNames": [
+            "webhook-gateway.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "webhook-gateway.azurewebsites.net",
+            "webhook-gateway.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "webhook-gateway.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "webhook-gateway.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.82.62,20.108.95.67,20.108.208.146,20.108.52.228",
+          "possibleOutboundIpAddresses": "20.108.6.192,20.108.223.106,20.108.99.106,20.108.191.135,20.108.54.97,20.108.70.87,20.108.193.16,20.108.128.72,20.108.148.248,20.108.93.33,20.108.176.129,20.108.136.162",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-integration",
+          "repositorySiteName": "webhook-gateway",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-identity/providers/Microsoft.Web/sites/audit-collector",
+          "name": "audit-collector",
+          "resourceGroup": "rg-identity",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "audit-collector.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-identity/providers/Microsoft.Web/serverfarms/asp-rg-identity",
+          "hostNames": [
+            "audit-collector.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "audit-collector.azurewebsites.net",
+            "audit-collector.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "audit-collector.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "audit-collector.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.203.221,20.108.218.56,20.108.24.70,20.108.230.64",
+          "possibleOutboundIpAddresses": "20.108.99.103,20.108.166.115,20.108.111.245,20.108.80.218,20.108.209.224,20.108.248.6,20.108.33.9,20.108.109.182,20.108.196.230,20.108.206.122,20.108.248.151,20.108.126.1",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-identity",
+          "repositorySiteName": "audit-collector",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-identity/providers/Microsoft.Web/sites/scim-bridge",
+          "name": "scim-bridge",
+          "resourceGroup": "rg-identity",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "scim-bridge.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-identity/providers/Microsoft.Web/serverfarms/asp-rg-identity",
+          "hostNames": [
+            "scim-bridge.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "scim-bridge.azurewebsites.net",
+            "scim-bridge.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "scim-bridge.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "scim-bridge.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.19.101,20.108.239.238,20.108.238.212,20.108.136.219",
+          "possibleOutboundIpAddresses": "20.108.120.249,20.108.115.64,20.108.201.28,20.108.58.40,20.108.39.134,20.108.249.175,20.108.28.242,20.108.212.185,20.108.180.166,20.108.217.196,20.108.230.118,20.108.22.142",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-identity",
+          "repositorySiteName": "scim-bridge",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-integration/providers/Microsoft.Web/sites/mail-relay",
+          "name": "mail-relay",
+          "resourceGroup": "rg-integration",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "mail-relay.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-integration/providers/Microsoft.Web/serverfarms/asp-rg-integration",
+          "hostNames": [
+            "mail-relay.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "mail-relay.azurewebsites.net",
+            "mail-relay.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "mail-relay.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "mail-relay.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.199.11,20.108.1.201,20.108.33.60,20.108.146.236",
+          "possibleOutboundIpAddresses": "20.108.10.166,20.108.184.78,20.108.247.33,20.108.161.65,20.108.136.163,20.108.112.179,20.108.196.29,20.108.26.19,20.108.77.135,20.108.242.150,20.108.50.100,20.108.67.58",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-integration",
+          "repositorySiteName": "mail-relay",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-batch/providers/Microsoft.Web/sites/pdf-render",
+          "name": "pdf-render",
+          "resourceGroup": "rg-batch",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "pdf-render.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-batch/providers/Microsoft.Web/serverfarms/asp-rg-batch",
+          "hostNames": [
+            "pdf-render.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "pdf-render.azurewebsites.net",
+            "pdf-render.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "pdf-render.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "pdf-render.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.203.154,20.108.1.3,20.108.138.78,20.108.118.72",
+          "possibleOutboundIpAddresses": "20.108.246.81,20.108.166.215,20.108.227.63,20.108.122.135,20.108.61.141,20.108.64.8,20.108.246.106,20.108.181.167,20.108.79.15,20.108.6.50,20.108.128.227,20.108.173.166",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-batch",
+          "repositorySiteName": "pdf-render",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-batch/providers/Microsoft.Web/sites/thumbnailer",
+          "name": "thumbnailer",
+          "resourceGroup": "rg-batch",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "thumbnailer.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-batch/providers/Microsoft.Web/serverfarms/asp-rg-batch",
+          "hostNames": [
+            "thumbnailer.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "thumbnailer.azurewebsites.net",
+            "thumbnailer.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "thumbnailer.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "thumbnailer.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.108.21,20.108.66.59,20.108.171.109,20.108.237.95",
+          "possibleOutboundIpAddresses": "20.108.59.127,20.108.9.179,20.108.87.184,20.108.108.93,20.108.175.102,20.108.51.2,20.108.205.75,20.108.190.217,20.108.130.18,20.108.53.127,20.108.249.52,20.108.80.197",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-batch",
+          "repositorySiteName": "thumbnailer",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-data-prod/providers/Microsoft.Web/sites/geo-lookup",
+          "name": "geo-lookup",
+          "resourceGroup": "rg-data-prod",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "geo-lookup.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-data-prod/providers/Microsoft.Web/serverfarms/asp-rg-data-prod",
+          "hostNames": [
+            "geo-lookup.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "geo-lookup.azurewebsites.net",
+            "geo-lookup.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "geo-lookup.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "geo-lookup.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.210.50,20.108.60.120,20.108.57.68,20.108.195.228",
+          "possibleOutboundIpAddresses": "20.108.76.28,20.108.244.160,20.108.127.157,20.108.48.230,20.108.58.125,20.108.107.234,20.108.171.15,20.108.243.153,20.108.38.237,20.108.101.14,20.108.55.7,20.108.250.153",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-data-prod",
+          "repositorySiteName": "geo-lookup",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Web/sites/rate-limiter",
+          "name": "rate-limiter",
+          "resourceGroup": "rg-network-hub",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "rate-limiter.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Web/serverfarms/asp-rg-network-hub",
+          "hostNames": [
+            "rate-limiter.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "rate-limiter.azurewebsites.net",
+            "rate-limiter.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "rate-limiter.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "rate-limiter.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.37.107,20.108.14.182,20.108.16.48,20.108.101.116",
+          "possibleOutboundIpAddresses": "20.108.230.183,20.108.227.81,20.108.188.29,20.108.21.239,20.108.43.85,20.108.49.48,20.108.168.240,20.108.135.192,20.108.120.9,20.108.80.171,20.108.186.97,20.108.215.96",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-network-hub",
+          "repositorySiteName": "rate-limiter",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-identity/providers/Microsoft.Web/sites/cert-rotator",
+          "name": "cert-rotator",
+          "resourceGroup": "rg-identity",
+          "location": "UK South",
+          "state": "Running",
+          "type": "Microsoft.Web/sites",
+          "kind": "app,linux",
+          "defaultHostName": "cert-rotator.azurewebsites.net",
+          "enabled": true,
+          "httpsOnly": true,
+          "publicNetworkAccess": "Disabled",
+          "clientAffinityEnabled": false,
+          "clientCertEnabled": false,
+          "containerSize": 0,
+          "dailyMemoryTimeQuota": 0,
+          "availabilityState": "Normal",
+          "usageState": "Normal",
+          "serverFarmId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-identity/providers/Microsoft.Web/serverfarms/asp-rg-identity",
+          "hostNames": [
+            "cert-rotator.azurewebsites.net"
+          ],
+          "enabledHostNames": [
+            "cert-rotator.azurewebsites.net",
+            "cert-rotator.scm.azurewebsites.net"
+          ],
+          "hostNameSslStates": [
+            {
+              "name": "cert-rotator.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Standard",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            },
+            {
+              "name": "cert-rotator.scm.azurewebsites.net",
+              "sslState": "Disabled",
+              "hostType": "Repository",
+              "thumbprint": null,
+              "toUpdate": null,
+              "virtualIP": null
+            }
+          ],
+          "outboundIpAddresses": "20.108.253.85,20.108.114.44,20.108.28.1,20.108.21.72",
+          "possibleOutboundIpAddresses": "20.108.21.90,20.108.108.245,20.108.227.32,20.108.144.247,20.108.195.54,20.108.98.92,20.108.197.211,20.108.80.211,20.108.206.111,20.108.23.13,20.108.181.122,20.108.51.96",
+          "redundancyMode": "None",
+          "reserved": true,
+          "scmSiteAlsoStopped": false,
+          "storageAccountRequired": false,
+          "isXenon": false,
+          "hyperV": false,
+          "resourceGroupName": "rg-identity",
+          "repositorySiteName": "cert-rotator",
+          "lastModifiedTimeUtc": "2026-08-19T11:04:33.283333",
+          "virtualNetworkSubnetId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub/subnets/snet-apps",
+          "siteConfig": {
+            "alwaysOn": true,
+            "numberOfWorkers": 1,
+            "linuxFxVersion": "PYTHON|3.12",
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled",
+            "http20Enabled": false,
+            "healthCheckPath": "/healthz",
+            "appSettings": null
+          },
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          },
+          "identity": {
+            "type": "SystemAssigned",
+            "principalId": "0d9f8e7c-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+            "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14"
+          },
+          "properties": {
+            "provisioningState": "Succeeded"
+          }
+        }
+      ]
+    },
+    {
+      "match": [
+        "webapp",
+        "show"
+      ],
+      "lookup": {
+        "from": [
+          "webapp",
+          "list"
+        ],
+        "flags": [
+          "-n",
+          "--name"
+        ],
+        "field": "name",
+        "kind": "Microsoft.Web/sites"
+      }
+    },
+    {
+      "match": [
+        "graph",
+        "query"
+      ],
+      "data": {
+        "count": 47,
+        "totalRecords": 47,
+        "data": [
+          {
+            "name": "contoso-www",
+            "resourceGroup": "rg-web-prod",
+            "publicNetworkAccess": "Enabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "contoso-checkout",
+            "resourceGroup": "rg-web-prod",
+            "publicNetworkAccess": "Enabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "contoso-status",
+            "resourceGroup": "rg-web-prod",
+            "publicNetworkAccess": "Enabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "partner-portal",
+            "resourceGroup": "rg-integration",
+            "publicNetworkAccess": "Enabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "docs-site",
+            "resourceGroup": "rg-web-nonprod",
+            "publicNetworkAccess": "Enabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "fh-scratch-app",
+            "resourceGroup": "rg-sandbox-fh",
+            "publicNetworkAccess": "Enabled",
+            "httpsOnly": false
+          },
+          {
+            "name": "legacy-invoices",
+            "resourceGroup": "rg-legacy-2019",
+            "publicNetworkAccess": "Enabled",
+            "httpsOnly": false
+          },
+          {
+            "name": "orders-api",
+            "resourceGroup": "rg-web-prod",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "pricing-api",
+            "resourceGroup": "rg-web-prod",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "billing-api",
+            "resourceGroup": "rg-web-prod",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "catalog-api",
+            "resourceGroup": "rg-web-prod",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "search-api",
+            "resourceGroup": "rg-web-prod",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "identity-api",
+            "resourceGroup": "rg-identity",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "notify-worker",
+            "resourceGroup": "rg-integration",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "sync-worker",
+            "resourceGroup": "rg-integration",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "etl-runner",
+            "resourceGroup": "rg-data-prod",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "report-builder",
+            "resourceGroup": "rg-data-prod",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "orders-api-stg",
+            "resourceGroup": "rg-web-nonprod",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "pricing-api-stg",
+            "resourceGroup": "rg-web-nonprod",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "catalog-api-stg",
+            "resourceGroup": "rg-web-nonprod",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "checkout-stg",
+            "resourceGroup": "rg-web-nonprod",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "www-stg",
+            "resourceGroup": "rg-web-nonprod",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "identity-api-stg",
+            "resourceGroup": "rg-web-nonprod",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "batch-dispatch",
+            "resourceGroup": "rg-batch",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "batch-collector",
+            "resourceGroup": "rg-batch",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "log-shipper",
+            "resourceGroup": "rg-observability",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "alert-router",
+            "resourceGroup": "rg-observability",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "metrics-api",
+            "resourceGroup": "rg-observability",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "trace-collector",
+            "resourceGroup": "rg-observability",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "hub-proxy",
+            "resourceGroup": "rg-network-hub",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "edge-router",
+            "resourceGroup": "rg-network-hub",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "dev-playground",
+            "resourceGroup": "rg-sandbox-fh",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "fh-test-2",
+            "resourceGroup": "rg-sandbox-fh",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "legacy-reports",
+            "resourceGroup": "rg-legacy-2019",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "legacy-batch",
+            "resourceGroup": "rg-legacy-2019",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "archive-api",
+            "resourceGroup": "rg-legacy-2019",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "data-vault-api",
+            "resourceGroup": "rg-data-prod",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "feature-flags",
+            "resourceGroup": "rg-integration",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "webhook-gateway",
+            "resourceGroup": "rg-integration",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "audit-collector",
+            "resourceGroup": "rg-identity",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "scim-bridge",
+            "resourceGroup": "rg-identity",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "mail-relay",
+            "resourceGroup": "rg-integration",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "pdf-render",
+            "resourceGroup": "rg-batch",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "thumbnailer",
+            "resourceGroup": "rg-batch",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "geo-lookup",
+            "resourceGroup": "rg-data-prod",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "rate-limiter",
+            "resourceGroup": "rg-network-hub",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          },
+          {
+            "name": "cert-rotator",
+            "resourceGroup": "rg-identity",
+            "publicNetworkAccess": "Disabled",
+            "httpsOnly": true
+          }
+        ],
+        "skip_token": null,
+        "resultTruncated": "false"
+      }
+    },
+    {
+      "match": [
+        "resource",
+        "list"
+      ],
+      "data": [
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-prod/providers/Microsoft.Web/sites/contoso-www",
+          "name": "contoso-www",
+          "resourceGroup": "rg-web-prod",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-prod/providers/Microsoft.Web/sites/contoso-checkout",
+          "name": "contoso-checkout",
+          "resourceGroup": "rg-web-prod",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-prod/providers/Microsoft.Web/sites/contoso-status",
+          "name": "contoso-status",
+          "resourceGroup": "rg-web-prod",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-integration/providers/Microsoft.Web/sites/partner-portal",
+          "name": "partner-portal",
+          "resourceGroup": "rg-integration",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-nonprod/providers/Microsoft.Web/sites/docs-site",
+          "name": "docs-site",
+          "resourceGroup": "rg-web-nonprod",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-sandbox-fh/providers/Microsoft.Web/sites/fh-scratch-app",
+          "name": "fh-scratch-app",
+          "resourceGroup": "rg-sandbox-fh",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-legacy-2019/providers/Microsoft.Web/sites/legacy-invoices",
+          "name": "legacy-invoices",
+          "resourceGroup": "rg-legacy-2019",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-prod/providers/Microsoft.Web/sites/orders-api",
+          "name": "orders-api",
+          "resourceGroup": "rg-web-prod",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-prod/providers/Microsoft.Web/sites/pricing-api",
+          "name": "pricing-api",
+          "resourceGroup": "rg-web-prod",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-prod/providers/Microsoft.Web/sites/billing-api",
+          "name": "billing-api",
+          "resourceGroup": "rg-web-prod",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-prod/providers/Microsoft.Web/sites/catalog-api",
+          "name": "catalog-api",
+          "resourceGroup": "rg-web-prod",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-prod/providers/Microsoft.Web/sites/search-api",
+          "name": "search-api",
+          "resourceGroup": "rg-web-prod",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-identity/providers/Microsoft.Web/sites/identity-api",
+          "name": "identity-api",
+          "resourceGroup": "rg-identity",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-integration/providers/Microsoft.Web/sites/notify-worker",
+          "name": "notify-worker",
+          "resourceGroup": "rg-integration",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-integration/providers/Microsoft.Web/sites/sync-worker",
+          "name": "sync-worker",
+          "resourceGroup": "rg-integration",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-data-prod/providers/Microsoft.Web/sites/etl-runner",
+          "name": "etl-runner",
+          "resourceGroup": "rg-data-prod",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-data-prod/providers/Microsoft.Web/sites/report-builder",
+          "name": "report-builder",
+          "resourceGroup": "rg-data-prod",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-nonprod/providers/Microsoft.Web/sites/orders-api-stg",
+          "name": "orders-api-stg",
+          "resourceGroup": "rg-web-nonprod",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-nonprod/providers/Microsoft.Web/sites/pricing-api-stg",
+          "name": "pricing-api-stg",
+          "resourceGroup": "rg-web-nonprod",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-nonprod/providers/Microsoft.Web/sites/catalog-api-stg",
+          "name": "catalog-api-stg",
+          "resourceGroup": "rg-web-nonprod",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-nonprod/providers/Microsoft.Web/sites/checkout-stg",
+          "name": "checkout-stg",
+          "resourceGroup": "rg-web-nonprod",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-nonprod/providers/Microsoft.Web/sites/www-stg",
+          "name": "www-stg",
+          "resourceGroup": "rg-web-nonprod",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-web-nonprod/providers/Microsoft.Web/sites/identity-api-stg",
+          "name": "identity-api-stg",
+          "resourceGroup": "rg-web-nonprod",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-batch/providers/Microsoft.Web/sites/batch-dispatch",
+          "name": "batch-dispatch",
+          "resourceGroup": "rg-batch",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-batch/providers/Microsoft.Web/sites/batch-collector",
+          "name": "batch-collector",
+          "resourceGroup": "rg-batch",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-observability/providers/Microsoft.Web/sites/log-shipper",
+          "name": "log-shipper",
+          "resourceGroup": "rg-observability",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-observability/providers/Microsoft.Web/sites/alert-router",
+          "name": "alert-router",
+          "resourceGroup": "rg-observability",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-observability/providers/Microsoft.Web/sites/metrics-api",
+          "name": "metrics-api",
+          "resourceGroup": "rg-observability",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-observability/providers/Microsoft.Web/sites/trace-collector",
+          "name": "trace-collector",
+          "resourceGroup": "rg-observability",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Web/sites/hub-proxy",
+          "name": "hub-proxy",
+          "resourceGroup": "rg-network-hub",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Web/sites/edge-router",
+          "name": "edge-router",
+          "resourceGroup": "rg-network-hub",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-sandbox-fh/providers/Microsoft.Web/sites/dev-playground",
+          "name": "dev-playground",
+          "resourceGroup": "rg-sandbox-fh",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-sandbox-fh/providers/Microsoft.Web/sites/fh-test-2",
+          "name": "fh-test-2",
+          "resourceGroup": "rg-sandbox-fh",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-legacy-2019/providers/Microsoft.Web/sites/legacy-reports",
+          "name": "legacy-reports",
+          "resourceGroup": "rg-legacy-2019",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-legacy-2019/providers/Microsoft.Web/sites/legacy-batch",
+          "name": "legacy-batch",
+          "resourceGroup": "rg-legacy-2019",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-legacy-2019/providers/Microsoft.Web/sites/archive-api",
+          "name": "archive-api",
+          "resourceGroup": "rg-legacy-2019",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-data-prod/providers/Microsoft.Web/sites/data-vault-api",
+          "name": "data-vault-api",
+          "resourceGroup": "rg-data-prod",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-integration/providers/Microsoft.Web/sites/feature-flags",
+          "name": "feature-flags",
+          "resourceGroup": "rg-integration",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-integration/providers/Microsoft.Web/sites/webhook-gateway",
+          "name": "webhook-gateway",
+          "resourceGroup": "rg-integration",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-identity/providers/Microsoft.Web/sites/audit-collector",
+          "name": "audit-collector",
+          "resourceGroup": "rg-identity",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-identity/providers/Microsoft.Web/sites/scim-bridge",
+          "name": "scim-bridge",
+          "resourceGroup": "rg-identity",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-integration/providers/Microsoft.Web/sites/mail-relay",
+          "name": "mail-relay",
+          "resourceGroup": "rg-integration",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-batch/providers/Microsoft.Web/sites/pdf-render",
+          "name": "pdf-render",
+          "resourceGroup": "rg-batch",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-batch/providers/Microsoft.Web/sites/thumbnailer",
+          "name": "thumbnailer",
+          "resourceGroup": "rg-batch",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-data-prod/providers/Microsoft.Web/sites/geo-lookup",
+          "name": "geo-lookup",
+          "resourceGroup": "rg-data-prod",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "prod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-network-hub/providers/Microsoft.Web/sites/rate-limiter",
+          "name": "rate-limiter",
+          "resourceGroup": "rg-network-hub",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-identity/providers/Microsoft.Web/sites/cert-rotator",
+          "name": "cert-rotator",
+          "resourceGroup": "rg-identity",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth",
+          "tags": {
+            "env": "nonprod",
+            "owner": "platform"
+          }
+        }
+      ]
+    },
+    {
+      "match": [
+        "functionapp",
+        "list"
+      ],
+      "data": []
+    },
+    {
+      "match": [
+        "storage",
+        "account",
+        "list"
+      ],
+      "data": [
+        {
+          "name": "contosoassets",
+          "resourceGroup": "rg-web-prod",
+          "allowBlobPublicAccess": true,
+          "publicNetworkAccess": "Enabled",
+          "minimumTlsVersion": "TLS1_2",
+          "kind": "StorageV2",
+          "location": "uksouth"
+        },
+        {
+          "name": "contosodata",
+          "resourceGroup": "rg-data-prod",
+          "allowBlobPublicAccess": false,
+          "publicNetworkAccess": "Disabled",
+          "minimumTlsVersion": "TLS1_2",
+          "kind": "StorageV2",
+          "location": "uksouth"
+        }
+      ]
+    },
+    {
+      "match": [
+        "resource",
+        "show"
+      ],
+      "lookup": {
+        "from": [
+          "resource",
+          "list"
+        ],
+        "flags": [
+          "--ids",
+          "--id"
+        ],
+        "field": "id",
+        "kind": "resource"
+      }
+    },
+    {
+      "match": [
+        "webapp",
+        "config",
+        "access-restriction",
+        "show"
+      ],
+      "data": {
+        "ipSecurityRestrictions": [
+          {
+            "name": "Allow all",
+            "action": "Allow",
+            "ipAddress": "Any",
+            "priority": 2147483647
+          }
+        ],
+        "scmIpSecurityRestrictionsUseMain": false
+      }
+    },
+    {
+      "match": [],
+      "returncode": 2,
+      "stderr": "ERROR: this command is not part of the scenario (estate-contoso). Nothing was run.\n"
+    }
+  ]
+}

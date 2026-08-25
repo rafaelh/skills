@@ -11,6 +11,9 @@ package = false
 
 [dependency-groups]
 dev = [
+    # evals/az/fixtures/az evaluates --query with the same library az itself uses,
+    # so a projected command in an eval returns a real projection
+    "jmespath>=1.0",
     "pyright>=1.1.411",
     "pytest>=9",
     # obsidian-metabind parses vault frontmatter with it
@@ -124,6 +127,10 @@ ignore = [
 "evals/create-agents-for-repo/*.py" = [
     "S603",    # subprocess argv is built from resolved fixture paths, never user text
     "S607",    # `git` and `diff` come from PATH by design — the harness runs on the dev's tools
+]
+"evals/az/*.py" = [
+    "S603",    # subprocess argv is the resolved claude CLI plus harness-owned prompts
+    "S607",    # `az` comes from PATH by design — capture_help.py freezes the dev's CLI
 ]
 "evals/plan/*.py" = [
     "S603",    # subprocess argv is the resolved claude CLI plus harness-owned prompts

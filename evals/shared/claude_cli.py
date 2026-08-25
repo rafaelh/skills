@@ -21,7 +21,7 @@ import subprocess
 from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Mapping, Sequence
 
 Json = dict[str, object]
 
@@ -103,9 +103,15 @@ def run_claude(
     allowed_tools: Sequence[str] | None = None,
     disallowed_tools: Sequence[str] = BLOCKED_TOOLS,
     permission_mode: str | None = None,
+    env: Mapping[str, str] | None = None,
     timeout: int = 600,
 ) -> CliResult:
-    """One CLI turn. Returns the assistant's text plus what it cost to get it."""
+    """One CLI turn. Returns the assistant's text plus what it cost to get it.
+
+    `env` is merged over the harness's own environment rather than replacing it, so a
+    suite can put a stand-in binary first on PATH — the az suite's fake CLI — without
+    having to reconstruct everything the Claude CLI needs to start.
+    """
     argv = [
         cli_path(),
         "-p",
@@ -135,7 +141,13 @@ def run_claude(
         argv += ["--resume", session_id]
 
     proc = subprocess.run(
-        argv, cwd=cwd, capture_output=True, text=True, timeout=timeout, check=False
+        argv,
+        cwd=cwd,
+        env={**os.environ, **env} if env else None,
+        capture_output=True,
+        text=True,
+        timeout=timeout,
+        check=False,
     )
     if proc.returncode != 0:
         # The CLI reports the reason on stdout as a result event, not on stderr, so a

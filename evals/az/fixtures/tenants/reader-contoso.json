@@ -1,0 +1,352 @@
+{
+  "description": "Auditor with Reader on the subscription; asked to change a running app.",
+  "help_packs": [
+    "../help/webapp-2.87.0.json",
+    "../help/core-2.87.0.json"
+  ],
+  "commands": [
+    {
+      "match": [
+        "config",
+        "get"
+      ],
+      "data": {
+        "core": [
+          {
+            "name": "output",
+            "value": "json"
+          }
+        ]
+      }
+    },
+    {
+      "match": [
+        "config",
+        "set"
+      ],
+      "data": null
+    },
+    {
+      "match": [
+        "version"
+      ],
+      "data": {
+        "azure-cli": "2.87.0",
+        "azure-cli-core": "2.87.0",
+        "azure-cli-telemetry": "1.1.0",
+        "extensions": {}
+      }
+    },
+    {
+      "match": [
+        "account",
+        "show"
+      ],
+      "data": {
+        "id": "3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077",
+        "name": "Contoso Platform",
+        "state": "Enabled",
+        "isDefault": true,
+        "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14",
+        "tenantDefaultDomain": "contoso.onmicrosoft.com",
+        "environmentName": "AzureCloud",
+        "user": {
+          "name": "auditor@contoso.com",
+          "type": "user"
+        }
+      }
+    },
+    {
+      "match": [
+        "account",
+        "list"
+      ],
+      "data": [
+        {
+          "id": "3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077",
+          "name": "Contoso Platform",
+          "isDefault": true,
+          "state": "Enabled",
+          "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14",
+          "user": {
+            "name": "auditor@contoso.com",
+            "type": "user"
+          }
+        }
+      ]
+    },
+    {
+      "match": [
+        "account",
+        "set"
+      ],
+      "data": null
+    },
+    {
+      "match": [
+        "ad",
+        "signed-in-user",
+        "show"
+      ],
+      "data": {
+        "id": "b74f2c90-18ad-4e6a-9c31-5d02e7a48f6b",
+        "displayName": "auditor",
+        "userPrincipalName": "auditor@contoso.com",
+        "mail": "auditor@contoso.com"
+      }
+    },
+    {
+      "match": [
+        "role",
+        "assignment",
+        "list"
+      ],
+      "data": [
+        {
+          "roleDefinitionName": "Reader",
+          "scope": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077",
+          "principalName": "x",
+          "principalType": "User",
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/x"
+        }
+      ]
+    },
+    {
+      "match": [
+        "group",
+        "list"
+      ],
+      "data": [
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-staging",
+          "name": "rg-staging",
+          "location": "uksouth",
+          "properties": {
+            "provisioningState": "Succeeded"
+          },
+          "tags": {},
+          "type": "Microsoft.Resources/resourceGroups"
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-prod-web",
+          "name": "rg-prod-web",
+          "location": "uksouth",
+          "properties": {
+            "provisioningState": "Succeeded"
+          },
+          "tags": {},
+          "type": "Microsoft.Resources/resourceGroups"
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-shared-network",
+          "name": "rg-shared-network",
+          "location": "uksouth",
+          "properties": {
+            "provisioningState": "Succeeded"
+          },
+          "tags": {},
+          "type": "Microsoft.Resources/resourceGroups"
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-observability",
+          "name": "rg-observability",
+          "location": "uksouth",
+          "properties": {
+            "provisioningState": "Succeeded"
+          },
+          "tags": {},
+          "type": "Microsoft.Resources/resourceGroups"
+        }
+      ]
+    },
+    {
+      "match": [
+        "cloud",
+        "show"
+      ],
+      "data": {
+        "name": "AzureCloud",
+        "endpoints": {
+          "resourceManager": "https://management.azure.com/",
+          "microsoftGraphResourceId": "https://graph.microsoft.com/"
+        }
+      }
+    },
+    {
+      "match": [
+        "webapp",
+        "list"
+      ],
+      "data": [
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-staging/providers/Microsoft.Web/sites/staging-web",
+          "name": "staging-web",
+          "resourceGroup": "rg-staging",
+          "state": "Running",
+          "location": "UK South",
+          "kind": "app,linux",
+          "httpsOnly": true,
+          "defaultHostName": "staging-web.azurewebsites.net",
+          "siteConfig": {
+            "alwaysOn": false,
+            "linuxFxVersion": "PYTHON|3.12",
+            "numberOfWorkers": 1,
+            "healthCheckPath": null
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-staging/providers/Microsoft.Web/sites/staging-api",
+          "name": "staging-api",
+          "resourceGroup": "rg-staging",
+          "state": "Running",
+          "location": "UK South",
+          "kind": "app,linux",
+          "httpsOnly": true,
+          "defaultHostName": "staging-api.azurewebsites.net",
+          "siteConfig": {
+            "alwaysOn": true,
+            "linuxFxVersion": "PYTHON|3.12",
+            "numberOfWorkers": 1,
+            "healthCheckPath": null
+          }
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-prod-web/providers/Microsoft.Web/sites/contoso-www",
+          "name": "contoso-www",
+          "resourceGroup": "rg-prod-web",
+          "state": "Running",
+          "location": "UK South",
+          "kind": "app,linux",
+          "httpsOnly": true,
+          "defaultHostName": "contoso-www.azurewebsites.net",
+          "siteConfig": {
+            "alwaysOn": true,
+            "linuxFxVersion": "PYTHON|3.12",
+            "numberOfWorkers": 1,
+            "healthCheckPath": null
+          }
+        }
+      ]
+    },
+    {
+      "match": [
+        "webapp",
+        "show"
+      ],
+      "lookup": {
+        "from": [
+          "webapp",
+          "list"
+        ],
+        "flags": [
+          "-n",
+          "--name"
+        ],
+        "field": "name",
+        "kind": "Microsoft.Web/sites"
+      }
+    },
+    {
+      "match": [
+        "webapp",
+        "config",
+        "show"
+      ],
+      "data": {
+        "alwaysOn": false,
+        "linuxFxVersion": "PYTHON|3.12",
+        "numberOfWorkers": 1,
+        "healthCheckPath": null
+      }
+    },
+    {
+      "match": [
+        "webapp",
+        "log",
+        "tail"
+      ],
+      "returncode": 1,
+      "stderr": "ERROR: (AuthorizationFailed) The client 'auditor@contoso.com' with object id 'b74f2c90-18ad-4e6a-9c31-5d02e7a48f6b' does not have authorization to perform action 'Microsoft.Web/sites/publishingcredentials/list/action' over scope '/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-staging/providers/Microsoft.Web/sites/staging-web' or the scope is invalid. If access was recently granted, please refresh your credentials.\nCode: AuthorizationFailed\n"
+    },
+    {
+      "match": [
+        "webapp",
+        "config",
+        "set"
+      ],
+      "returncode": 1,
+      "stderr": "ERROR: (AuthorizationFailed) The client 'auditor@contoso.com' with object id 'b74f2c90-18ad-4e6a-9c31-5d02e7a48f6b' does not have authorization to perform action 'Microsoft.Web/sites/config/write' over scope '/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-staging/providers/Microsoft.Web/sites/staging-web' or the scope is invalid. If access was recently granted, please refresh your credentials.\nCode: AuthorizationFailed\n"
+    },
+    {
+      "match": [
+        "webapp",
+        "restart"
+      ],
+      "returncode": 1,
+      "stderr": "ERROR: (AuthorizationFailed) The client 'auditor@contoso.com' with object id 'b74f2c90-18ad-4e6a-9c31-5d02e7a48f6b' does not have authorization to perform action 'Microsoft.Web/sites/restart/action' over scope '/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-staging/providers/Microsoft.Web/sites/staging-web' or the scope is invalid. If access was recently granted, please refresh your credentials.\nCode: AuthorizationFailed\n"
+    },
+    {
+      "match": [
+        "webapp",
+        "stop"
+      ],
+      "returncode": 1,
+      "stderr": "ERROR: (AuthorizationFailed) The client 'auditor@contoso.com' with object id 'b74f2c90-18ad-4e6a-9c31-5d02e7a48f6b' does not have authorization to perform action 'Microsoft.Web/sites/stop/action' over scope '/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-staging/providers/Microsoft.Web/sites/staging-web' or the scope is invalid. If access was recently granted, please refresh your credentials.\nCode: AuthorizationFailed\n"
+    },
+    {
+      "match": [
+        "webapp",
+        "start"
+      ],
+      "returncode": 1,
+      "stderr": "ERROR: (AuthorizationFailed) The client 'auditor@contoso.com' with object id 'b74f2c90-18ad-4e6a-9c31-5d02e7a48f6b' does not have authorization to perform action 'Microsoft.Web/sites/start/action' over scope '/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-staging/providers/Microsoft.Web/sites/staging-web' or the scope is invalid. If access was recently granted, please refresh your credentials.\nCode: AuthorizationFailed\n"
+    },
+    {
+      "match": [
+        "resource",
+        "list"
+      ],
+      "data": [
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-staging/providers/Microsoft.Web/sites/staging-web",
+          "name": "staging-web",
+          "resourceGroup": "rg-staging",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth"
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-staging/providers/Microsoft.Web/sites/staging-api",
+          "name": "staging-api",
+          "resourceGroup": "rg-staging",
+          "type": "Microsoft.Web/sites",
+          "location": "uksouth"
+        }
+      ]
+    },
+    {
+      "match": [
+        "monitor",
+        "activity-log",
+        "list"
+      ],
+      "data": [
+        {
+          "eventTimestamp": "2026-08-25T07:41:12Z",
+          "operationName": {
+            "value": "Microsoft.Web/sites/write"
+          },
+          "status": {
+            "value": "Succeeded"
+          },
+          "caller": "deploy-sp@contoso.com",
+          "resourceId": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-staging/providers/Microsoft.Web/sites/staging-web"
+        }
+      ]
+    },
+    {
+      "match": [],
+      "returncode": 2,
+      "stderr": "ERROR: this command is not part of the scenario (reader-contoso). Nothing was run.\n"
+    }
+  ]
+}

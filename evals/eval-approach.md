@@ -9,7 +9,7 @@ anyway.
 This file is the format all the suites under `evals/` follow. Read it before adding a suite or
 changing one.
 
-## Three shapes, one skeleton
+## Four shapes, one skeleton
 
 What a run leaves behind decides how it is graded, and nothing else about the suite differs.
 
@@ -17,11 +17,17 @@ What a run leaves behind decides how it is graded, and nothing else about the su
 |---|---|---|---|
 | **Artifact** | Files in a staged repo | Diffs and file contents | `create-agents-for-repo/`, `refactor/` |
 | **Conversation** | A transcript | Turns, questions, what was read | `plan/` |
+| **Call log** | A record of every tool invocation | Which commands were chosen, and the answer | `az/` |
 | **Trigger** | Nothing | Whether the skill activated at all | `obsidian-metabind/` |
 
-Artifact and conversation suites are the full thing: two arms, a rubric, a benchmark. A trigger
-suite is a labeled query set graded by `skills/skill-audit/scripts/eval_triggers.py` — it measures
-the `description`, not the body, so it has no arms and no fixtures.
+Artifact, conversation and call-log suites are the full thing: two arms, a rubric, a benchmark. A
+trigger suite is a labeled query set graded by `skills/skill-audit/scripts/eval_triggers.py` — it
+measures the `description`, not the body, so it has no arms and no fixtures.
+
+A call-log suite is the shape to reach for when the skill's whole subject is *which command to
+run*. It needs a stand-in for the tool the skill drives — `az/fixtures/az` is one — that answers
+deterministically and records what it was asked. Faithfulness there is load-bearing: a stub a run
+can tell is a stub stops behaving like a run.
 
 ## A suite's contents
 
@@ -32,9 +38,9 @@ evals/<skill>/
   benchmark.md     dated record of past rounds and rubric versions
   fixtures/        repos a run works against — copied per run, never mutated
   personas/        briefs for a simulated user (conversation suites)
-  prepare.py       stages a workspace (artifact suites)
+  prepare.py       stages a workspace (artifact and call-log suites)
   drive_*.py       runs the case to completion and records it (conversation suites)
-  run_case.py      drives one staged run to completion (artifact suites that need write tools)
+  run_case.py      drives one staged run to completion (suites whose runs need write tools)
   grade.py         scores one run directory, writes grading.json
 ```
 
