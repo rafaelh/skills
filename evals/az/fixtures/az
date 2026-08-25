@@ -168,6 +168,31 @@ def resolve_lookup(
     return None, NOT_FOUND.format(kind=spec.get("kind", "resource"), name=wanted), 3
 
 
+def apply_filters(entry: dict[str, Any], data: Any, argv: list[str]) -> Any:
+    """Narrow a served list the way `az` narrows it when a scope flag is passed.
+
+    A tenant serves one list per command. Without this, `az storage account list -g
+    rg-integration` hands back an account that lives in rg-data-prod, and a run that
+    believed it goes on to reason about the wrong resource group — worse than the
+    command not existing, because nothing signals that it was lied to.
+    """
+    specs: list[dict[str, Any]] = entry.get("filter", [])
+    if not specs or not isinstance(data, list):
+        return data
+    items: list[Any] = data
+    for spec in specs:
+        wanted = flag_value(argv, *spec["flags"])
+        if wanted is None:
+            continue
+        field: str = spec["field"]
+        items = [
+            i
+            for i in items
+            if isinstance(i, dict) and str(i.get(field, "")).lower() == wanted.lower()
+        ]
+    return items
+
+
 def serve_command(
     scenario: dict[str, Any], argv: list[str], path: list[str]
 ) -> tuple[str, str, int, list[str] | None]:
@@ -193,6 +218,7 @@ def serve_command(
             data = entry["data"]
         else:
             return "", stderr, code, match
+        data = apply_filters(entry, data, argv)
         query = flag_value(argv, "--query")
         if query:
             try:

@@ -97,8 +97,21 @@ For ARM and Bicep, `az deployment group what-if -g RG --template-file main.bicep
 run — use it before every `deployment group create`.
 
 Secrets: `az keyvault secret show`, `az webapp config appsettings list`, and
-`az storage account keys list` return live credentials. Query only the fields you need, never echo a
-secret value into the conversation, and prefer `--auth-mode login` over fetching account keys.
+`az storage account keys list` return live credentials. The risk starts when the value enters your
+context, not when it reaches the conversation — once read it can be echoed by accident, quoted back
+in a summary, or written to a scratch file. So project these on the way out, not after:
+
+```bash
+az webapp config appsettings list -g RG -n APP --query "[].name" -o tsv
+az storage account keys list -g RG -n ACCT --query "[].{name:keyName,created:creationTime}"
+az keyvault secret show --vault-name V -n S --query "attributes.updated" -o tsv
+```
+
+Diagnosing a credential is almost never a reason to read one. A key that no longer works was
+rotated, and rotation leaves a timestamp: `az storage account show --query keyCreationTime`, the
+secret's `attributes.updated`, or a `regenerateKey`/`SecretSet` entry in `az monitor activity-log
+list`. Compare that against when the caller last worked — that is the whole diagnosis, and it never
+touches the value. Prefer `--auth-mode login` over fetching account keys at all.
 
 ## 5. When there is no typed command
 

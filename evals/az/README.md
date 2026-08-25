@@ -50,6 +50,11 @@ behaving like a run:
   calls are projected.
 - **`-o` is honoured** for json, jsonc, tsv, table and none, and `-h` returns help text captured
   from a real CLI at the version the tenant claims.
+- **A scope flag narrows a list.** A tenant serves one list per command, so without this
+  `az storage account list -g rg-integration` returns an account belonging to another group. That
+  is worse than the command not existing: nothing signals to the run that it was lied to. Entries
+  declare what a flag filters on (`filter: [{flags: [-g, --resource-group], field: resourceGroup}]`),
+  and a `show` can `lookup` out of the matching list so the two can never disagree.
 - **An unmatched path fails the way `az` fails it** — exit 2, "misspelled or not recognized" on
   stderr. Returning empty success would read to the run as "no such resources exist", which is a
   different finding entirely.
