@@ -250,8 +250,17 @@ def main() -> int:
 
     # Logged before the streams are written, so a run killed mid-command still shows
     # the attempt — an attempted write that never returned is still an attempted write.
+    # `bytes` is what the call put into the run's context, which is how a round tells
+    # a compacted help read from a raw one; logs captured before it existed omit it.
     with Path(call_log).open("a", encoding="utf-8") as handle:
-        record = {"argv": argv, "path": path, "matched": matched, "kind": kind, "exit": code}
+        record = {
+            "argv": argv,
+            "path": path,
+            "matched": matched,
+            "kind": kind,
+            "exit": code,
+            "bytes": len(stdout),
+        }
         handle.write(json.dumps(record) + "\n")
 
     if stdout:

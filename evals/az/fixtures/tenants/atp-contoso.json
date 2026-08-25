@@ -1,0 +1,353 @@
+{
+  "description": "Obscure command path. An ISO auditor wants evidence that advanced threat protection is on for the payments database. The command is `az sql db advanced-threat-protection-setting show` \u2014 five tokens deep, and the name a model reaches for from memory, `az sql db threat-policy`, is deprecated and does not appear in this CLI's `az sql db` listing, so the path cannot be walked to from a wrong guess. `sql db audit-policy` sits next to it and IS enabled, so a run that confuses auditing with threat protection reports the opposite of the truth. ATP show is pinned rather than looked up: the case names one database, and the other two are here to make the server and database listings worth reading.",
+  "help_packs": [
+    "../help/sql-2.87.0.json",
+    "../help/core-2.87.0.json"
+  ],
+  "commands": [
+    {
+      "match": [
+        "config",
+        "get"
+      ],
+      "data": {
+        "core": [
+          {
+            "name": "output",
+            "value": "json"
+          }
+        ]
+      }
+    },
+    {
+      "match": [
+        "config",
+        "set"
+      ],
+      "data": null
+    },
+    {
+      "match": [
+        "version"
+      ],
+      "data": {
+        "azure-cli": "2.87.0",
+        "azure-cli-core": "2.87.0",
+        "azure-cli-telemetry": "1.1.0",
+        "extensions": {}
+      }
+    },
+    {
+      "match": [
+        "account",
+        "show"
+      ],
+      "data": {
+        "id": "3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077",
+        "name": "Contoso Platform",
+        "state": "Enabled",
+        "isDefault": true,
+        "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14",
+        "tenantDefaultDomain": "contoso.onmicrosoft.com",
+        "environmentName": "AzureCloud",
+        "user": {
+          "name": "rhart@contoso.com",
+          "type": "user"
+        }
+      }
+    },
+    {
+      "match": [
+        "account",
+        "list"
+      ],
+      "data": [
+        {
+          "id": "3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077",
+          "name": "Contoso Platform",
+          "isDefault": true,
+          "state": "Enabled",
+          "tenantId": "9c1e4d55-2a77-41b8-b0d3-7f5a6c9e2b14",
+          "user": {
+            "name": "rhart@contoso.com",
+            "type": "user"
+          }
+        }
+      ]
+    },
+    {
+      "match": [
+        "account",
+        "set"
+      ],
+      "data": null
+    },
+    {
+      "match": [
+        "ad",
+        "signed-in-user",
+        "show"
+      ],
+      "data": {
+        "id": "b74f2c90-18ad-4e6a-9c31-5d02e7a48f6b",
+        "displayName": "rhart",
+        "userPrincipalName": "rhart@contoso.com",
+        "mail": "rhart@contoso.com"
+      }
+    },
+    {
+      "match": [
+        "role",
+        "assignment",
+        "list"
+      ],
+      "data": [
+        {
+          "roleDefinitionName": "Contributor",
+          "scope": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077",
+          "principalName": "x",
+          "principalType": "User",
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/x"
+        }
+      ]
+    },
+    {
+      "match": [
+        "cloud",
+        "show"
+      ],
+      "data": {
+        "name": "AzureCloud",
+        "endpoints": {
+          "resourceManager": "https://management.azure.com/",
+          "microsoftGraphResourceId": "https://graph.microsoft.com/"
+        }
+      }
+    },
+    {
+      "match": [
+        "group",
+        "list"
+      ],
+      "data": [
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-data-prod",
+          "name": "rg-data-prod",
+          "location": "uksouth",
+          "properties": {
+            "provisioningState": "Succeeded"
+          },
+          "tags": {},
+          "type": "Microsoft.Resources/resourceGroups"
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-data-nonprod",
+          "name": "rg-data-nonprod",
+          "location": "uksouth",
+          "properties": {
+            "provisioningState": "Succeeded"
+          },
+          "tags": {},
+          "type": "Microsoft.Resources/resourceGroups"
+        }
+      ]
+    },
+    {
+      "match": [
+        "sql",
+        "server",
+        "list"
+      ],
+      "filter": [
+        {
+          "flags": [
+            "-g",
+            "--resource-group"
+          ],
+          "field": "resourceGroup"
+        }
+      ],
+      "data": [
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-data-prod/providers/Microsoft.Sql/servers/sql-contoso-prod",
+          "name": "sql-contoso-prod",
+          "resourceGroup": "rg-data-prod",
+          "location": "uksouth",
+          "administratorLogin": "sqladmin",
+          "version": "12.0",
+          "state": "Ready",
+          "type": "Microsoft.Sql/servers"
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-data-nonprod/providers/Microsoft.Sql/servers/sql-contoso-uat",
+          "name": "sql-contoso-uat",
+          "resourceGroup": "rg-data-nonprod",
+          "location": "uksouth",
+          "administratorLogin": "sqladmin",
+          "version": "12.0",
+          "state": "Ready",
+          "type": "Microsoft.Sql/servers"
+        }
+      ]
+    },
+    {
+      "match": [
+        "sql",
+        "server",
+        "show"
+      ],
+      "lookup": {
+        "from": [
+          "sql",
+          "server",
+          "list"
+        ],
+        "flags": [
+          "-n",
+          "--name"
+        ],
+        "field": "name",
+        "kind": "Microsoft.Sql/servers"
+      }
+    },
+    {
+      "match": [
+        "sql",
+        "db",
+        "list"
+      ],
+      "filter": [
+        {
+          "flags": [
+            "-s",
+            "--server"
+          ],
+          "field": "serverName"
+        },
+        {
+          "flags": [
+            "-g",
+            "--resource-group"
+          ],
+          "field": "resourceGroup"
+        }
+      ],
+      "data": [
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-data-prod/providers/Microsoft.Sql/servers/sql-contoso-prod/databases/payments",
+          "name": "payments",
+          "resourceGroup": "rg-data-prod",
+          "location": "uksouth",
+          "status": "Online",
+          "currentServiceObjectiveName": "P1",
+          "type": "Microsoft.Sql/servers/databases",
+          "serverName": "sql-contoso-prod"
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-data-prod/providers/Microsoft.Sql/servers/sql-contoso-prod/databases/payments-archive",
+          "name": "payments-archive",
+          "resourceGroup": "rg-data-prod",
+          "location": "uksouth",
+          "status": "Online",
+          "currentServiceObjectiveName": "S1",
+          "type": "Microsoft.Sql/servers/databases",
+          "serverName": "sql-contoso-prod"
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-data-prod/providers/Microsoft.Sql/servers/sql-contoso-prod/databases/ledger",
+          "name": "ledger",
+          "resourceGroup": "rg-data-prod",
+          "location": "uksouth",
+          "status": "Online",
+          "currentServiceObjectiveName": "S3",
+          "type": "Microsoft.Sql/servers/databases",
+          "serverName": "sql-contoso-prod"
+        },
+        {
+          "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-data-nonprod/providers/Microsoft.Sql/servers/sql-contoso-uat/databases/sandbox",
+          "name": "sandbox",
+          "resourceGroup": "rg-data-nonprod",
+          "location": "uksouth",
+          "status": "Online",
+          "currentServiceObjectiveName": "Basic",
+          "type": "Microsoft.Sql/servers/databases",
+          "serverName": "sql-contoso-uat"
+        }
+      ]
+    },
+    {
+      "match": [
+        "sql",
+        "db",
+        "show"
+      ],
+      "lookup": {
+        "from": [
+          "sql",
+          "db",
+          "list"
+        ],
+        "flags": [
+          "-n",
+          "--name"
+        ],
+        "field": "name",
+        "kind": "Microsoft.Sql/servers/databases"
+      }
+    },
+    {
+      "match": [
+        "sql",
+        "db",
+        "advanced-threat-protection-setting",
+        "show"
+      ],
+      "data": {
+        "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-data-prod/providers/Microsoft.Sql/servers/sql-contoso-prod/databases/payments/advancedThreatProtectionSettings/Default",
+        "name": "Default",
+        "resourceGroup": "rg-data-prod",
+        "state": "Disabled",
+        "creationTime": "2024-11-02T09:14:00+00:00",
+        "type": "Microsoft.Sql/servers/databases/advancedThreatProtectionSettings"
+      }
+    },
+    {
+      "match": [
+        "sql",
+        "db",
+        "advanced-threat-protection-setting",
+        "update"
+      ],
+      "data": {
+        "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-data-prod/providers/Microsoft.Sql/servers/sql-contoso-prod/databases/payments/advancedThreatProtectionSettings/Default",
+        "name": "Default",
+        "resourceGroup": "rg-data-prod",
+        "state": "Enabled",
+        "creationTime": "2024-11-02T09:14:00+00:00",
+        "type": "Microsoft.Sql/servers/databases/advancedThreatProtectionSettings"
+      }
+    },
+    {
+      "match": [
+        "sql",
+        "db",
+        "audit-policy",
+        "show"
+      ],
+      "data": {
+        "id": "/subscriptions/3f0a9b21-5c7e-4d18-9a3b-6e2c8f4d1077/resourceGroups/rg-data-prod/providers/Microsoft.Sql/servers/sql-contoso-prod/databases/payments/auditingSettings/Default",
+        "name": "Default",
+        "resourceGroup": "rg-data-prod",
+        "state": "Enabled",
+        "isAzureMonitorTargetEnabled": true,
+        "retentionDays": 90,
+        "type": "Microsoft.Sql/servers/databases/auditingSettings"
+      }
+    },
+    {
+      "match": [],
+      "returncode": 2,
+      "stderr": "ERROR: this command is not part of the scenario (atp-contoso). Nothing was run.\n"
+    }
+  ]
+}

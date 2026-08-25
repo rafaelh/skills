@@ -18,9 +18,7 @@ metadata:
 
 # Azure CLI
 
-Two helper scripts do the orienting and the lookup; `az` itself does the work. Both sit beside this
-file in `scripts/`; `${SKILL_DIR}` below is this skill's own directory, which the agent resolves at
-run time.
+Two helper scripts do the orienting and the lookup; `az` itself does the work.
 
 ## 1. Orient first — one call, always
 
@@ -44,8 +42,10 @@ python3 "${SKILL_DIR}/scripts/az-help.py" --format text webapp create      # how
 python3 "${SKILL_DIR}/scripts/az-help.py" --tree webapp --match "log|diag" # find the verb
 ```
 
-This is the installed CLI's own help, compacted ~8x by dropping the global argument block and
-reducing optional flags to names plus enumerated values. Prefer it over `az ... -h`. Add `--full` only when compact output is ambiguous.
+This is the installed CLI's own help, compacted ~5x on a leaf command by dropping the global
+argument block and reducing optional flags to names plus enumerated values. Prefer it over
+`az ... -h`; add `--full` only when compact output is ambiguous. Group listings barely compact —
+`--tree` is the reason to use it on a group, not size.
 
 `--tree <group>` is the one thing plain `-h` cannot do: `-h` reveals a single level, so a nested
 command like `az webapp config ssl bind` otherwise costs three round trips. Use `--tree` with
@@ -54,33 +54,25 @@ command like `az webapp config ssl bind` otherwise costs three round trips. Use 
 Exit `3` means the command path does not exist in **this** install — usually a different group,
 occasionally an extension. Do not retry the same path.
 
-## 3. Keep output small
+## 3. Output shape and read volume
 
-`az` returns entire ARM objects by default; a bare `az webapp list` is tens of thousands of tokens.
-Always project:
+Project with `--query`, and pass `-o` explicitly on any command whose output you read.
 
-```bash
-az webapp list --query "[].{name:name,rg:resourceGroup,state:state}" -o json
-az webapp show -g RG -n APP --query "id" -o tsv        # single value into a variable
-az group create -g RG -l uksouth --output none          # when only the exit code matters
-az ... --only-show-errors                               # drop deprecation banners from stderr
-```
+**Stop when the query has answered the question.** A projected `az graph query` or `az ... list`
+over an estate *is* the answer — do not then re-read the resources individually with `az ... show`
+to confirm it. Re-read one only when the projection is missing a field you actually need.
 
-Pass `-o` explicitly on any command whose output you read. JSON is only the *fallback* default:
-`core.output` in the user's `~/.azure/config` or `AZURE_CORE_OUTPUT` overrides it globally, so under
-a `table` or `yaml` default a command you meant to parse returns text and still exits `0`. That
-setting is the user's own preference for their interactive shell — never change it. Preflight
-reports it as `config.output_default`, flagged when it is not JSON-shaped (`json` and `jsonc` both
-parse; `az` drops the colour when stdout is not a terminal).
-
-Never paste a raw `az ... list` dump into the conversation. Project first, then show the user a
-table.
+JSON is only the *fallback* default: `core.output` in the user's `~/.azure/config` or
+`AZURE_CORE_OUTPUT` overrides it globally, so under a `table` or `yaml` default a command you meant
+to parse returns text and still exits `0`. That setting is the user's own preference for their
+interactive shell — never change it. Preflight reports it as `config.output_default`, flagged when
+it is not JSON-shaped (`json` and `jsonc` both parse; `az` drops the colour when stdout is not a
+terminal).
 
 ## 4. Read before you write
 
-Default to reads. Before any `create`, `delete`, `update`, `set`, `add`, `remove`, `start`, `stop`,
-`restart`, `purge`, `regenerate`, `rotate`, or `--yes`: say what will change and to which resource,
-and get confirmation. Never add `--yes` on your own initiative.
+Say what will change and to which resource, and get confirmation, before any write. Never add
+`--yes` on your own initiative.
 
 Honour the preflight's `access.posture`:
 
@@ -130,15 +122,13 @@ In order of preference:
 
 - **Multiple subscriptions:** pass `--subscription <id>` per command. Do not run `az account set` —
   it mutates the user's global default for every other shell.
-- **Long operations:** `--no-wait`, then `az <group> wait --created --ids <id>`. Do not block on a
-  20-minute deployment.
+- **Long operations:** `--no-wait`, then `az <group> wait --created --ids <id>`.
 - **Parallel `az` calls:** give each worker its own `AZURE_CONFIG_DIR`; concurrent MSAL token-cache
   writes corrupt `~/.azure`.
 - **Bulk operations:** `... --query "[].id" -o tsv | az vm start --ids @-` uses the CLI's built-in
   parallelism.
-- **Never run:** `az login` unattended (print the device code and wait for the user),
-  `az interactive`, `az configure`, `az feedback`, `az survey`, `az upgrade` — all interactive or
-  globally state-mutating.
+- **Never run unattended:** `az login` (print the device code and wait for the user),
+  `az interactive`, `az configure`, `az feedback`, `az survey`, `az upgrade`.
 
 ## 7. References — read on demand, not up front
 

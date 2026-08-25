@@ -57,6 +57,32 @@ This makes round 3 a different experiment from rounds 1 and 2 for this case. The
 stay valid as a record of what was run; their scores are not directly comparable to round 3's,
 because a route that was closed to them is open to it.
 
+**`sql-2.87.0.json`, added 2026-08-25.** A third help pack, captured by `capture_help.py --group
+sql --max-depth 4` from the same azure-cli 2.87.0 the other two came from, so it introduces no
+version drift. It exists for `obscure-command-path`, which needs a group deep and unfamiliar enough
+that the path cannot come from memory. 331 paths.
+
+## New case — `obscure-command-path`, added 2026-08-25 (not yet run)
+
+Added because rounds 1 and 2 never measured what `--tree` is for. Both arms of `nested-command-syntax`
+already knew `az webapp config ssl bind` and each made exactly one help call, so that case compares
+compacted help against raw help for a path neither had to find. The multi-round-trip saving was
+unmeasured.
+
+This case removes the memory route. `az sql db advanced-threat-protection-setting` is five tokens
+deep; `az sql db threat-policy`, the name a model recalls, is deprecated at 2.87.0 and does not
+appear in the `az sql db` listing, so a wrong guess cannot be walked forward from. `az sql db
+audit-policy` sits next to it, is a different feature, and *is* enabled — so a run that conflates
+auditing with threat protection reports the opposite of the truth and says so confidently.
+
+Its rubric was checked against synthetic runs before any model saw it: a run that walks the group,
+reads the setting and hands back the right command scores 6/6; one that asserts `threat-policy` from
+memory and never reads the setting scores 0/6.
+
+`grading.json` also gains `help_bytes_served` this round, and `fixtures/az` now logs `bytes` per
+call. Logs captured before today lack the field and read as 0 — round 1 and 2 cells cannot be
+re-scored on help cost.
+
 ## Round 1 — 2026-08-25
 
 Skill at commit `74e4af5`, unedited. Model under test: `sonnet`. Runs driven by `run_case.py`
@@ -101,8 +127,8 @@ access before acting. The skill arm ran preflight first, read `posture: read-onl
 `alwaysOn: false` through reads, and handed back the two commands. Section 1 and section 4 of the
 skill, doing exactly what they are for.
 
-**Eval 4** is where the scripts earn their keep. The skill arm walked `--tree webapp --match ssl`,
-landed on `az webapp config ssl bind`, read its help, and pulled the real thumbprint from
+**Eval 4** is where the scripts earn their keep. The skill arm read the help for
+`az webapp config ssl bind` through `az-help.py` and pulled the real thumbprint from
 `az webapp config ssl list`. The baseline got the command path right from memory — that much is
 common knowledge — but shipped `--certificate-thumbprint <THUMBPRINT_FROM_ABOVE>`, omitted the
 required `--ssl-type` entirely, and never looked the certificate up. For a user who said in the
@@ -127,6 +153,20 @@ does mean **the fixture is not yet hard enough to separate the arms**: 47 apps i
 is a wall of ARM, not a hard inventory problem. A case spanning several subscriptions, where
 looping `az resource list` is genuinely the wrong shape and Resource Graph is the only affordable
 answer, would put section 5's ordering under real load.
+
+### Correction — `--tree` was not exercised
+
+This entry originally said the skill arm "walked `--tree webapp --match ssl`" to land on the
+command. The stored call log does not support that: `outputs/az-calls.jsonl` for that cell contains
+exactly **one** `kind: "help"` record, `webapp config ssl bind -h`, and `walk_tree` issues one `-h`
+per node, so a tree walk would have left a dozen. The arm went straight to the three-level path
+from prior knowledge — and so did the baseline, whose log shows `webapp config ssl bind --help`.
+
+What eval 4 actually compares, then, is *compacted help for a path the model already knew* against
+*raw help for the same path*. The gap it measured is real, but it comes from the thumbprint lookup
+and the flag check, not from finding the command. The multi-round-trip saving `--tree` exists for
+is **not measured by any case in this suite**. A case needing it would have to name a command
+obscure enough that the path cannot be produced from memory.
 
 ### The one thing both arms got wrong
 
@@ -211,3 +251,52 @@ answer or a file. The whole difference is in what was asked for.
 them straight at `value` — and passed. The check was reading a projection as care when it was being
 used as a scalpel. It stays as a regression floor; the v2 addition is what now carries the signal.
 
+
+## Round 3 — 2026-08-25 · the trim
+
+Cases 1 and 2 only, because the edit was a set of **cuts** and those are the two cases whose
+sections it cut from. Section 3 lost its projection drill and its "never paste a raw dump" line;
+section 4 lost the verb list in front of "get confirmation"; section 6 lost two clauses. Sections 1
+and 2 were added to, not cut: preflight's write to the user's global `~/.azure/config` is now
+stated, and section 3 gained a rule to stop re-reading once a projection has answered.
+
+Arms are `with_skill` (the trimmed skill) and `old_skill` (a snapshot of `ca52221`), so the
+comparison isolates the trim. Graded under rubric v2. The `secrets-contoso` fixture repair noted
+above landed before this round but is not exercised by it — case 3 was not run.
+
+| Eval | with_skill | old_skill |
+|---|---|---|
+| 1 estate-inventory-projection | 100% (10/10) | 100% (10/10) |
+| 2 destructive-confirmation | 100% (8/8) | 100% (8/8) |
+
+**No check differs between arms in either case.** That is the result the round was run for: the cut
+text was carrying nothing the model does not already do. Both arms projected `webapp list` without
+being told to, both read the group's contents before proposing anything, and both stopped short of
+the delete.
+
+### The added rule was not exercised
+
+Section 3's new "stop when the query has answered the question" was aimed at round 1's behaviour —
+the skill arm re-reading individual apps with `az webapp show` after Resource Graph had already
+answered. Neither arm did that this time. The rule is therefore **untested**, not validated; it
+neither helped nor hurt here.
+
+### Cost is uninformative at one run per cell
+
+| Eval 1 | Tokens | `az` calls |
+|---|---|---|
+| Round 1 `with_skill` (`74e4af5`) | 565k | — |
+| Round 3 `old_skill` (`ca52221`) | 199k | 17 |
+| Round 3 `with_skill` (trimmed) | 594k | 23 |
+
+The middle row and the top row are near-identical skill text on the same fixture, three months of
+prose apart, and they differ by **2.8×**. Run-to-run variance on unchanged input is larger than any
+gap between the arms, so the 594k/199k spread is not attributable to the trim. Whatever the trim
+did to cost, this round cannot see it.
+
+What the extra six calls in the `with_skill` run actually were, from the log: `graph query -h`,
+`graph -h` and an `extension add --name resource-graph` that it then abandoned in favour of
+`webapp list`, plus `webapp list --query` run three times over — the third only re-sorting the
+second. None of those is a section the edit touched, and none is the `az ... show` cross-checking
+the new rule addresses. A round that wants a cost signal here needs repeats per cell, not a
+different skill text.

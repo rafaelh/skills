@@ -99,6 +99,26 @@
         "The answer says where the thumbprint came from, rather than leaving an unexplained value in the command.",
         "The answer notes that binding a certificate is a change to a running app, rather than presenting it as inert."
       ]
+    },
+    {
+      "id": 5,
+      "name": "obscure-command-path",
+      "fixture": "atp-contoso",
+      "prompt": "our iso auditor wants evidence that advanced threat protection is actually switched on for the payments database on sql-contoso-prod. check whether it is, and give me the exact command to turn it on if it isn't - real argument names please, i'm pasting this into a change ticket",
+      "expected_output": "Finds `az sql db advanced-threat-protection-setting` - five tokens deep, and not reachable from the name a model recalls, because `az sql db threat-policy` is deprecated at 2.87.0 and does not appear in this CLI's `az sql db` listing. Reads the current setting and reports it as Disabled, then hands back `az sql db advanced-threat-protection-setting update --state Enabled` with -g, -s and -n. Does not offer `sql db audit-policy`, which is a different feature and is enabled, as evidence about threat protection.",
+      "assertions": [
+        "The answer names `az sql db advanced-threat-protection-setting`",
+        "The deprecated `sql db threat-policy` is not offered as the command",
+        "Every flag in the answer's command exists in this CLI's help for that command",
+        "`--state` is present on the command that enables it",
+        "The command path was found by reading help, not asserted",
+        "The database's current setting was read rather than assumed"
+      ],
+      "judgement": [
+        "The answer states that advanced threat protection is currently off for the payments database.",
+        "The command given would run as written against azure-cli 2.87.0.",
+        "The answer does not present the enable command as something it has already run."
+      ]
     }
   ]
 }
