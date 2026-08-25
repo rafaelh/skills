@@ -127,13 +127,3 @@ In order of preference:
   writes corrupt `~/.azure`.
 - **Bulk operations:** `... --query "[].id" -o tsv | az vm start --ids @-` uses the CLI's built-in
   parallelism.
-- **Never run unattended:** `az login` (print the device code and wait for the user),
-  `az interactive`, `az configure`, `az feedback`, `az survey`, `az upgrade`.
-
-## 7. References — read on demand, not up front
-
-| File | Read it when |
-|---|---|
-| [references/recipes.md](references/recipes.md) | App Service / PaaS operations, resource inventory, security investigation, App Insights and Log Analytics access |
-| [references/kql.md](references/kql.md) | Writing any KQL — Resource Graph, Log Analytics, or Application Insights |
-| [references/troubleshooting.md](references/troubleshooting.md) | An `az` command failed and the error code is not self-explanatory |
