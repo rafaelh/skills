@@ -95,7 +95,7 @@ signal that it's an output variation, not a behavioural switch.
 
 ## Designing for retryability
 
-The agent may retry a tool call if it receives a transient error (exit 2).
+The agent may retry a tool call that failed transiently — exit `2` carrying `"transient": true` in its stderr line. Exit `2` alone is not a retry signal: a permanent system error (bad credentials, missing file) uses it too, and so does an argparse invocation failure in any tool that hasn't remapped it (see [interface-contract.md](interface-contract.md)).
 Design operations to be safe to retry:
 
 - **Reads:** always safe

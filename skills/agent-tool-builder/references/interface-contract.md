@@ -17,6 +17,21 @@ Full specification for Python scripts designed to be called by AI agents.
 distinguish "found nothing" from "hit an error". That coupling is fragile and breaks whenever output
 format changes. Exit `3` is the contract signal: "I ran successfully; there's just nothing here."
 
+**Argparse's default collides with `2`.** On an unknown flag, a bad `type=`, or a missing required
+argument, `argparse` prints usage text to stderr and exits `2` — the code this contract reserves for
+infrastructure failure, which an agent may retry. A typo'd flag then looks retryable when no number
+of retries will fix it, and the usage text is not the structured line the next section requires.
+Override `error()` so invocation failures land on `1`:
+
+```python
+class ContractParser(argparse.ArgumentParser):
+    """argparse exits 2 (system error) on bad args; agent tools need 1 (user error)."""
+
+    def error(self, message: str) -> NoReturn:
+        _emit_error(message, "BAD_INVOCATION", hint=f"Check flags against: {self.prog} --help")
+        raise SystemExit(EXIT_USER_ERROR)
+```
+
 ### Conditional (add only when meaningfully distinct from `1`/`2`)
 
 | Code | Meaning | When to use |
@@ -26,6 +41,22 @@ format changes. Exit `3` is the contract signal: "I ran successfully; there's ju
 
 Don't reach for `4`/`5` reflexively. A login-required tool might genuinely need `4`; a `--name`
 lookup that returns nothing should use `3`, not `4`. Most tools will only use `0/1/2/3`.
+
+### Codes you don't choose
+
+`126`, `127`, `128+n` (`130` SIGINT, `137` SIGKILL or the OOM killer, `143` SIGTERM) and `255` are
+produced by the shell and the kernel, not by your `return` statement: the file wasn't executable,
+the shebang was wrong, the process was killed. An agent will see them, and they arrive with **no
+structured stderr line** — there was no running script to write one. They mean "the tool never ran
+or was terminated", not anything about the request. Only `137` is worth a retry, and only smaller.
+
+So never exit in the `126`–`255` range deliberately: a tool returning `127` for "record not found"
+is indistinguishable from a tool that isn't installed. The single sanctioned use is `130` on
+`KeyboardInterrupt`, which restates what the shell would have reported anyway.
+
+The sysexits.h codes (`64`–`78`: `EX_USAGE`, `EX_DATAERR`, `EX_NOPERM`, …) are a sendmail-era
+convention that no agent harness interprets. They buy no branching that `code` and `hint` in the
+stderr line don't already give you, at the cost of codes nobody recognises. Don't adopt them.
 
 ### Every exit must explain itself
 
@@ -251,7 +282,7 @@ crashing, because the harness can't tell whether to wait longer or kill the proc
 
 ## Argument validation order
 
-1. Parse args (argparse handles unknown flags → exit 2)
+1. Parse args (a `ContractParser` remaps argparse's own exit `2` to `1` — see above)
 2. Validate enum values and ranges (`EXIT_USER_ERROR = 1`)
 3. Validate required combinations (`--id` required with `--update`, etc.)
 4. Resolve and verify paths/credentials (before network calls)
@@ -323,7 +354,7 @@ def main(argv=None):
     try:
         result = run(args)
     except KeyboardInterrupt:
-        return EXIT_USER_ERROR
+        return 130  # shell convention for SIGINT; not a user error the agent can fix
     except Exception as exc:
         _emit_error(
             str(exc), "UNEXPECTED_ERROR", hint="Check logs or re-run with --debug for a traceback"

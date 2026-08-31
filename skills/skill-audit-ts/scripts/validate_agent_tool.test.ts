@@ -248,3 +248,82 @@ export function helper(): number {
     expect(data.skipped).toBe(true);
   });
 });
+
+describe("validate_agent_tool shell-reserved exit codes", () => {
+  it("warns when a script exits in the reserved range", () => {
+    const fixture = write(
+      "reserved.ts",
+      `#!/usr/bin/env -S npx tsx
+/** tool - examples: tool --format json */
+import { parseArgs } from "node:util";
+parseArgs({ args: process.argv.slice(2), options: { format: { type: "string" }, quiet: { type: "boolean" } } });
+process.exit(127);
+`,
+    );
+    const result = runCli("validate_agent_tool.ts", [fixture, "--format", "json"]);
+    const findings = JSON.parse(result.stdout).findings;
+    const reserved = findings.find((f: { code: string }) => f.code === "contract.reserved-exit-127");
+    expect(reserved).toBeDefined();
+    expect(reserved.severity).toBe("warn");
+  });
+
+  it("allows 130 (SIGINT), which only restates what the shell reports", () => {
+    const fixture = write(
+      "sigint.ts",
+      `#!/usr/bin/env -S npx tsx
+/** tool - examples: tool --format json */
+import { parseArgs } from "node:util";
+const EXIT_INTERRUPTED = 130;
+parseArgs({ args: process.argv.slice(2), options: { format: { type: "string" }, quiet: { type: "boolean" } } });
+process.exit(EXIT_INTERRUPTED);
+`,
+    );
+    const result = runCli("validate_agent_tool.ts", [fixture, "--format", "json"]);
+    const codes = JSON.parse(result.stdout).findings.map((f: { code: string }) => f.code);
+    expect(codes.some((c: string) => c.startsWith("contract.reserved-exit"))).toBe(false);
+  });
+});
+
+describe("validate_agent_tool parseArgs throw handling", () => {
+  it("flags an unguarded parseArgs call", () => {
+    const fixture = write(
+      "unguarded.ts",
+      `#!/usr/bin/env -S npx tsx
+/** tool - examples: tool --format json */
+import { parseArgs } from "node:util";
+const { values } = parseArgs({ args: process.argv.slice(2), options: { format: { type: "string" }, quiet: { type: "boolean" } } });
+void values;
+process.exit(0);
+`,
+    );
+    const result = runCli("validate_agent_tool.ts", [fixture, "--format", "json"]);
+    const codes = JSON.parse(result.stdout).findings.map((f: { code: string }) => f.code);
+    expect(codes).toContain("contract.parseargs-throws");
+  });
+
+  it("stays quiet when parseArgs is wrapped in try/catch", () => {
+    const fixture = write(
+      "guarded.ts",
+      `#!/usr/bin/env -S npx tsx
+/** tool - examples: tool --format json */
+import { parseArgs } from "node:util";
+
+function main(argv: string[]): number {
+  try {
+    const { values } = parseArgs({ args: argv, options: { format: { type: "string" }, quiet: { type: "boolean" } } });
+    void values;
+    return 0;
+  } catch (err) {
+    process.stderr.write(JSON.stringify({ error: (err as Error).message, code: "BAD_INVOCATION" }) + "\\n");
+    return 2;
+  }
+}
+
+process.exit(main(process.argv.slice(2)));
+`,
+    );
+    const result = runCli("validate_agent_tool.ts", [fixture, "--format", "json"]);
+    const codes = JSON.parse(result.stdout).findings.map((f: { code: string }) => f.code);
+    expect(codes).not.toContain("contract.parseargs-throws");
+  });
+});

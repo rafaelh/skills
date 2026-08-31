@@ -2,8 +2,8 @@
 """Validate that a Python script meets the agent tool interface contract.
 
 Checks: argparse present, --format/--quiet flags, reachable exit codes 0/1/2,
-no input() calls, no stdout/stderr mixing, PEP 723 block if non-stdlib imports
-detected.
+no exits in the shell-reserved range, argparse's own exit 2 remapped, no input()
+calls, no stdout/stderr mixing, PEP 723 block if non-stdlib imports detected.
 
 Usage:
     validate_agent_tool.py <script-path> [--json] [--exit-on-warn]
@@ -90,11 +90,14 @@ def check_quiet_flag(src: str) -> list[Finding]:
     return []
 
 
-def check_exit_codes(src: str) -> list[Finding]:
-    findings = []
+def _exit_values(src: str) -> set[int] | None:
+    """Statically-derivable exit codes: sys.exit(N)/exit(N) and `return N` in main().
+
+    Returns None when the source does not parse.
+    """
     tree = _ast(src)
     if tree is None:
-        return []
+        return None
 
     # Build a map of name → literal int value for constants like EXIT_OK = 0
     const_map: dict[str, int] = {}
@@ -134,6 +137,14 @@ def check_exit_codes(src: str) -> list[Finding]:
             elif isinstance(val, ast.Name) and val.id in const_map:
                 exits_found.add(const_map[val.id])
 
+    return exits_found
+
+
+def check_exit_codes(src: str) -> list[Finding]:
+    exits_found = _exit_values(src)
+    if exits_found is None:
+        return []
+
     labels = {
         0: "success path missing",
         1: "user-error path missing",
@@ -154,6 +165,82 @@ def check_exit_codes(src: str) -> list[Finding]:
             )
         )
     return findings
+
+
+# Codes the shell and kernel produce on their own. 130 (SIGINT) is the one a script
+# may legitimately return, since it only restates what the shell would have reported.
+_RESERVED_EXITS = {
+    126: "command invoked cannot execute",
+    127: "command not found",
+    137: "killed by SIGKILL or the OOM killer",
+    139: "segmentation fault",
+    143: "killed by SIGTERM",
+    255: "exit status out of range",
+}
+
+
+def check_reserved_exit_codes(src: str) -> list[Finding]:
+    exits_found = _exit_values(src)
+    if exits_found is None:
+        return []
+    return [
+        Finding(
+            f"contract.reserved-exit-{n}",
+            "warn",
+            f"Exits {n}, reserved by the shell ({_RESERVED_EXITS.get(n, 'signal 128+n')}) — "
+            "the agent cannot tell it from the tool failing to launch or being killed, "
+            "and no structured stderr line reaches it. Use 1/2/3.",
+        )
+        for n in sorted(exits_found)
+        if n >= 126 and n != 130
+    ]
+
+
+def check_argparse_exit_remap(src: str) -> list[Finding]:
+    """Flag scripts where argparse's own exit 2 collides with their meaning for 2.
+
+    argparse exits 2 on an unknown flag or a bad ``type=``. That only misleads an
+    agent when the script gives 2 a different meaning — a system/infrastructure
+    error, which the agent may retry. A script whose 2 already means "bad
+    invocation" agrees with argparse and needs no remap.
+    """
+    tree = _ast(src)
+    if tree is None or "ArgumentParser" not in src:
+        return []
+
+    collides = any(
+        isinstance(node, ast.Assign)
+        and len(node.targets) == 1
+        and isinstance(node.targets[0], ast.Name)
+        and isinstance(node.value, ast.Constant)
+        and node.value.value == 2
+        and re.search(r"SYSTEM|INFRA|TRANSIENT|INTERNAL", node.targets[0].id)
+        for node in ast.walk(tree)
+    )
+    if not collides:
+        return []
+
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.ClassDef):
+            continue
+        bases = {
+            b.attr if isinstance(b, ast.Attribute) else getattr(b, "id", "") for b in node.bases
+        }
+        if "ArgumentParser" in bases and any(
+            isinstance(b, ast.FunctionDef) and b.name == "error" for b in node.body
+        ):
+            return []
+
+    return [
+        Finding(
+            "contract.argparse-exit-2",
+            "info",
+            "Exit 2 means system error here, but argparse also exits 2 on an unknown flag or a "
+            "bad --type value — so an unfixable invocation looks like a retryable outage, and "
+            "the agent gets usage text instead of the structured stderr line. Subclass "
+            "ArgumentParser and override error() to emit the error line and exit 1.",
+        )
+    ]
 
 
 def check_no_interactive(src: str) -> list[Finding]:
@@ -286,17 +373,30 @@ def check_docstring(src: str) -> list[Finding]:
     return []
 
 
+def _parser_ctors(tree: ast.Module) -> set[str]:
+    """`ArgumentParser` plus any local subclass of it — e.g. a ContractParser."""
+    names = {"ArgumentParser"}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ClassDef) and any(
+            (b.attr if isinstance(b, ast.Attribute) else getattr(b, "id", "")) in names
+            for b in node.bases
+        ):
+            names.add(node.name)
+    return names
+
+
 def check_epilog(src: str) -> list[Finding]:
     """`--help` is the agent's reference; a flag list without examples leaves it guessing."""
     tree = _ast(src)
     if tree is None:
         return []
+    ctors = _parser_ctors(tree)
     for node in ast.walk(tree):
         if (
             isinstance(node, ast.Call)
             and (
-                (isinstance(node.func, ast.Attribute) and node.func.attr == "ArgumentParser")
-                or (isinstance(node.func, ast.Name) and node.func.id == "ArgumentParser")
+                (isinstance(node.func, ast.Attribute) and node.func.attr in ctors)
+                or (isinstance(node.func, ast.Name) and node.func.id in ctors)
             )
             and any(kw.arg == "epilog" for kw in node.keywords)
         ):
@@ -375,6 +475,8 @@ ALL_CHECKS = [
     check_format_flag,
     check_quiet_flag,
     check_exit_codes,
+    check_reserved_exit_codes,
+    check_argparse_exit_remap,
     check_no_interactive,
     check_stderr_for_errors,
     check_pep723,

@@ -83,7 +83,7 @@ by `validate_agent_tool.py`:
 
 - `--format json|text`, `--json` as shorthand, `--quiet` to suppress informational stderr.
 - Exit codes: `0` success, `1` user error, `2` system error, `3` not-found/empty. Never make the
-  agent parse text to tell "nothing matched" from "it broke".
+  agent parse text to tell "nothing matched" from "it broke"; never exit `126`+ (the shell's range).
 - Argparse-based; no `input()`, no free-form stdout errors.
 - Library modules that are *not* agent tools carry `# agent-tool: false` in the first 10 lines so
   the validator skips them.

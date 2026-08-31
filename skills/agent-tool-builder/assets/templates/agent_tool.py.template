@@ -18,6 +18,8 @@ Exit codes:
     1   User/invocation error — bad args, validation failed, missing required flag
     2   System/infrastructure error — network failure, DB unreachable, file missing
     3   Not found / empty result — query succeeded but nothing matched
+    130 Interrupted (SIGINT). Codes >= 126 otherwise come from the shell, not from
+        this script — see references/interface-contract.md.
 """
 
 from __future__ import annotations
@@ -26,7 +28,7 @@ import argparse
 import json
 import sys
 from dataclasses import asdict, dataclass
-from typing import Any
+from typing import Any, NoReturn
 
 # ---------------------------------------------------------------------------
 # Exit code constants — use these, never bare integers
@@ -35,6 +37,7 @@ EXIT_OK = 0
 EXIT_USER_ERROR = 1
 EXIT_SYSTEM_ERROR = 2
 EXIT_NOT_FOUND = 3
+EXIT_INTERRUPTED = 130  # shell convention for SIGINT
 
 # ---------------------------------------------------------------------------
 # Output helpers
@@ -141,8 +144,21 @@ def _emit_csv(result: ResultSet, fields: list[str] | None) -> None:
 # Argument parser
 # ---------------------------------------------------------------------------
 
+class ContractParser(argparse.ArgumentParser):
+    """Route argparse's own failures through the contract.
+
+    argparse exits 2 on an unknown flag or a bad `type=` — the code this contract
+    reserves for infrastructure errors, which agents may retry. Bad args are a user
+    error (1) and are never fixed by retrying.
+    """
+
+    def error(self, message: str) -> NoReturn:
+        _emit_error(message, "BAD_INVOCATION", hint=f"Check flags against: {self.prog} --help")
+        raise SystemExit(EXIT_USER_ERROR)
+
+
 def _build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
+    parser = ContractParser(
         description=__doc__.split("\n", 1)[0] if __doc__ else "",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
@@ -234,6 +250,8 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         result = fetch(query=args.query, limit=args.limit, cursor=args.cursor)
+    except KeyboardInterrupt:
+        return EXIT_INTERRUPTED
     except NotImplementedError:
         _emit_error("fetch() not yet implemented", "NOT_IMPLEMENTED")
         return EXIT_SYSTEM_ERROR

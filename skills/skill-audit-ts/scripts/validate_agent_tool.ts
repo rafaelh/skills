@@ -3,8 +3,9 @@
  * Validate that a TypeScript script meets the agent tool interface contract.
  *
  * Checks: parseArgs (or another arg parser) present, --format/--quiet flags,
- * reachable exit codes 0/1/2/3, no interactive prompts, no stdout/stderr
- * mixing, non-builtin imports declared in a reachable package.json.
+ * reachable exit codes 0/1/2/3, no exits in the shell-reserved range, parseArgs
+ * throws caught, no interactive prompts, no stdout/stderr mixing, non-builtin
+ * imports declared in a reachable package.json.
  *
  * Usage:
  *   validate_agent_tool.ts <script-path> [--json] [--exit-on-warn]
@@ -195,6 +196,70 @@ function checkExitCodes(src: string): Finding[] {
     severity,
     message,
   }));
+}
+
+// Codes the shell and kernel produce on their own. 130 (SIGINT) is the one a script
+// may legitimately return, since it only restates what the shell would have reported.
+const RESERVED_EXITS = new Map<number, string>([
+  [126, "command invoked cannot execute"],
+  [127, "command not found"],
+  [137, "killed by SIGKILL or the OOM killer"],
+  [139, "segmentation fault"],
+  [143, "killed by SIGTERM"],
+  [255, "exit status out of range"],
+]);
+
+function checkReservedExitCodes(src: string): Finding[] {
+  const sourceFile = ast(src);
+  const constMap = buildNumericConstMap(sourceFile);
+  const exitsFound = [...new Set(collectExitValues(sourceFile, constMap))].sort((a, b) => a - b);
+  return exitsFound
+    .filter((n) => n >= 126 && n !== 130)
+    .map((n) => ({
+      code: `contract.reserved-exit-${n}`,
+      severity: "warn" as const,
+      message:
+        `Exits ${n}, reserved by the shell (${RESERVED_EXITS.get(n) ?? "signal 128+n"}) — ` +
+        "the agent cannot tell it from the tool failing to launch or being killed, " +
+        "and no structured stderr line reaches it. Use 1/2/3.",
+    }));
+}
+
+/**
+ * `parseArgs` throws on an unknown flag. Uncaught, Node prints a stack trace and
+ * exits 1 — the code this contract gives to "issues found", so a typo'd flag reads
+ * as a finished run with findings. Catch it and return 2 (bad invocation).
+ */
+function checkParseArgsThrows(src: string): Finding[] {
+  const sourceFile = ast(src);
+  if (!/\bparseArgs\s*\(/.test(src)) return [];
+
+  let unguarded = false;
+  forEachNode(sourceFile, (node) => {
+    if (
+      !ts.isCallExpression(node) ||
+      !ts.isIdentifier(node.expression) ||
+      node.expression.text !== "parseArgs"
+    ) {
+      return;
+    }
+    for (let p: ts.Node | undefined = node.parent; p; p = p.parent) {
+      if (ts.isTryStatement(p)) return;
+    }
+    unguarded = true;
+  });
+  if (!unguarded) return [];
+
+  return [
+    {
+      code: "contract.parseargs-throws",
+      severity: "info",
+      message:
+        "parseArgs() is not inside a try/catch — an unknown flag throws, and Node exits 1 " +
+        "with a stack trace, which this contract gives to 'issues found'. Catch the throw, " +
+        "emit the structured stderr line, and return 2 (bad invocation).",
+    },
+  ];
 }
 
 function checkNoInteractive(src: string): Finding[] {
@@ -408,6 +473,8 @@ const ALL_CHECKS: Array<(src: string) => Finding[]> = [
   checkFormatFlag,
   checkQuietFlag,
   checkExitCodes,
+  checkReservedExitCodes,
+  checkParseArgsThrows,
   checkNoInteractive,
   checkStderrForErrors,
   checkShebang,

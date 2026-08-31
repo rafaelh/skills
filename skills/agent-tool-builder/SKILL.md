@@ -228,8 +228,10 @@ long output, delegate to one subagent so the raw per-file dumps stay out of the 
 > both are clean, return "Validators pass."
 
 `validate_agent_tool.py` checks the contract mechanically: argparse present, `--format` / `--quiet`,
-reachable exit codes `0/1/2/3`, no `input()`, stdout/stderr not mixed, PEP 723 block when non-stdlib
-imports are detected, `epilog=` examples, structured error JSON on stderr.
+reachable exit codes `0/1/2/3`, nothing exiting in the shell-reserved range (`126`+), argparse's own
+exit `2` remapped when the script uses `2` for system errors, no `input()`, stdout/stderr not mixed,
+PEP 723 block when non-stdlib imports are detected, `epilog=` examples, structured error JSON on
+stderr.
 
 `perf_check.py` accepts a file or a directory (walked recursively). Treat **HIGH** findings as
 blockers. Read [references/perf-findings.md](references/perf-findings.md) when deciding whether a

@@ -14,6 +14,9 @@
  *   2   bad invocation (missing path, unreadable file, etc.)
  *   3   nothing matched — only for tools that can return an empty result set,
  *       so the agent can tell "no results" apart from "it broke"
+ *
+ * Never exit >= 126 deliberately: 126/127/128+n/255 come from the shell and the
+ * kernel (not executable, killed, OOM) and carry no structured stderr line.
  */
 
 import { existsSync } from "node:fs";
@@ -67,42 +70,63 @@ Options:
   --help       Show this help message
 `;
 
+/** parseArgs signals every invocation problem with an ERR_PARSE_ARGS_* code. */
+function isInvocationError(err: unknown): boolean {
+  const code = (err as { code?: unknown }).code;
+  return typeof code === "string" && code.startsWith("ERR_PARSE_ARGS");
+}
+
 export function main(argv: string[]): number {
-  const { values, positionals } = parseArgs({
-    args: argv,
-    allowPositionals: true,
-    options: {
-      json: { type: "boolean", default: false },
-      "dry-run": { type: "boolean", default: false },
-      help: { type: "boolean", default: false },
-    },
-  });
+  try {
+    const { values, positionals } = parseArgs({
+      args: argv,
+      allowPositionals: true,
+      options: {
+        json: { type: "boolean", default: false },
+        "dry-run": { type: "boolean", default: false },
+        help: { type: "boolean", default: false },
+      },
+    });
 
-  if (values.help) {
-    console.log(HELP);
-    return 0;
-  }
+    if (values.help) {
+      console.log(HELP);
+      return 0;
+    }
 
-  const targetArg = positionals[0];
-  if (!targetArg) {
-    console.error(HELP);
+    const targetArg = positionals[0];
+    if (!targetArg) {
+      console.error(HELP);
+      return 2;
+    }
+
+    const target = resolve(targetArg);
+    if (!existsSync(target)) {
+      console.error(`{{script_name}}: path does not exist: ${target}`);
+      return 2;
+    }
+
+    const results = run(target);
+    if (values.json) {
+      emitJson(target, results);
+    } else {
+      emitText(results);
+    }
+
+    return results.some((r) => r.severity === "fail") ? 1 : 0;
+  } catch (err) {
+    // An unknown flag throws here. Uncaught, Node exits 1 with a stack trace —
+    // the code this contract gives to "issues found", so a typo'd flag would read
+    // as a finished run. Invocation errors belong on 2; real bugs stay unhandled.
+    if (!isInvocationError(err)) throw err;
+    console.error(
+      JSON.stringify({
+        error: (err as Error).message,
+        code: "BAD_INVOCATION",
+        hint: "Check flags against: {{script_name}}.ts --help",
+      }),
+    );
     return 2;
   }
-
-  const target = resolve(targetArg);
-  if (!existsSync(target)) {
-    console.error(`{{script_name}}: path does not exist: ${target}`);
-    return 2;
-  }
-
-  const results = run(target);
-  if (values.json) {
-    emitJson(target, results);
-  } else {
-    emitText(results);
-  }
-
-  return results.some((r) => r.severity === "fail") ? 1 : 0;
 }
 
 const isMain = process.argv[1] && import.meta.url === `file://${process.argv[1]}`;

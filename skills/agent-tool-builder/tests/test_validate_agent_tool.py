@@ -258,3 +258,121 @@ def test_agent_tool_false_marker_skips(tmp_path: Path) -> None:
     assert r.returncode == 0
     data = json.loads(r.stdout)
     assert data["skipped"] is True
+
+
+# ---------------------------------------------------------------------------
+# Shell-reserved exit codes
+# ---------------------------------------------------------------------------
+
+
+def test_reserved_exit_code_warns(tmp_path: Path) -> None:
+    fixture = _write(
+        tmp_path,
+        "reserved.py",
+        """\
+        #!/usr/bin/env python3
+        '''tool'''
+        import argparse, sys
+        p = argparse.ArgumentParser(epilog='examples: tool')
+        p.add_argument('--format', default='json')
+        p.add_argument('--quiet', action='store_true')
+        sys.exit(127)
+        """,
+    )
+    r = _run(str(fixture), "--format", "json")
+    findings = {f["code"]: f for f in json.loads(r.stdout)["findings"]}
+    assert "contract.reserved-exit-127" in findings
+    assert findings["contract.reserved-exit-127"]["severity"] == "warn"
+
+
+def test_exit_130_is_allowed(tmp_path: Path) -> None:
+    """130 (SIGINT) only restates what the shell would report — not a finding."""
+    fixture = _write(
+        tmp_path,
+        "sigint.py",
+        """\
+        #!/usr/bin/env python3
+        '''tool'''
+        import argparse, sys
+        EXIT_INTERRUPTED = 130
+        p = argparse.ArgumentParser(epilog='examples: tool')
+        p.add_argument('--format', default='json')
+        p.add_argument('--quiet', action='store_true')
+        sys.exit(EXIT_INTERRUPTED)
+        """,
+    )
+    r = _run(str(fixture), "--format", "json")
+    codes = {f["code"] for f in json.loads(r.stdout)["findings"]}
+    assert not any(c.startswith("contract.reserved-exit") for c in codes)
+
+
+# ---------------------------------------------------------------------------
+# argparse's exit 2 vs the contract's exit 2
+# ---------------------------------------------------------------------------
+
+
+_SYSTEM_ERROR_TOOL = """\
+#!/usr/bin/env python3
+'''tool'''
+import argparse, sys
+EXIT_OK = 0
+EXIT_USER_ERROR = 1
+EXIT_SYSTEM_ERROR = 2
+{parser}
+p.add_argument('--format', default='json')
+p.add_argument('--quiet', action='store_true')
+sys.exit(EXIT_SYSTEM_ERROR)
+"""
+
+
+def test_argparse_exit_2_collision_flagged(tmp_path: Path) -> None:
+    fixture = _write(
+        tmp_path,
+        "collides.py",
+        _SYSTEM_ERROR_TOOL.format(parser="p = argparse.ArgumentParser(epilog='examples: tool')"),
+    )
+    r = _run(str(fixture), "--format", "json")
+    codes = {f["code"] for f in json.loads(r.stdout)["findings"]}
+    assert "contract.argparse-exit-2" in codes
+
+
+def test_argparse_exit_2_silent_when_error_overridden(tmp_path: Path) -> None:
+    fixture = _write(
+        tmp_path,
+        "remapped.py",
+        _SYSTEM_ERROR_TOOL.format(
+            parser=(
+                "class ContractParser(argparse.ArgumentParser):\n"
+                "    def error(self, message):\n"
+                "        raise SystemExit(EXIT_USER_ERROR)\n"
+                "p = ContractParser(epilog='examples: tool')"
+            )
+        ),
+    )
+    r = _run(str(fixture), "--format", "json")
+    codes = {f["code"] for f in json.loads(r.stdout)["findings"]}
+    assert "contract.argparse-exit-2" not in codes
+    assert "contract.missing-epilog" not in codes, "epilog on a parser subclass must be seen"
+
+
+def test_argparse_exit_2_silent_when_2_means_bad_invocation(tmp_path: Path) -> None:
+    """A tool whose 2 already means "bad invocation" agrees with argparse."""
+    fixture = _write(
+        tmp_path,
+        "agrees.py",
+        """\
+        #!/usr/bin/env python3
+        '''tool'''
+        import argparse, sys
+        EXIT_OK = 0
+        EXIT_FAIL = 1
+        EXIT_BAD_INVOCATION = 2
+        p = argparse.ArgumentParser(epilog='examples: tool')
+        p.add_argument('--format', default='json')
+        p.add_argument('--quiet', action='store_true')
+        sys.exit(EXIT_BAD_INVOCATION)
+        """,
+    )
+    r = _run(str(fixture), "--format", "json")
+    codes = {f["code"] for f in json.loads(r.stdout)["findings"]}
+    assert "contract.argparse-exit-2" not in codes
