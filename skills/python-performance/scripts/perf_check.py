@@ -31,6 +31,7 @@ from __future__ import annotations
 import argparse
 import ast
 from collections import defaultdict
+import contextlib
 import cProfile
 from dataclasses import asdict, dataclass
 import io
@@ -237,8 +238,10 @@ _CHECKS: dict[str, Check] = {
         "HIGH/MEDIUM",
         "'x in [a, b, c]' walks the sequence comparing element by element; a set hashes x once "
         "and looks it up in O(1). The gap widens with both the number of candidates and the "
-        "number of checks, so inside a loop this is O(n*m) where O(n) was available. A set "
-        "literal costs nothing extra to write, which is why this is HIGH in a loop.",
+        "number of checks, so inside a loop this is O(n*m) where O(n) was available. 'not in' "
+        "costs the same or more — it has to reach the end of the sequence before it can answer, "
+        "so every miss is the worst case. A set literal costs nothing extra to write, which is "
+        "why this is HIGH in a loop.",
         "Use a set literal: x in {a, b, c}. If the candidates are computed rather than literal, "
         "build the set once outside the loop (frozenset(...)) instead of rebuilding it per pass.",
     ),
@@ -464,8 +467,7 @@ _CHECKS: dict[str, Check] = {
 }
 
 
-# Patterns this tool stays quiet about on purpose. Recorded here because "the
-# linter said nothing" is only useful if you know what it declines to say.
+# Patterns this tool stays quiet about on purpose.
 _NOT_FLAGGED: list[tuple[str, str]] = [
     (
         "Caching method lookups (append = out.append)",
@@ -615,8 +617,8 @@ def _spawning_functions(
         for name, called in calls.items():
             if name in spawning:
                 continue
-            # sorted() so a function reaching two different spawns names the same
-            # one on every run — set order would make the report unstable.
+            # sorted() so a function reaching two different spawns names the same one on every run.
+            # set order would make the report unstable.
             reached = next((spawning[c] for c in sorted(called) if c in spawning), None)
             if reached is not None:
                 spawning[name] = reached
@@ -630,9 +632,9 @@ class PerfVisitor(ast.NodeVisitor):
         self.issues: list[Issue] = []
         self._depth = 0
         self._buffers: dict[str, str] = {}
-        self._flattened: set[ast.AST] = set()
-        # Spawns are resolved up front: a helper may be defined after the loop
-        # that calls it, so the walk cannot answer "does this spawn?" on its own.
+        self._flattened: set[ast.For] = set()
+        # Spawns are resolved up front: a helper may be defined after the loop that calls it, so the
+        # walk cannot answer "does this spawn?" on its own.
         self._spawn_modules, self._spawn_direct = _spawn_bindings(tree)
         self._spawning_funcs = _spawning_functions(tree, self._spawn_modules, self._spawn_direct)
 
@@ -663,7 +665,8 @@ class PerfVisitor(ast.NodeVisitor):
     def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:
         self._visit_scope(node)
 
-    def _check_loop_body(self, node: ast.For | ast.While) -> None:
+    def _check_repeated_subscript(self, node: ast.For | ast.While) -> None:
+        """Flag the same constant-key lookup done three or more times per iteration."""
         counter = _SubscriptCounter()
         for stmt in node.body:
             counter.visit(stmt)
@@ -677,38 +680,42 @@ class PerfVisitor(ast.NodeVisitor):
                 )
 
     def visit_For(self, node: ast.For) -> None:
-        c = node.iter
-        if (
-            isinstance(c, ast.Call)
-            and isinstance(c.func, ast.Name)
-            and c.func.id == "range"
-            and c.args
-        ):
-            offset = _range_len_offset(c.args[-1])
-            if offset == 1:
-                self._flag(
-                    node,
-                    "range-len",
-                    "for i in range(len(seq) - 1) — a sliding window over adjacent pairs",
-                    "Use itertools.pairwise(seq): 'for a, b in pairwise(seq)' — ~60% faster",
-                    sev="MEDIUM",
-                )
-            elif offset is not None:
-                self._flag(
-                    node,
-                    "range-len",
-                    "for i in range(len(seq)) — index-based iteration over a sequence",
-                    "Use 'for item in seq:' or 'for i, item in enumerate(seq):'",
-                    sev="LOW",
-                )
-        if self._check_manual_flatten(node):
-            self._flattened.add(node.body[0])  # don't also report its inner append
+        self._check_range_len(node)
+        self._check_manual_flatten(node)
         self._check_lone_append(node)
         for name in ast.walk(node.target):
             if isinstance(name, ast.Name):
                 self._buffers.pop(name.id, None)  # the loop variable rebinds it
-        self._check_loop_body(node)
+        self._check_repeated_subscript(node)
         self._enter(node)
+
+    def _check_range_len(self, node: ast.For) -> None:
+        """Flag 'for i in range(len(seq))' — direct iteration or pairwise says it better."""
+        it = node.iter
+        if not (
+            isinstance(it, ast.Call)
+            and isinstance(it.func, ast.Name)
+            and it.func.id == "range"
+            and it.args
+        ):
+            return
+        offset = _range_len_offset(it.args[-1])
+        if offset == 1:
+            self._flag(
+                node,
+                "range-len",
+                "for i in range(len(seq) - 1) — a sliding window over adjacent pairs",
+                "Use itertools.pairwise(seq): 'for a, b in pairwise(seq)' — ~60% faster",
+                sev="MEDIUM",
+            )
+        elif offset is not None:
+            self._flag(
+                node,
+                "range-len",
+                "for i in range(len(seq)) — index-based iteration over a sequence",
+                "Use 'for item in seq:' or 'for i, item in enumerate(seq):'",
+                sev="LOW",
+            )
 
     def _lone_append(self, node: ast.For) -> ast.Call | None:
         """Return the append() call if the loop body is exactly one .append(...) on a name."""
@@ -737,14 +744,14 @@ class PerfVisitor(ast.NodeVisitor):
             "Readability only, not speed: result = [expr for item in seq]",
         )
 
-    def _check_manual_flatten(self, node: ast.For) -> bool:
+    def _check_manual_flatten(self, node: ast.For) -> None:
         """Flag 'for sub in nested: for x in sub: out.append(x)' — a hand-rolled flatten."""
         if len(node.body) != 1 or not isinstance(node.body[0], ast.For):
-            return False
+            return
         inner = node.body[0]
         call = self._lone_append(inner)
         if call is None:
-            return False
+            return
         # The inner loop must walk the outer variable and append only its own variable.
         if not (
             isinstance(node.target, ast.Name)
@@ -754,14 +761,14 @@ class PerfVisitor(ast.NodeVisitor):
             and isinstance(call.args[0], ast.Name)
             and call.args[0].id == inner.target.id
         ):
-            return False
+            return
         self._flag(
             node,
             "manual-flatten",
             "nested loop whose only work is appending inner items — a hand-rolled flatten",
             "Use itertools.chain.from_iterable(nested) — ~40% faster and one line",
         )
-        return True
+        self._flattened.add(inner)  # so visiting it does not also report its inner append
 
     def visit_Subscript(self, node: ast.Subscript) -> None:
         self._check_sort_then_slice(node)
@@ -818,7 +825,7 @@ class PerfVisitor(ast.NodeVisitor):
         )
 
     def visit_While(self, node: ast.While) -> None:
-        self._check_loop_body(node)
+        self._check_repeated_subscript(node)
         self._enter(node)
 
     # A comprehension is a loop: whatever its body does is done once per item.
@@ -895,6 +902,19 @@ class PerfVisitor(ast.NodeVisitor):
                 )
                 return
 
+    def _check_self_concat(self, node: ast.Assign, name: str, other: ast.expr) -> None:
+        """Flag 'x = x + ...' in a loop — quadratic for str and bytes, and for list too."""
+        kind = self._buffers.get(name) or _buffer_kind(other)
+        if kind:
+            self._flag_concat(node, kind, f"'{name} = {name} + ...'")
+        elif isinstance(other, ast.List):
+            self._flag(
+                node,
+                "list-concat-loop",
+                f"'{name} = {name} + [...]' — creates a new list every iteration",
+                "Use .append() or += (which calls extend) instead of +",
+            )
+
     def visit_Assign(self, node: ast.Assign) -> None:
         if self._depth > 0:
             self._check_manual_counter(node)
@@ -904,16 +924,10 @@ class PerfVisitor(ast.NodeVisitor):
                 continue
             other = _self_concat_operand(node.value, target.id)
             if other is not None:
-                kind = self._buffers.get(target.id) or _buffer_kind(other)
-                if kind and self._depth > 0:
-                    self._flag_concat(node, kind, f"'{target.id} = {target.id} + ...'")
-                elif self._depth > 0 and isinstance(other, ast.List):
-                    self._flag(
-                        node,
-                        "list-concat-loop",
-                        f"'{target.id} = {target.id} + [...]' — creates a new list every iteration",
-                        "Use .append() or += (which calls extend) instead of +",
-                    )
+                # A self-concat neither seeds nor clears the accumulator: 'x = x + y'
+                # leaves x whatever kind it already was.
+                if self._depth > 0:
+                    self._check_self_concat(node, target.id, other)
             elif seed:
                 self._buffers[target.id] = seed
             else:
@@ -922,15 +936,18 @@ class PerfVisitor(ast.NodeVisitor):
 
     def visit_Compare(self, node: ast.Compare) -> None:
         for i, op in enumerate(node.ops):
-            if not isinstance(op, ast.In):
+            # `not in` pays the same scan as `in`: it walks to the end before it can
+            # answer, so a miss is the worst case rather than the cheap one.
+            if not isinstance(op, ast.In | ast.NotIn):
                 continue
+            operator = "not in" if isinstance(op, ast.NotIn) else "in"
             comp = node.comparators[i]
             if isinstance(comp, ast.List | ast.Tuple) and len(comp.elts) > 1:
                 kind = "list" if isinstance(comp, ast.List) else "tuple"
                 self._flag(
                     node,
                     "membership-seq",
-                    f"'in {kind}' literal — O(n) scan each time",
+                    f"'{operator} {kind}' literal — O(n) scan each time",
                     "Use a set literal {a, b, ...} for O(1) membership tests",
                     sev="HIGH" if self._depth > 0 else "MEDIUM",
                 )
@@ -943,7 +960,7 @@ class PerfVisitor(ast.NodeVisitor):
                 self._flag(
                     node,
                     "dict-keys-membership",
-                    "'in dict.keys()' — .keys() is redundant for membership tests",
+                    f"'{operator} dict.keys()' — .keys() is redundant for membership tests",
                     "Use 'in dict' directly",
                 )
         self.generic_visit(node)
@@ -965,21 +982,21 @@ class PerfVisitor(ast.NodeVisitor):
             self._check_subprocess_in_loop(node, f)
         self.generic_visit(node)
 
-    def _check_list_as_queue(self, node: ast.Call, f: ast.expr) -> None:
-        if not (isinstance(f, ast.Attribute) and isinstance(f.value, ast.Name)):
-            return
-        if f.attr == "pop" and len(node.args) == 1 and _int_index(node.args[0]) == 0:
-            op, repl = f"{f.value.id}.pop(0)", "popleft()"
-        elif f.attr == "insert" and node.args and _int_index(node.args[0]) == 0:
-            op, repl = f"{f.value.id}.insert(0, ...)", "appendleft(...)"
-        else:
-            return
+    def _flag_list_as_queue(self, node: _Located, op: str, repl: str) -> None:
         self._flag(
             node,
             "list-as-queue",
             f"{op} in a loop — every element shifts up, making the loop O(n²)",
             f"Use collections.deque and {repl} — O(1) at both ends",
         )
+
+    def _check_list_as_queue(self, node: ast.Call, f: ast.expr) -> None:
+        if not (isinstance(f, ast.Attribute) and isinstance(f.value, ast.Name)):
+            return
+        if f.attr == "pop" and len(node.args) == 1 and _int_index(node.args[0]) == 0:
+            self._flag_list_as_queue(node, f"{f.value.id}.pop(0)", "popleft()")
+        elif f.attr == "insert" and node.args and _int_index(node.args[0]) == 0:
+            self._flag_list_as_queue(node, f"{f.value.id}.insert(0, ...)", "appendleft(...)")
 
     def visit_Delete(self, node: ast.Delete) -> None:
         if self._depth > 0:
@@ -989,12 +1006,7 @@ class PerfVisitor(ast.NodeVisitor):
                     and isinstance(t.value, ast.Name)
                     and _int_index(t.slice) == 0
                 ):
-                    self._flag(
-                        node,
-                        "list-as-queue",
-                        f"del {t.value.id}[0] in a loop — every element shifts up, making it O(n²)",
-                        "Use collections.deque and popleft() — O(1) at both ends",
-                    )
+                    self._flag_list_as_queue(node, f"del {t.value.id}[0]", "popleft()")
         self.generic_visit(node)
 
     def _check_list_remove_in_loop(self, node: ast.Call, f: ast.expr) -> None:
@@ -1158,8 +1170,8 @@ class PerfVisitor(ast.NodeVisitor):
 
 
 # Approximate cold-import cost in milliseconds, against a ~20ms interpreter baseline.
-# Only modules worth deferring are listed; cheap ones (pathlib, dataclasses, json)
-# are omitted deliberately — deferring those is noise, not a saving.
+# Only modules worth deferring are listed; cheap ones (pathlib, dataclasses, json) are omitted
+# deliberately as deferring them isn't a real saving.
 _HEAVY_IMPORTS = {
     "logging": 30,
     "urllib.request": 28,
@@ -1204,10 +1216,10 @@ def _module_bindings(stmt: ast.stmt) -> list[tuple[str, str]]:
 def check_heavy_imports(tree: ast.Module, filename: str) -> list[Issue]:
     """Flag an expensive module-scope import whose only consumer is one function.
 
-    Module-scope imports run on every process launch, so an import used by a
-    single (possibly rarely reached) function is pure overhead on every call
-    that does not reach it. Deferring is only safe when nothing at module level
-    — including class bodies and annotations, which run at import — needs it.
+    Module-scope imports run on every process launch, so an import used by a single (possibly rarely
+    reached) function is pure overhead on every call that does not reach it. Deferring is only safe
+    when nothing at module level — including class bodies and annotations, which run at import —
+    needs it.
     """
     funcs: dict[str, set[str]] = {}
     module_names: set[str] = set()
@@ -1284,18 +1296,28 @@ def _resolve_inputs(paths: list[str]) -> tuple[list[Path], list[str]]:
     return files, missing
 
 
-def run_profile(script: Path, script_args: list[str]) -> cProfile.Profile:
-    """Execute a script under cProfile, as if it had been run directly."""
+def run_profile(
+    script: Path, script_args: list[str], *, divert_stdout: bool = False
+) -> cProfile.Profile:
+    """Execute a script under cProfile, as if it had been run directly.
+
+    `divert_stdout` sends the target's own output to stderr, for callers that own stdout for a
+    machine-readable report — otherwise the two interleave there and the report no longer parses.
+    """
     pr = cProfile.Profile()
     old_argv = sys.argv[:]
     sys.argv = [str(script), *script_args]
     script_dir = str(script.parent)
     if script_dir not in sys.path:
         sys.path.insert(0, script_dir)
+    redirect: contextlib.AbstractContextManager[Any] = (
+        contextlib.redirect_stdout(sys.stderr) if divert_stdout else contextlib.nullcontext()
+    )
     try:
         code = compile(script.read_text(encoding="utf-8"), str(script), "exec")
-        pr.enable()
-        exec(code, {"__name__": "__main__", "__file__": str(script)})
+        with redirect:
+            pr.enable()
+            exec(code, {"__name__": "__main__", "__file__": str(script)})
     except SystemExit:
         pass
     except Exception as e:
@@ -1348,8 +1370,8 @@ def _profile_entries(pr: cProfile.Profile, top: int) -> list[dict[str, object]]:
 def _wrap(text: str, label: str, indent: int = 2, color: str = "") -> str:
     """Render 'Label  text' with continuation lines aligned under the text.
 
-    Colour codes are added after the width is computed, since they occupy no
-    columns on screen but would otherwise eat into the wrap budget.
+    Colour codes are added after the width is computed, since they occupy no columns on screen but
+    would otherwise eat into the wrap budget.
     """
     plain = " " * indent + label + "  "
     body = textwrap.wrap(text, width=max(_WRAP - len(plain), 40)) or [""]
@@ -1361,9 +1383,8 @@ def _wrap(text: str, label: str, indent: int = 2, color: str = "") -> str:
 def _group_issues(issues: list[Issue]) -> list[tuple[str, str, list[Issue]]]:
     """Bucket findings by (severity, category) — worst first, then most frequent.
 
-    Grouping is what lets each explanation be printed once per category rather
-    than repeated against every occurrence, which is the difference between a
-    report you read and one you skim past.
+    Grouping is what lets each explanation be printed once per category rather than repeated against
+    every occurrence, which is the difference between a report you read and one you skim past.
     """
     groups: defaultdict[tuple[str, str], list[Issue]] = defaultdict(list)
     for issue in issues:
@@ -1459,6 +1480,25 @@ def _explain_json(cats: list[str], full: bool) -> None:
     print(json.dumps(payload, indent=2))
 
 
+def _report_explain(selector: str, use_json: bool) -> int:
+    cats = _explain_categories(selector)
+    if cats is None:
+        _emit_error(
+            f"Unknown check category: {selector}",
+            "UNKNOWN_CATEGORY",
+            hint="Run --explain with no argument to list every category",
+        )
+        return EXIT_USER_ERROR
+    # The catalogue-wide extras — what is deliberately not flagged, the severity
+    # policy — belong to the full listing, not to a single category's entry.
+    full = selector == "all"
+    if use_json:
+        _explain_json(cats, full)
+    else:
+        print_explain(cats, full)
+    return EXIT_OK
+
+
 def _report_json(files: list[Path], profile: str | None, script_args: list[str], top: int) -> int:
     result: dict[str, Any] = {}
     if files:
@@ -1478,7 +1518,8 @@ def _report_json(files: list[Path], profile: str | None, script_args: list[str],
             return EXIT_USER_ERROR
         if script not in files:
             result.setdefault("static", []).extend(asdict(i) for i in analyze(script))
-        result["profile"] = _profile_entries(run_profile(script, script_args), top)
+        pr = run_profile(script, script_args, divert_stdout=True)
+        result["profile"] = _profile_entries(pr, top)
     print(json.dumps(result, indent=2))
     return EXIT_OK
 
@@ -1583,20 +1624,7 @@ def main(argv: list[str] | None = None) -> int:
     use_json = args.json or args.format == "json"
 
     if args.explain:
-        cats = _explain_categories(args.explain)
-        if cats is None:
-            _emit_error(
-                f"Unknown check category: {args.explain}",
-                "UNKNOWN_CATEGORY",
-                hint="Run --explain with no argument to list every category",
-            )
-            return EXIT_USER_ERROR
-        full = args.explain == "all"
-        if use_json:
-            _explain_json(cats, full)
-        else:
-            print_explain(cats, full)
-        return EXIT_OK
+        return _report_explain(args.explain, use_json)
 
     try:
         files, missing = _resolve_inputs(args.files) if args.files else ([], [])
@@ -1617,10 +1645,17 @@ def main(argv: list[str] | None = None) -> int:
         return EXIT_USER_ERROR
 
     if args.files and not files:
-        _log("No Python files matched the given paths.", quiet=args.quiet)
+        _emit_error(
+            f"No Python files matched: {', '.join(args.files)}",
+            "NO_PYTHON_FILES",
+            hint="Pass a .py file, or a directory holding one — directories are walked recursively",
+        )
         return EXIT_NOT_FOUND
 
-    _log(f"Analyzing {len(files)} file(s)...", quiet=args.quiet)
+    if files:
+        _log(f"Analyzing {len(files)} file(s)...", quiet=args.quiet)
+    else:
+        _log(f"Analyzing and profiling {args.profile}...", quiet=args.quiet)
 
     report = _report_json if use_json else _report_text
     try:

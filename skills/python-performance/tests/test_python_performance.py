@@ -590,6 +590,25 @@ def test_empty_directory_exits_3(tmp_path: Path) -> None:
     empty.mkdir()
     r = _run(str(empty), "--format", "json", "--quiet")
     assert r.returncode == 3
+    # --quiet suppresses chatter, never the reason for a non-zero exit
+    assert json.loads(r.stderr)["code"] == "NO_PYTHON_FILES"
+    assert r.stdout == ""
+
+
+def test_profiled_script_output_stays_out_of_the_json(tmp_path: Path) -> None:
+    fixture = _write(
+        tmp_path,
+        "chatty.py",
+        """
+        print("output from the profiled script")
+        sum(range(1000))
+        """,
+    )
+    r = _run("--profile", str(fixture), "--format", "json", "--quiet")
+    assert r.returncode == 0, r.stderr
+    payload = json.loads(r.stdout)  # would fail if the script's print landed here
+    assert payload["profile"]
+    assert "output from the profiled script" in r.stderr
 
 
 def test_membership_seq_flagged(tmp_path: Path) -> None:
@@ -605,6 +624,35 @@ def test_membership_seq_flagged(tmp_path: Path) -> None:
         """,
     )
     assert "membership-seq" in _categories(payload)
+
+
+def test_negated_membership_seq_flagged(tmp_path: Path) -> None:
+    """'not in' scans to the end before it can answer, so a miss is the worst case."""
+    payload = _analyze(
+        tmp_path,
+        "not_member.py",
+        """\
+        def f(items):
+            for x in items:
+                if x not in ["a", "b", "c"]:
+                    yield x
+        """,
+    )
+    assert "membership-seq" in _categories(payload)
+    assert _issues(payload, "membership-seq")[0]["severity"] == "HIGH"
+    assert "not in" in _issues(payload, "membership-seq")[0]["message"]
+
+
+def test_negated_dict_keys_membership_flagged(tmp_path: Path) -> None:
+    payload = _analyze(
+        tmp_path,
+        "not_keys.py",
+        """\
+        def f(d, k):
+            return k not in d.keys()
+        """,
+    )
+    assert "dict-keys-membership" in _categories(payload)
 
 
 def test_list_concat_loop_flagged(tmp_path: Path) -> None:

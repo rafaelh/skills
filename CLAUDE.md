@@ -31,7 +31,7 @@ hardcode the local toolchain.
 
 Eval harnesses live in `evals/<skill>/`, outside the shipped plugin, and follow
 [eval-approach.md](evals/eval-approach.md) — read it before touching one. Four shapes, decided by
-what a run leaves behind: artifact (`create-agents-for-repo`, `refactor` — staged repos, diffed),
+what a run leaves behind: artifact (`create-agents-for-repo`, `refactor`, `python-performance` — staged repos, diffed),
 conversation (`plan` — a simulated interview, graded on the transcript), call log (`az` — a fake
 `az` on the run's PATH logs every invocation; the rubric grades which commands were chosen),
 trigger (`obsidian-metabind` — a labeled query set for `eval_triggers.py`). `refactor` and `az`

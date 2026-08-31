@@ -69,7 +69,13 @@ class CliResult:
     cost_usd: float
 
 
-def _tool_summary(name: str, tool_input: Json, root: Path) -> str:
+# How much of a tool's argument the log keeps. A suite grading *what* a Bash call did
+# raises it: an inline timing script prefixed with a `cd` into an absolute workspace path
+# spends its first 150 characters before reaching the part a check reads.
+TOOL_SUMMARY_CHARS = 200
+
+
+def _tool_summary(name: str, tool_input: Json, root: Path, limit: int) -> str:
     # `command` last and truncated: it is what a Bash call actually did, which is the
     # difference between "ran the suite between edits" and "ran a linter that is not
     # configured here" — invisible when only the tool name is recorded.
@@ -79,7 +85,7 @@ def _tool_summary(name: str, tool_input: Json, root: Path) -> str:
             target = Path(value)
             if target.is_absolute() and target.is_relative_to(root):
                 value = str(target.relative_to(root))
-            return f"{name} {value[:200].replace(chr(10), ' ')}"
+            return f"{name} {value[:limit].replace(chr(10), ' ')}"
     return name
 
 
@@ -105,6 +111,7 @@ def run_claude(
     permission_mode: str | None = None,
     env: Mapping[str, str] | None = None,
     timeout: int = 600,
+    tool_summary_chars: int = TOOL_SUMMARY_CHARS,
 ) -> CliResult:
     """One CLI turn. Returns the assistant's text plus what it cost to get it.
 
@@ -177,7 +184,12 @@ def run_claude(
                     text_parts.append(str(blk.get("text", "")))
                 elif blk.get("type") == "tool_use":
                     tools.append(
-                        _tool_summary(str(blk.get("name")), cast("Json", blk.get("input", {})), cwd)
+                        _tool_summary(
+                            str(blk.get("name")),
+                            cast("Json", blk.get("input", {})),
+                            cwd,
+                            tool_summary_chars,
+                        )
                     )
         elif kind == "result":
             result = event

@@ -26,15 +26,15 @@ target-version = "py314"
 line-length = 100
 # Eval fixtures are snapshots of a target repo, held byte-identical so results stay
 # comparable between rounds. Formatting them would change what the skill is measured on.
-# `evals/refactor/hidden/` is the same kind of artifact: a suite written against a
-# fixture, run only inside a throwaway copy of a graded run.
+# `evals/*/hidden/` is the same kind of artifact: a suite written against a fixture,
+# run only inside a throwaway copy of a graded run.
 # `.claude/skills/skill-creator/` is Anthropic's own skill, vendored for running evals.
 # It is upstream code this repo does not own or edit, so it is held as it ships rather
 # than reformatted to this repo's rules.
 extend-exclude = [
     "evals/*/fixtures/*",
     "**/evals/fixtures/*",
-    "evals/refactor/hidden/*",
+    "evals/*/hidden/*",
     ".claude/skills/skill-creator/*",
 ]
 
@@ -135,6 +135,10 @@ ignore = [
 "evals/plan/*.py" = [
     "S603",    # subprocess argv is the resolved claude CLI plus harness-owned prompts
 ]
+"evals/python-performance/*.py" = [
+    "S603",    # subprocess argv is sys.executable plus resolved harness paths, never user text
+    "RUF001",  # × in the speed-up pattern is intentional — runs write "12×", not "12x"
+]
 "evals/refactor/*.py" = [
     "S603",    # subprocess argv is sys.executable and a fixed git invocation, never user text
     "S607",    # `git` comes from PATH by design — a staged fixture uses the dev's git
@@ -184,7 +188,7 @@ norecursedirs = [
     "evals/*/fixtures",
     # Written against a fixture's `src/`, so it only imports inside a staged copy —
     # grade.py runs it there, this repo's suite cannot.
-    "evals/refactor/hidden",
+    "evals/*/hidden",
     ".claude",
     ".venv",
     "node_modules",
@@ -201,7 +205,7 @@ exclude = [
     "**/__pycache__",
     ".venv",
     "evals/*/fixtures",
-    "evals/refactor/hidden",
+    "evals/*/hidden",
     # Vendored upstream — see the ruff exclusion above.
     ".claude/skills/skill-creator",
 ]

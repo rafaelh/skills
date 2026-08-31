@@ -15,7 +15,7 @@ What a run leaves behind decides how it is graded, and nothing else about the su
 
 | Kind | The run leaves | Graded from | Here |
 |---|---|---|---|
-| **Artifact** | Files in a staged repo | Diffs and file contents | `create-agents-for-repo/`, `refactor/` |
+| **Artifact** | Files in a staged repo | Diffs and file contents | `create-agents-for-repo/`, `refactor/`, `python-performance/` |
 | **Conversation** | A transcript | Turns, questions, what was read | `plan/` |
 | **Call log** | A record of every tool invocation | Which commands were chosen, and the answer | `az/` |
 | **Trigger** | Nothing | Whether the skill activated at all | `obsidian-metabind/` |
