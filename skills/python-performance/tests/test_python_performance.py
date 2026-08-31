@@ -858,3 +858,210 @@ def test_clean_report_points_at_profiling(tmp_path: Path) -> None:
     assert r.returncode == 0
     assert "No findings." in r.stdout
     assert "--profile" in r.stdout
+
+
+# Regression tests for false positives that survived the first round of checks.
+# Each pairs the shape that must stay quiet with the one that must still fire, so a
+# fix that silences the check outright fails here rather than passing quietly.
+
+
+def test_loop_iterable_is_evaluated_once(tmp_path: Path) -> None:
+    payload = _analyze(
+        tmp_path,
+        "iter_once.py",
+        """
+        import re
+        import subprocess
+
+        def a(path, s, cmd):
+            for line in open(path):
+                print(line)
+            for m in re.finditer(r"x", s):
+                print(m)
+            for tok in subprocess.run(cmd).stdout.split():
+                print(tok)
+        """,
+    )
+    assert _categories(payload) == set()
+
+
+def test_loop_else_clause_is_not_loop_body(tmp_path: Path) -> None:
+    payload = _analyze(
+        tmp_path,
+        "loop_else.py",
+        """
+        def f(items, out):
+            for i in items:
+                pass
+            else:
+                out.sort()
+            while items:
+                out.sort()
+            else:
+                out.sort()
+        """,
+    )
+    assert _lines(payload, "sort-in-loop") == [8]
+
+
+def test_comprehension_separates_first_iterable_from_per_item_work(tmp_path: Path) -> None:
+    payload = _analyze(
+        tmp_path,
+        "comp.py",
+        """
+        import re
+
+        def f(path, words):
+            rows = [x for x in open(path)]
+            return rows, [re.match(r"a", w) for w in words]
+        """,
+    )
+    assert _lines(payload, "open-in-loop") == []
+    assert _lines(payload, "regex-recompile") == [6]
+
+
+def test_remove_is_flagged_only_for_lists(tmp_path: Path) -> None:
+    payload = _analyze(
+        tmp_path,
+        "removes.py",
+        """
+        import os
+
+        def cleanup(paths):
+            seen = set()
+            kept = []
+            for p in paths:
+                os.remove(p)
+                seen.remove(p)
+                kept.remove(p)
+        """,
+    )
+    assert _lines(payload, "list-remove-in-loop") == [10]
+
+
+def test_reverse_in_loop_is_not_described_as_a_sort(tmp_path: Path) -> None:
+    payload = _analyze(
+        tmp_path,
+        "rev.py",
+        """
+        def f(items, out):
+            for i in items:
+                out.reverse()
+        """,
+    )
+    (issue,) = _issues(payload, "sort-in-loop")
+    assert "O(n) rewalk" in issue["message"]
+    assert "O(n log n)" not in issue["message"]
+
+
+def test_spawn_helper_matched_only_on_calls_this_file_resolves(tmp_path: Path) -> None:
+    payload = _analyze(
+        tmp_path,
+        "spawn.py",
+        """
+        import subprocess
+
+        class Deployer:
+            def run(self, cmd):
+                subprocess.run(cmd)
+
+            def deploy_all(self, items):
+                for i in items:
+                    self.run(i)
+
+        class Reporter:
+            def run(self, item):
+                return item * 2
+
+        def main(items, reporter):
+            for i in items:
+                reporter.run(i)
+        """,
+    )
+    assert _lines(payload, "subprocess-in-loop") == [10]
+
+
+def test_bytearray_accumulator_is_never_quadratic(tmp_path: Path) -> None:
+    payload = _analyze(
+        tmp_path,
+        "buf.py",
+        """
+        def read(chunks):
+            buf = bytearray()
+            for c in chunks:
+                buf += b"\\n"
+            return buf
+
+        def build(rows):
+            s = ""
+            for r in rows:
+                s += "x"
+            return s
+        """,
+    )
+    assert _lines(payload, "bytes-concat-loop") == []
+    assert _lines(payload, "string-concat-loop") == [11]
+
+
+def test_repeated_subscript_counts_reads_on_one_path(tmp_path: Path) -> None:
+    payload = _analyze(
+        tmp_path,
+        "subs.py",
+        """
+        def f(rows, d, items):
+            for row in rows:
+                row["a"] = 1
+                row["a"] = 2
+                del row["a"]
+            for k in items:
+                if k:
+                    print(d["x"])
+                elif k == 1:
+                    print(d["x"])
+                else:
+                    print(d["x"])
+            for r in rows:
+                print(r["b"], r["b"], r["b"])
+        """,
+    )
+    assert _lines(payload, "repeated-subscript") == [15]
+
+
+def test_heavy_import_needed_at_def_time_is_not_deferrable(tmp_path: Path) -> None:
+    payload = _analyze(
+        tmp_path,
+        "imports.py",
+        """
+        import numpy
+        import pandas
+        import torch
+        import boto3
+
+        @numpy.vectorize
+        def scaled(x):
+            return x * 2
+
+        def load(path, frame=pandas.DataFrame()):
+            return frame
+
+        def annotated(x: torch.Tensor) -> int:
+            return 1
+
+        def upload(key):
+            return boto3.client("s3").put_object(Key=key)
+        """,
+    )
+    assert _lines(payload, "heavy-import") == [5]
+
+
+def test_profile_target_directory_is_a_user_error(tmp_path: Path) -> None:
+    r = _run("--profile", str(tmp_path), "--quiet")
+    assert r.returncode == 1
+    assert json.loads(r.stderr)["code"] == "PROFILE_TARGET_NOT_FILE"
+
+
+def test_top_must_be_positive(tmp_path: Path) -> None:
+    fixture = _write(tmp_path, "fine.py", "x = 1\n")
+    r = _run(str(fixture), "--top", "0", "--quiet")
+    assert r.returncode == 1
+    assert json.loads(r.stderr)["code"] == "INVALID_TOP"

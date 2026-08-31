@@ -40,7 +40,10 @@ from pathlib import Path
 import pstats
 import sys
 import textwrap
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 EXIT_OK = 0
 EXIT_USER_ERROR = 1
@@ -63,9 +66,17 @@ _WRAP = 88
 # The AST nodes a finding can be reported against — those carrying a source line.
 _Located = ast.stmt | ast.expr | ast.excepthandler
 
-# Accumulator kinds tracked for the quadratic-concatenation checks.
+# The four comprehension forms, which share a generator list and differ only in
+# what each iteration produces.
+_Comprehension = ast.ListComp | ast.SetComp | ast.DictComp | ast.GeneratorExp
+
+# Value kinds tracked per scope. The two immutable ones drive the quadratic
+# concatenation checks; the rest exist to keep a name that holds something else
+# from being mistaken for an accumulator, or a list, later on.
 _STR = "str"
 _BYTES = "bytes"
+_LIST = "list"
+_IMMUTABLE = frozenset({_STR, _BYTES})
 _CONCAT_CATEGORY = {_STR: "string-concat-loop", _BYTES: "bytes-concat-loop"}
 _CONCAT_FIX = {
     _STR: "Collect into a list, then ''.join(parts) after the loop (or write into an io.StringIO)",
@@ -73,11 +84,30 @@ _CONCAT_FIX = {
 }
 
 
-def _buffer_kind(node: ast.expr) -> str | None:
-    """Classify an assignment RHS as an immutable str/bytes accumulator seed.
+# What a constructor call binds. bytearray and the io buffers are the idioms the
+# Python FAQ recommends, so a name holding one must never be read as an immutable
+# accumulator — that is the whole point of tracking them.
+_KIND_CALLS = {
+    "str": _STR,
+    "bytes": _BYTES,
+    "list": _LIST,
+    "sorted": _LIST,
+    "bytearray": "buffer",
+    "StringIO": "buffer",
+    "BytesIO": "buffer",
+    "deque": "deque",
+    "set": "set",
+    "frozenset": "set",
+    "dict": "dict",
+}
 
-    Returns None for anything else — notably bytearray() and io.StringIO(), the
-    idioms the Python FAQ recommends, which must never be flagged.
+
+def _value_kind(node: ast.expr) -> str | None:
+    """Classify an assignment RHS by the kind of value it binds.
+
+    Only _STR and _BYTES are accumulators the concatenation checks act on; the
+    other kinds are recorded so a later '+=' or '.remove()' on that name knows it
+    is looking at a bytearray, a set or a deque rather than guessing.
     """
     if isinstance(node, ast.JoinedStr):
         return _STR
@@ -86,18 +116,24 @@ def _buffer_kind(node: ast.expr) -> str | None:
             return _STR
         if isinstance(node.value, bytes):
             return _BYTES
-    if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
-        if node.func.id == "str":
-            return _STR
-        if node.func.id == "bytes":
-            return _BYTES
+    if isinstance(node, ast.List | ast.ListComp):
+        return _LIST
+    if isinstance(node, ast.Set | ast.SetComp):
+        return "set"
+    if isinstance(node, ast.Dict | ast.DictComp):
+        return "dict"
+    if isinstance(node, ast.Call):
+        if isinstance(node.func, ast.Name):
+            return _KIND_CALLS.get(node.func.id)
+        if isinstance(node.func, ast.Attribute):
+            return _KIND_CALLS.get(node.func.attr)
     return None
 
 
 def _int_index(node: ast.expr) -> int | None:
     """Extract a literal int subscript; negatives parse as UnaryOp(USub, Constant)."""
     if isinstance(node, ast.Constant) and isinstance(node.value, int) and node.value is not True:
-        return node.value
+        return int(node.value)  # int() so False renders as 0, not as 'False'
     if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.USub):
         inner = _int_index(node.operand)
         return None if inner is None else -inner
@@ -153,6 +189,22 @@ def _called_name(func: ast.expr) -> str:
         return func.attr
     if isinstance(func, ast.Name):
         return func.id
+    return ""
+
+
+def _local_call_name(func: ast.expr) -> str:
+    """The name of a call that this file's own function definitions can answer for.
+
+    A bare name, helper(), or a call on self. An attribute call on anything else
+    names some other object's method, about which the definitions here say
+    nothing: a Deployer.run that shells out tells you nothing about what
+    reporter.run() does, and treating the two as the same function is how one
+    spawning helper comes to indict every .run() in the file.
+    """
+    if isinstance(func, ast.Name):
+        return func.id
+    if isinstance(func, ast.Attribute) and isinstance(func.value, ast.Name):
+        return func.attr if func.value.id == "self" else ""
     return ""
 
 
@@ -343,7 +395,8 @@ _CHECKS: dict[str, Check] = {
         "MEDIUM",
         "A sort is O(n log n); running it once per iteration makes the surrounding loop "
         "O(n^2 log n). Almost always the result only needs to be ordered once, after the "
-        "collecting is finished.",
+        "collecting is finished. list.reverse() is the cheaper O(n) member of the same family "
+        "and lands here for the same reason: it is being redone on every pass.",
         "Sort once after the loop. If the order has to hold at every step, bisect.insort() "
         "maintains it per insert, or keep a heapq when you only ever need the smallest element.",
     ),
@@ -522,17 +575,79 @@ class Issue:
         self.why = _CHECKS[self.category].why
 
 
-class _SubscriptCounter(ast.NodeVisitor):
-    """Collects constant-key subscript accesses in a subtree, grouped by (name, key)."""
+# Constant-key reads, grouped by (name, key). A list rather than a count so a
+# finding can point at the first occurrence.
+_Reads = defaultdict[tuple[str, object], list[ast.Subscript]]
 
-    def __init__(self) -> None:
-        self.accesses: defaultdict[tuple[str, object], list[ast.Subscript]] = defaultdict(list)
 
-    def visit_Subscript(self, node: ast.Subscript) -> None:
-        if isinstance(node.value, ast.Name) and isinstance(node.slice, ast.Constant):
-            self.accesses[node.value.id, node.slice.value].append(node)
-        self.generic_visit(node)
+def _as_list(node: ast.AST | list[ast.stmt]) -> list[ast.AST]:
+    """An If holds statement lists where an IfExp holds a single expression."""
+    return list(node) if isinstance(node, list) else [node]
 
+
+def _add_reads(into: _Reads, other: _Reads) -> None:
+    """Combine reads that all happen on the same pass, so they add up."""
+    for key, nodes in other.items():
+        into[key].extend(nodes)
+
+
+def _add_worst_arm(into: _Reads, arms: list[_Reads]) -> None:
+    """Combine mutually exclusive branches by keeping only the busiest arm.
+
+    Three arms of an if/elif/else that each read row['a'] once read it once per
+    iteration, not three times — and hoisting the lookup above the branch would
+    move work onto the paths that were not doing it.
+    """
+    # sorted() so a finding names the same occurrence on every run; the keys mix
+    # types, so repr is the only ordering all of them support.
+    for key in sorted({k for arm in arms for k in arm}, key=repr):
+        into[key].extend(max((arm.get(key, []) for arm in arms), key=len))
+
+
+def _count_reads(nodes: Iterable[ast.AST]) -> _Reads:
+    """Constant-key reads per execution of `nodes`, grouped by (name, key).
+
+    Reads only: a subscript in Store or Del context is not a lookup that caching
+    could remove, and 'row[k] = v' rewritten as a local is a different program.
+    """
+    total: _Reads = defaultdict(list)
+    for node in nodes:
+        if isinstance(node, ast.Subscript):
+            if (
+                isinstance(node.ctx, ast.Load)
+                and isinstance(node.value, ast.Name)
+                and isinstance(node.slice, ast.Constant)
+            ):
+                total[node.value.id, node.slice.value].append(node)
+            _add_reads(total, _count_reads([node.value, node.slice]))
+        elif isinstance(node, ast.If | ast.IfExp):
+            _add_reads(total, _count_reads([node.test]))
+            _add_worst_arm(
+                total, [_count_reads(_as_list(node.body)), _count_reads(_as_list(node.orelse))]
+            )
+        elif isinstance(node, ast.Try):
+            _add_reads(total, _count_reads([*node.body, *node.orelse, *node.finalbody]))
+            _add_worst_arm(total, [_count_reads(h.body) for h in node.handlers])
+        elif isinstance(node, ast.Match):
+            _add_reads(total, _count_reads([node.subject]))
+            _add_worst_arm(total, [_count_reads(case.body) for case in node.cases])
+        else:
+            _add_reads(total, _count_reads(ast.iter_child_nodes(node)))
+    return total
+
+
+# Reordering a list in place, and why doing it per iteration is waste. reverse()
+# is O(n) rather than O(n log n), so it gets its own wording and its own remedy.
+_REORDER_IN_LOOP = {
+    "sort": (
+        ".sort() called inside a loop — O(n log n) work every iteration",
+        "Sort once after the loop, or use bisect.insort() to maintain order incrementally",
+    ),
+    "reverse": (
+        ".reverse() called inside a loop — an O(n) rewalk of the list every iteration",
+        "Reverse once after the loop, or iterate with reversed(seq), which copies nothing",
+    ),
+}
 
 # Calls that start an OS process, by the module they live in.
 _SPAWN_CALLS = {
@@ -549,6 +664,16 @@ _SPAWN_CALLS = {
     ),
     "os": frozenset({"system", "popen"}),
 }
+
+
+def _imported_modules(tree: ast.Module) -> set[str]:
+    """Names bound by 'import x' / 'import x.y as z' — receivers that are modules."""
+    return {
+        alias.asname or alias.name.split(".")[0]
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Import)
+        for alias in node.names
+    }
 
 
 def _spawn_bindings(tree: ast.Module) -> tuple[dict[str, str], dict[str, str]]:
@@ -592,8 +717,9 @@ def _spawning_functions(
 
     A spawn factored out into a helper costs exactly what it cost inline, so a loop
     calling that helper per item is the same finding — and that is the shape the
-    per-item work usually ends up in. Chains are followed to a fixpoint, and
-    functions are keyed by bare name so methods are covered too.
+    per-item work usually ends up in. Chains are followed to a fixpoint. Functions
+    are keyed by bare name, which is why only calls this file can resolve — a plain
+    name, or self.name — are matched against them.
     """
     spawning: dict[str, str] = {}
     calls: dict[str, set[str]] = {}
@@ -607,8 +733,8 @@ def _spawning_functions(
             label = _spawn_label(inner.func, modules, direct)
             if label:
                 spawning.setdefault(node.name, label)
-            else:
-                called.add(_called_name(inner.func))
+            elif local := _local_call_name(inner.func):
+                called.add(local)
         calls[node.name] = called
 
     changed = True
@@ -631,10 +757,11 @@ class PerfVisitor(ast.NodeVisitor):
         self.filename = filename
         self.issues: list[Issue] = []
         self._depth = 0
-        self._buffers: dict[str, str] = {}
+        self._kinds: dict[str, str] = {}
         self._flattened: set[ast.For] = set()
         # Spawns are resolved up front: a helper may be defined after the loop that calls it, so the
         # walk cannot answer "does this spawn?" on its own.
+        self._modules = _imported_modules(tree)
         self._spawn_modules, self._spawn_direct = _spawn_bindings(tree)
         self._spawning_funcs = _spawning_functions(tree, self._spawn_modules, self._spawn_direct)
 
@@ -647,17 +774,28 @@ class PerfVisitor(ast.NodeVisitor):
         severity = sev or _CHECKS[cat].severity
         self.issues.append(Issue(self.filename, node.lineno, severity, cat, msg, fix))
 
-    def _enter(self, node: ast.AST) -> None:
+    def _visit_all(self, nodes: Iterable[ast.AST]) -> None:
+        for node in nodes:
+            self.visit(node)
+
+    def _per_iteration(self, nodes: Iterable[ast.AST]) -> None:
+        """Visit nodes that run once per iteration of the enclosing loop.
+
+        Only these raise the loop depth. A loop's iterable is evaluated once before
+        the first iteration and its else clause runs at most once after the last, so
+        neither belongs here — 'for line in open(path)' opens one file, not one per
+        line, and flagging it as loop work is simply wrong.
+        """
         self._depth += 1
-        self.generic_visit(node)
+        self._visit_all(nodes)
         self._depth -= 1
 
     def _visit_scope(self, node: ast.AST) -> None:
-        """Visit a function body with a fresh accumulator map, then restore."""
-        outer = self._buffers
-        self._buffers = {}
+        """Visit a function body with a fresh map of tracked names, then restore."""
+        outer = self._kinds
+        self._kinds = {}
         self.generic_visit(node)
-        self._buffers = outer
+        self._kinds = outer
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
         self._visit_scope(node)
@@ -667,15 +805,12 @@ class PerfVisitor(ast.NodeVisitor):
 
     def _check_repeated_subscript(self, node: ast.For | ast.While) -> None:
         """Flag the same constant-key lookup done three or more times per iteration."""
-        counter = _SubscriptCounter()
-        for stmt in node.body:
-            counter.visit(stmt)
-        for (obj, key), accesses in counter.accesses.items():
+        for (obj, key), accesses in _count_reads(node.body).items():
             if len(accesses) >= 3:
                 self._flag(
                     accesses[0],
                     "repeated-subscript",
-                    f"'{obj}[{key!r}]' accessed {len(accesses)}x per loop iteration",
+                    f"'{obj}[{key!r}]' read {len(accesses)}x per loop iteration",
                     "Cache in a local variable at the top of the loop body",
                 )
 
@@ -685,9 +820,11 @@ class PerfVisitor(ast.NodeVisitor):
         self._check_lone_append(node)
         for name in ast.walk(node.target):
             if isinstance(name, ast.Name):
-                self._buffers.pop(name.id, None)  # the loop variable rebinds it
+                self._kinds.pop(name.id, None)  # the loop variable rebinds it
         self._check_repeated_subscript(node)
-        self._enter(node)
+        self.visit(node.iter)
+        self._per_iteration([node.target, *node.body])
+        self._visit_all(node.orelse)
 
     def _check_range_len(self, node: ast.For) -> None:
         """Flag 'for i in range(len(seq))' — direct iteration or pairwise says it better."""
@@ -826,20 +963,31 @@ class PerfVisitor(ast.NodeVisitor):
 
     def visit_While(self, node: ast.While) -> None:
         self._check_repeated_subscript(node)
-        self._enter(node)
+        # Unlike a for's iterable, the test is re-evaluated on every pass.
+        self._per_iteration([node.test, *node.body])
+        self._visit_all(node.orelse)
 
-    # A comprehension is a loop: whatever its body does is done once per item.
+    # A comprehension is a loop: whatever its body does is done once per item —
+    # except the first generator's iterable, which is evaluated once, up front.
     def visit_ListComp(self, node: ast.ListComp) -> None:
-        self._enter(node)
+        self._visit_comprehension(node, [node.elt])
 
     def visit_SetComp(self, node: ast.SetComp) -> None:
-        self._enter(node)
+        self._visit_comprehension(node, [node.elt])
 
     def visit_DictComp(self, node: ast.DictComp) -> None:
-        self._enter(node)
+        self._visit_comprehension(node, [node.key, node.value])
 
     def visit_GeneratorExp(self, node: ast.GeneratorExp) -> None:
-        self._enter(node)
+        self._visit_comprehension(node, [node.elt])
+
+    def _visit_comprehension(self, node: _Comprehension, produced: list[ast.AST]) -> None:
+        first, *rest = node.generators
+        self.visit(first.iter)
+        per_item: list[ast.AST] = [first.target, *first.ifs]
+        for gen in rest:
+            per_item += [gen.target, gen.iter, *gen.ifs]
+        self._per_iteration(per_item + produced)
 
     def visit_Try(self, node: ast.Try) -> None:
         if self._depth > 0:
@@ -863,17 +1011,36 @@ class PerfVisitor(ast.NodeVisitor):
             _CONCAT_FIX[kind],
         )
 
+    def _accumulator_kind(self, name: str, value: ast.expr) -> str | None:
+        """The str/bytes accumulator kind for 'name', or None if it is not one.
+
+        A name already known to hold a bytearray, an io buffer or a list is never
+        one, whatever the right-hand side looks like: 'buf += b"\\n"' on a bytearray
+        resizes in place, and flagging it recommends the code that is already
+        there. Only a name this scope has not seen bound falls back to reading the
+        value, which is what catches an accumulator seeded out of sight.
+        """
+        tracked = self._kinds.get(name)
+        kind = tracked if tracked is not None else _value_kind(value)
+        return kind if kind in _IMMUTABLE else None
+
+    def _check_augassign_concat(self, node: ast.AugAssign) -> None:
+        """Flag 's += chunk' in a loop — every += on an immutable recopies the whole buffer."""
+        if self._depth == 0 or not isinstance(node.op, ast.Add):
+            return
+        if not isinstance(node.target, ast.Name):
+            return
+        kind = self._accumulator_kind(node.target.id, node.value)
+        if kind is None:
+            return
+        if isinstance(node.value, ast.JoinedStr):
+            what = "f-string +="
+        else:
+            what = "String +=" if kind == _STR else "bytes +="
+        self._flag_concat(node, kind, what)
+
     def visit_AugAssign(self, node: ast.AugAssign) -> None:
-        if self._depth > 0 and isinstance(node.op, ast.Add):
-            target = node.target
-            tracked = self._buffers.get(target.id) if isinstance(target, ast.Name) else None
-            kind = _buffer_kind(node.value) or tracked
-            if kind:
-                if isinstance(node.value, ast.JoinedStr):
-                    what = "f-string +="
-                else:
-                    what = "String +=" if kind == _STR else "bytes +="
-                self._flag_concat(node, kind, what)
+        self._check_augassign_concat(node)
         self.generic_visit(node)
 
     def _check_manual_counter(self, node: ast.Assign) -> None:
@@ -904,21 +1071,21 @@ class PerfVisitor(ast.NodeVisitor):
 
     def _check_self_concat(self, node: ast.Assign, name: str, other: ast.expr) -> None:
         """Flag 'x = x + ...' in a loop — quadratic for str and bytes, and for list too."""
-        kind = self._buffers.get(name) or _buffer_kind(other)
+        kind = self._accumulator_kind(name, other)
         if kind:
             self._flag_concat(node, kind, f"'{name} = {name} + ...'")
-        elif isinstance(other, ast.List):
+        elif isinstance(other, ast.List) or self._kinds.get(name) == _LIST:
             self._flag(
                 node,
                 "list-concat-loop",
-                f"'{name} = {name} + [...]' — creates a new list every iteration",
+                f"'{name} = {name} + ...' — creates a new list every iteration",
                 "Use .append() or += (which calls extend) instead of +",
             )
 
     def visit_Assign(self, node: ast.Assign) -> None:
         if self._depth > 0:
             self._check_manual_counter(node)
-        seed = _buffer_kind(node.value)
+        seed = _value_kind(node.value)
         for target in node.targets:
             if not isinstance(target, ast.Name):
                 continue
@@ -929,9 +1096,9 @@ class PerfVisitor(ast.NodeVisitor):
                 if self._depth > 0:
                     self._check_self_concat(node, target.id, other)
             elif seed:
-                self._buffers[target.id] = seed
+                self._kinds[target.id] = seed
             else:
-                self._buffers.pop(target.id, None)  # rebound to something else
+                self._kinds.pop(target.id, None)  # rebound to something else
         self.generic_visit(node)
 
     def visit_Compare(self, node: ast.Compare) -> None:
@@ -1010,19 +1177,29 @@ class PerfVisitor(ast.NodeVisitor):
         self.generic_visit(node)
 
     def _check_list_remove_in_loop(self, node: ast.Call, f: ast.expr) -> None:
-        if (
+        """Only a list pays the scan-and-shift; other receivers named remove() do not.
+
+        os.remove() is a syscall and set.remove() hashes once, so neither is the
+        O(n²) shape this reports — and both are common enough inside a loop that
+        flagging them on the method name alone is mostly noise.
+        """
+        if not (
             isinstance(f, ast.Attribute)
             and f.attr == "remove"
             and isinstance(f.value, ast.Name)
             and len(node.args) == 1
             and not node.keywords
         ):
-            self._flag(
-                node,
-                "list-remove-in-loop",
-                f"{f.value.id}.remove() in a loop — O(n) scan + shift per call, O(n²) total",
-                "Build a new list with a comprehension, or collect indices and remove in bulk",
-            )
+            return
+        kind = self._kinds.get(f.value.id)
+        if f.value.id in self._modules or (kind is not None and kind != _LIST):
+            return
+        self._flag(
+            node,
+            "list-remove-in-loop",
+            f"{f.value.id}.remove() in a loop — O(n) scan + shift per call, O(n²) total",
+            "Build a new list with a comprehension, or collect indices and remove in bulk",
+        )
 
     def _check_deepcopy_in_loop(self, node: ast.Call, f: ast.expr) -> None:
         if _called_name(f) == "deepcopy":
@@ -1045,8 +1222,8 @@ class PerfVisitor(ast.NodeVisitor):
                 self._SPAWN_FIX,
             )
             return
-        called = _called_name(f)
-        reached = self._spawning_funcs.get(called)
+        called = _local_call_name(f)
+        reached = self._spawning_funcs.get(called) if called else None
         if reached is not None:
             self._flag(
                 node,
@@ -1135,13 +1312,9 @@ class PerfVisitor(ast.NodeVisitor):
             )
 
     def _check_sort_in_loop(self, node: ast.Call, f: ast.expr) -> None:
-        if isinstance(f, ast.Attribute) and f.attr in {"sort", "reverse"}:
-            self._flag(
-                node,
-                "sort-in-loop",
-                f".{f.attr}() called inside a loop — O(n log n) work every iteration",
-                "Sort once after the loop, or use bisect.insort() to maintain order incrementally",
-            )
+        if isinstance(f, ast.Attribute) and f.attr in _REORDER_IN_LOOP:
+            msg, fix = _REORDER_IN_LOOP[f.attr]
+            self._flag(node, "sort-in-loop", msg, fix)
 
     def _check_logging_fstring(self, node: ast.Call, f: ast.expr) -> None:
         log_methods = {"debug", "info", "warning", "error", "critical", "exception"}
@@ -1213,22 +1386,53 @@ def _module_bindings(stmt: ast.stmt) -> list[tuple[str, str]]:
     return []
 
 
+def _names_in(nodes: Iterable[ast.AST | None]) -> set[str]:
+    """Every bare name read anywhere under the given nodes."""
+    return {
+        n.id
+        for node in nodes
+        if node is not None
+        for n in ast.walk(node)
+        if isinstance(n, ast.Name)
+    }
+
+
+def _def_time_nodes(stmt: ast.FunctionDef | ast.AsyncFunctionDef) -> list[ast.AST | None]:
+    """The parts of a def evaluated when the module loads, not when it is called.
+
+    Decorators, default arguments and annotations all run at def time, so a name they need has to
+    stay importable at module scope. They live inside the FunctionDef node, which is why walking the
+    whole node and calling the result "what the function body uses" gets this exactly backwards.
+    """
+    args = stmt.args
+    every_arg = (*args.posonlyargs, *args.args, *args.kwonlyargs, args.vararg, args.kwarg)
+    return [
+        *stmt.decorator_list,
+        *args.defaults,
+        *args.kw_defaults,
+        stmt.returns,
+        *(a.annotation for a in every_arg if a is not None),
+    ]
+
+
 def check_heavy_imports(tree: ast.Module, filename: str) -> list[Issue]:
     """Flag an expensive module-scope import whose only consumer is one function.
 
     Module-scope imports run on every process launch, so an import used by a single (possibly rarely
     reached) function is pure overhead on every call that does not reach it. Deferring is only safe
-    when nothing at module level — including class bodies and annotations, which run at import —
-    needs it.
+    when nothing evaluated at import time — a class body, a decorator, a default argument, an
+    annotation — needs it, so all of those count as module-level use here.
     """
-    funcs: dict[str, set[str]] = {}
+    # defaultdict, not a plain assignment: a name defined twice in one module contributes
+    # its uses from both bodies.
+    funcs: defaultdict[str, set[str]] = defaultdict(set)
     module_names: set[str] = set()
     for stmt in tree.body:
-        names = {n.id for n in ast.walk(stmt) if isinstance(n, ast.Name)}
         if isinstance(stmt, ast.FunctionDef | ast.AsyncFunctionDef):
-            funcs[stmt.name] = names
+            funcs[stmt.name] |= _names_in(stmt.body)
+            module_names |= _names_in(_def_time_nodes(stmt))
         else:
-            module_names |= names
+            module_names |= _names_in([stmt])
 
     issues: list[Issue] = []
     for stmt in tree.body:
@@ -1270,9 +1474,18 @@ def _analyze_all(files: list[Path]) -> list[Issue]:
 
 def _profile_target(raw: str) -> Path | None:
     """Resolve --profile's script path, reporting the error if it doesn't exist."""
-    script = Path(raw)
-    if script.exists():
+    script = Path(raw).expanduser()
+    if script.is_file():
         return script
+    if script.exists():
+        # Without this the read fails deep inside the run and surfaces as a system error,
+        # telling the caller to retry what is really a bad argument.
+        _emit_error(
+            f"Profile target is not a file: {raw}",
+            "PROFILE_TARGET_NOT_FILE",
+            hint="--profile takes a single Python script; pass directories as positional paths",
+        )
+        return None
     _emit_error(f"Profile target not found: {raw}", "PROFILE_TARGET_NOT_FOUND")
     return None
 
@@ -1341,7 +1554,7 @@ def print_profile(pr: cProfile.Profile, script: Path, top: int) -> None:
     for line in lines:
         if "ncalls" in line and "tottime" in line:
             in_table = True
-            print(f"  {c['BOLD']}{line.strip()}{c['RESET']}")
+            print(f"  {c['BOLD']}{line.rstrip()}{c['RESET']}")
         elif in_table and line.strip():
             hi = script.name in line or "__main__" in line
             print(f"  {c['HIGH'] if hi else ''}{line}{c['RESET'] if hi else ''}")
@@ -1625,6 +1838,14 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.explain:
         return _report_explain(args.explain, use_json)
+
+    if args.top < 1:
+        _emit_error(
+            f"--top must be 1 or greater, got {args.top}",
+            "INVALID_TOP",
+            hint="Pass a positive count, e.g. --top 20",
+        )
+        return EXIT_USER_ERROR
 
     try:
         files, missing = _resolve_inputs(args.files) if args.files else ([], [])
