@@ -20,7 +20,6 @@ Script-bearing skills — held to the contracts below:
 | `skill-audit-ts` | TypeScript | Same workflow, for skills whose scripts are TypeScript |
 | `agent-tool-builder` | Python | Build & audit Python scripts that agents call as tools |
 | `create-agents-for-repo` | Python | Fit `.claude/agents/*.md` subagents to a *target* repo, wire their call sites |
-| `obsidian-metabind` | Python | Meta Bind syntax in a vault: read, author, validate, refactor |
 | `az` | Python | Orient an Azure session, look up `az` command syntax |
 | `python-performance` | Python | Slow Python: static checks, cProfile, benchmark driver |
 
@@ -33,9 +32,9 @@ Eval harnesses live in `evals/<skill>/`, outside the shipped plugin, and follow
 [eval-approach.md](evals/eval-approach.md) — read it before touching one. Four shapes, decided by
 what a run leaves behind: artifact (`create-agents-for-repo`, `refactor`, `python-performance` — staged repos, diffed),
 conversation (`plan` — a simulated interview, graded on the transcript), call log (`az` — a fake
-`az` on the run's PATH logs every invocation; the rubric grades which commands were chosen),
-trigger (`obsidian-metabind` — a labeled query set for `eval_triggers.py`). `refactor` and `az`
-drive their own runs, a `run_case.py` granting Edit/Write/Bash under `--safe-mode`, rather than
+`az` on the run's PATH logs every invocation; the rubric grades which commands were chosen). The
+fourth, trigger — a labeled query set for `eval_triggers.py` — has no suite here today. `refactor`
+and `az` drive their own runs, a `run_case.py` granting Edit/Write/Bash under `--safe-mode`, rather than
 farming the arms to subagents. `evals/shared/` holds their common plumbing — CLI invocation, the
 `grading.json` writer, the run layout, the aggregator — imported flatly.
 
@@ -103,9 +102,7 @@ dependency — it folds in its own equivalents so it runs on machines without Py
 `perf-findings.md` into the script so findings explain themselves and scoring severity by cost
 growth, not per-call agent overhead. Don't mirror changes — `skill-audit` calls the original.
 
-`obsidian-metabind` stands alone: its `parser.py` walks the vault itself rather than importing a
-sibling, so it needs nothing else installed. `.claude` is in `norecursedirs` so its symlinked
-scripts aren't collected twice.
+`.claude` is in `norecursedirs` so the skills symlinked back into it aren't collected twice.
 
 ### Python/TypeScript parity
 

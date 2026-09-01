@@ -16,7 +16,7 @@ dev = [
     "jmespath>=1.0",
     "pyright>=1.1.411",
     "pytest>=9",
-    # obsidian-metabind parses vault frontmatter with it
+    # the vendored skill-creator parses SKILL.md frontmatter with it
     "pyyaml>=6",
     "ruff>=0.15",
 ]
@@ -161,10 +161,6 @@ ignore = [
     "S101",    # assert is correct in tests
     "S603",    # subprocess calls in tests use controlled, trusted input
 ]
-"skills/obsidian-metabind/scripts/tests/*.py" = [
-    "S101",    # assert is correct in tests
-    "S603",    # subprocess calls in tests use controlled, trusted input
-]
 "skills/az/scripts/_common.py" = [
     "S603",    # subprocess invokes the `az` CLI with an argv built from tool flags, never a shell
 ]
@@ -174,11 +170,6 @@ ignore = [
 "skills/az/tests/*.py" = [
     "S101",    # assert is correct in tests
     "S603",    # subprocess calls in tests use controlled, trusted input
-]
-"skills/obsidian-metabind/scripts/refresh_docs.py" = [
-    "PLC0415", # urllib is imported inside http_get() so the fetch machinery is only
-               # paid for by callers that actually fetch — every test injects a fetcher
-               # instead, and perf_check flags the module-level import otherwise
 ]
 
 [tool.ruff.lint.isort]

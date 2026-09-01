@@ -172,7 +172,6 @@ This repo is a Claude Code plugin marketplace. From inside Claude Code, add the 
 /plugin install plan@rafaelh
 /plugin install tdd@rafaelh
 /plugin install refactor@rafaelh
-/plugin install obsidian-metabind@rafaelh
 /plugin install az@rafaelh
 /plugin install python-performance@rafaelh
 /reload-plugins
