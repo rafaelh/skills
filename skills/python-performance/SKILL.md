@@ -41,12 +41,9 @@ the output.
   something.
 - `--format json` when you want to filter or count findings programmatically.
 
-Severity is about the shape of the cost, not about how sure the tool is. HIGH means the cost
-grows faster than the input and will get worse with real data — plus process spawning, the one
-constant factor big enough to dominate a loop on its own; LOW means idiom, where the win is
-readability. Don't spend the user's time on LOW findings in code that isn't the bottleneck —
-but deciding to leave code alone is a claim about what it costs, and needs a number behind it
-exactly as a rewrite does.
+Don't spend the user's time on LOW findings in code that isn't the bottleneck — but deciding to
+leave code alone is a claim about what it costs, and needs a number behind it exactly as a
+rewrite does.
 
 ## 2. If nothing above LOW is flagged, measure
 
@@ -116,10 +113,9 @@ another one.
 Never `git stash` to get a baseline. The user's uncommitted work is not yours to move, and a stash
 that fails to pop takes it with them.
 
-Time before and after on input large enough for the effect to appear — quadratic fixes are
-invisible on ten items and dramatic on ten thousand — and tell the user the actual numbers. If the
-measurement doesn't move, revert it: unmeasured optimizations are how code gets harder to read
-for nothing.
+Time before and after on input large enough for the effect to appear, and tell the user the
+actual numbers. If the measurement doesn't move, revert it: unmeasured optimizations are how
+code gets harder to read for nothing.
 
 Time it, don't profile it. cProfile's per-call overhead inflates call-heavy code several-fold,
 so profile totals are comparable only to other profile totals — the before and after you quote

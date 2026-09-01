@@ -348,6 +348,14 @@ collapses the turns, and it can print the projection already labelled.
 | Step 3: *every number in the write-up is either measured or marked as not*, with the sentence written out, and `--project N` printing that line pre-labelled | "Every speed claim has a measured number" — 8/12, the lowest `with_skill` score in both rounds, and three of its four failures were unmarked extrapolations |
 | Step 2 gains the growth sweep and the warning that the same quadratic function reads *linear* at 8k items and *quadratic* at 80k | Found while smoke-testing `perf_bench.py` on `report-repo`: measuring at a size where the effect has not appeared yet is a wrong answer that looks like a measurement |
 | Step 3: never `git stash` to get a baseline | One round-2 run did exactly that. A stash that fails to pop takes the user's uncommitted work with it — the tool now uses a throwaway worktree instead |
+| Step 1's severity explainer is cut back to the LOW-restraint sentence | Every check the HIGH/LOW definitions could drive — no HIGH finding remains, and all five fixture-specific rewrites — is 100% in the no-skill arm in both rounds. The tool prints severity with each finding and `--explain` documents the scheme, so the paragraph also contradicted step 1's "there is nothing else to read to interpret the output" |
+| Step 3 drops *"quadratic fixes are invisible on ten items and dramatic on ten thousand"* | "The measurement was taken at a visible input size, stated" is 3/3 in both arms in round 1 and the only round-2 check where `with_skill` scores *below* baseline (8/9 against 9/9). Step 2's growth sweep now makes the point with a measured number instead |
+
+The last two are removals rather than additions, and neither is expected to move a number: they
+are justified by checks that are saturated in *every* arm, which is evidence the prose was not
+doing the work, not evidence that cutting it helps. Round 2 also showed tokens track tool calls
+(R^2 0.85) with SKILL.md under 4% of a run's total, so the ~90 words buy nothing measurable. If
+any of the saturated checks above regresses in round 3, these are the first edits to suspect.
 
 **Round 3 has a rubric problem to settle first.** 17 of 30 checks were already identical in all
 three arms, so the mechanical half will not separate v1.2 from v1.1 on its own; and the two live
