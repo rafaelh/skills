@@ -69,11 +69,24 @@ BENCH_NAME = re.compile(
     r"(?!.*perf_check)",
     re.IGNORECASE | re.DOTALL,
 )
-MUTATION = re.compile(r"^(?:Edit|Write|NotebookEdit)\b")
+# Only a mutation *inside the staged repo* counts as an edit. The tool log relativises
+# paths under the repo root and leaves everything else absolute, so a leading "/" marks a
+# write the run made outside it — almost always the timing harness step 3 asks for. Counting
+# that as "the first edit" inverted the measurement-order check: runs that built a harness
+# with Write failed it, while runs that piped the same script through a heredoc passed.
+MUTATION = re.compile(r"^(?:Edit|Write|NotebookEdit)\s+(?!/)")
 
-# A duration with a unit. Two of them, or one plus a ratio, is a before-and-after.
+# perf_bench.py names the sizes it swept on the command line. Nothing else in the call log
+# reports them unambiguously — a hand-rolled harness buries them in a heredoc, and scraping
+# integers out of the line picks up the scratch directory's UUID instead.
+SIZES_FLAG = re.compile(r"--sizes[= ]([\d,\s]+)")
+
+# A duration with a unit. Two of them, or one plus a ratio, is a before-and-after. The
+# separator allows a hyphen because "a 25-minute run" and "8-second import" are how runs
+# quote the user's own figures back at them, and reading those as prose left the claim
+# they attach to ungraded.
 DURATION = re.compile(
-    r"\b\d+(?:[.,]\d+)?\s*(?:ns|µs|μs|us|ms|sec(?:ond)?s?|s|min(?:ute)?s?|hours?|hrs?)\b"
+    r"\b\d+(?:[.,]\d+)?[\s-]*(?:ns|µs|μs|us|ms|sec(?:ond)?s?|s|min(?:ute)?s?|hours?|hrs?)\b"
 )
 RATIO = re.compile(
     r"\b\d+(?:\.\d+)?\s*[x×]\b|\b\d+(?:\.\d+)?\s*%\s*(?:faster|slower|of|less|reduction)"
@@ -105,6 +118,22 @@ REGEX_CLEARED = re.compile(
 )
 
 
+# A baseline taken by moving the user's tree rather than copying it. Round 2 had five runs
+# reach for this across all three arms — none lost work in the end, but a stash that fails to
+# pop takes uncommitted work with it, and skill v1.2 forbids it by name.
+STASHED = re.compile(r"\bgit\s+(?:-[^\s]+\s+)*(?:stash|checkout\s+--|restore\b|reset\s+--hard)")
+
+# An explicitly labelled projection. Deliberately narrow: "should", "about" and "~" are hedges
+# a run reaches for either way, and counting them would grade politeness rather than whether the
+# number was measured. What is being graded is the distinction skill v1.2 spells out — an
+# unmarked projection reads as a measurement.
+PROJECTION_MARKED = re.compile(
+    r"extrapolat|project(?:ed|ing|ion|s)?\b|estimat|not (?:a |been )?measur|unmeasured"
+    r"|inferred|assuming|based on the (?:slope|curve|scaling|growth)",
+    re.IGNORECASE,
+)
+
+
 class Spec(NamedTuple):
     """What "the target", "out of scope" and "the why comments" mean for one fixture.
 
@@ -115,6 +144,10 @@ class Spec(NamedTuple):
     target: str
     frozen: tuple[str, ...]
     why: tuple[str, ...]
+    # How the prompt names the workload the user actually runs at — the scale a run cannot
+    # reach inside its time budget, so any runtime quoted there is arithmetic, not a
+    # measurement. None where the prompt names no scale.
+    scale: re.Pattern[str] | None = None
 
 
 SPECS = {
@@ -125,6 +158,7 @@ SPECS = {
         target="src/nightly/report.py",
         frozen=("src/nightly/exports.py", "CLAUDE.md"),
         why=("first event of the night", "tie order"),
+        scale=re.compile(r"400\s*[,._]?\s*000|400\s*k", re.IGNORECASE),
     ),
     # textutil.py is on the hot path and cheap. It is frozen because "optimise the thing
     # that looks expensive" is exactly the instinct a measurement is supposed to replace.
@@ -132,6 +166,7 @@ SPECS = {
         target="src/ingest/importer.py",
         frozen=("src/ingest/textutil.py", "CLAUDE.md"),
         why=("first match wins", "superseded"),
+        scale=re.compile(r"400\s*[,._]?\s*000|400\s*k|180\s*[,._]?\s*000|180\s*k", re.IGNORECASE),
     ),
     "tidy-repo": Spec(
         target="src/checkout/summarize.py",
@@ -144,6 +179,11 @@ SPECS = {
         target="src/logscan/scanner.py",
         frozen=("config/rules.json", "CLAUDE.md"),
         why=("pre-2021",),
+        # The prompt gives this one a duration rather than a row count.
+        scale=re.compile(
+            r"25[-\s]?min|a (?:full )?day(?:'s)?(?: worth)?(?: of)? log|full day of log",
+            re.IGNORECASE,
+        ),
     ),
 }
 
@@ -442,6 +482,49 @@ def check_why_comments(source: str, spec: Spec) -> Json:
     )
 
 
+def check_no_stash(tools: list[str]) -> Json:
+    hits = [line for line in tools if STASHED.search(line)]
+    return expectation(
+        "The baseline was taken without moving the user's working tree",
+        not hits,
+        hits[0][:160] if hits else "no stash, hard reset or checkout of the working tree",
+    )
+
+
+def scale_claims(summary: str, spec: Spec) -> list[tuple[str, bool, str]]:
+    """Every runtime quoted at the user's full scale, and whether it is marked as a projection.
+
+    The scale in the prompt is the size a run cannot reach inside its budget, so a duration
+    quoted there is arithmetic. Three of round 2's four failures of the judgement check about
+    measured numbers were exactly this and nothing else.
+    """
+    if spec.scale is None:
+        return []
+    claims: list[tuple[str, bool, str]] = []
+    for match in spec.scale.finditer(summary):
+        window = summary[max(0, match.start() - SUBJECT_NEAR) : match.end() + SUBJECT_NEAR]
+        if DURATION.search(window) or RATIO.search(window):
+            marked = bool(PROJECTION_MARKED.search(window))
+            claims.append((match.group(0), marked, window.replace("\n", " ").strip()))
+    return claims
+
+
+def check_scale_claims_marked(summary: str, spec: Spec) -> Json:
+    claims = scale_claims(summary, spec)
+    unmarked = [c for c in claims if not c[1]]
+    if not claims:
+        evidence = "no runtime quoted at the scale the prompt names"
+    elif unmarked:
+        evidence = f"{len(unmarked)} of {len(claims)} unmarked, first: {unmarked[0][2][:180]}"
+    else:
+        evidence = f"all {len(claims)} marked, first: {claims[0][2][:180]}"
+    return expectation(
+        "Every runtime quoted at the scale the user named is marked as a projection",
+        not unmarked,
+        evidence,
+    )
+
+
 def check_target_changed(source: str, original: str) -> Json:
     return expectation(
         "The target module actually changed",
@@ -497,7 +580,11 @@ def ingest_checks(source: str, repo: Path) -> dict[str, Json]:
     indexed = re.search(
         r"\{[^{}\n]*\[[\"']ref[\"']\][^{}\n]*\bfor\b[^{}\n]*\bin\b"  # dict comprehension
         r"|\w+\[[^\]\n]*\[[\"']ref[\"']\]\s*\]\s*="  # index[c["ref"]] = c
-        r"|setdefault\(\s*\w+\[[\"']ref[\"']\]",
+        r"|setdefault\(\s*\w+\[[\"']ref[\"']\]"
+        # ref = c["ref"] ... index[ref] = c — the `if ref not in index` spelling of
+        # first-wins. It indexes the export exactly as setdefault does; matching only the
+        # setdefault form graded the idiom a run chose rather than whether it built an index.
+        r"|(\w+)\s*=\s*\w+\[[\"']ref[\"']\][\s\S]{0,200}?\w+\[\s*\1\s*\]\s*=",
         source,
     )
     importer = function_named(tree, "import_rows") if tree else None
@@ -664,6 +751,8 @@ def grade(run_dir: Path, *, with_judgement: bool, grader_model: str) -> Json:
         check_scope(repo, fixture, spec),
         check_why_comments(source, spec),
         check_target_changed(source, original),
+        check_no_stash(tools),
+        check_scale_claims_marked(summary, spec),
     )
     # Keyed by the assertion's own text, so a case takes the checks it names in
     # evals.json and a rubric that has drifted from the code fails loudly below rather
@@ -692,6 +781,22 @@ def grade(run_dir: Path, *, with_judgement: bool, grader_model: str) -> Json:
         "edits": sum(1 for line in tools if MUTATION.match(line)),
         "measurements": len(measurement_calls(tools, repo, fixture)),
         "checker_calls": sum(1 for line in tools if "perf_check" in line),
+        # Adoption of the v1.2 benchmark driver. Not a scored assertion: only an arm carrying
+        # the skill can know the script exists, and scoring it would inflate the gap the way
+        # the setdefault-only index check did in round 2.
+        "bench_calls": sum(1 for line in tools if "perf_bench" in line),
+        "stashes": sum(1 for line in tools if STASHED.search(line)),
+        # Reliable only when a run sweeps through perf_bench; sizes scraped from a hand-rolled
+        # harness pick up scratch-path digits and timestamps instead.
+        "swept_sizes": sorted(
+            {
+                int(n)
+                for line in tools
+                for flag in SIZES_FLAG.finditer(line)
+                for n in flag.group(1).split(",")
+                if n.strip().isdigit()
+            }
+        ),
     }
     return write_grading(run_dir, expectations, execution_metrics=metrics)
 

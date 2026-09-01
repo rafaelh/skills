@@ -155,9 +155,10 @@ rather than quietly grading something else.
 **Shared mechanical checks.** Tests still pass; no shipped test file was modified; `perf_check.py`
 ran before the first edit; a measurement was actually executed; the summary carries a before and an
 after; files outside scope are byte-identical; every *why* comment survives; the target actually
-changed.
+changed; the baseline was taken without moving the working tree; every runtime quoted at the user's
+scale is marked as a projection.
 
-Three of those carry the load:
+Five of those carry the load:
 
 - **"perf_check.py was run before the first edit"** is a floor for the skill arm, not a
   discriminator between arms: the baseline has no way to know the script exists, so it fails this
@@ -168,6 +169,23 @@ Three of those carry the load:
   run that writes a timing script and then runs it shows only a file name in the call log — also
   reads any `.py` file the run added to the repo. That is why a leftover `bench.py` is not a scope
   violation: it is evidence.
+- **"The measurement came before the first edit"** counts only mutations *inside* the staged repo.
+  The tool log leaves paths outside it absolute, and a run's timing harness is usually written
+  there; counting that write as "the first edit" graded which tool a run built its benchmark with
+  rather than what order it worked in. See rubric v1.2 in [benchmark.md](benchmark.md).
+- **"Every runtime quoted at the scale the user named is marked as a projection"** is the sharp
+  one, and the newest. The prompt names a workload — 400k events, 400k rows, a 25-minute run over a
+  day of logs — that no run can reach inside its budget, so a duration quoted *there* is arithmetic
+  whatever else the run measured. The check finds the scale in the summary, looks for a duration or
+  a ratio within 90 characters, and requires an explicit marker (`extrapolated`, `projected`,
+  `estimated`, `assuming`, `based on the slope`). Hedges do not count: "should", "about" and "~"
+  are what a run says either way, and grading them would grade politeness. `tidy-repo` does not
+  carry it, because its prompt names no scale.
+- **"The baseline was taken without moving the user's working tree"** catches `git stash`,
+  `git reset --hard`, `git checkout --` and `git restore`. Five of round 2's 36 runs reached for a
+  stash, across all three arms — none lost work in the end, but a stash that fails to pop takes
+  uncommitted work with it. Skill v1.2 forbids it by name and `perf_bench.py --baseline` uses a
+  detached worktree instead, so this is the floor under that.
 - **"The target module actually changed"** is the floor under every "did not do X" check. Without
   it a run that did nothing scores well on restraint for free. `tidy-repo` is the one case that
   does not carry it, because its correct answer is a run that changed nothing — and for the same
@@ -180,7 +198,9 @@ Three of those carry the load:
   accumulated with `+=`; the list is no longer drained from the front; the kind check is a set;
   the hidden suite passes.
 - `ingest-repo` — the measurement came *before* the first edit (this is the case where guessing is
-  the failure mode); the export is indexed once; `import_rows` no longer calls the per-row scan;
+  the failure mode); the export is indexed once — in any of the spellings that build the index
+  first-wins, `setdefault`, a dict comprehension or `if ref not in index`, because which one a run
+  picks is idiom and not the thing being graded; `import_rows` no longer calls the per-row scan;
   the hidden suite passes.
 - `tidy-repo` — at most 15 changed lines across `src/`; the summary says this module is not where
   the time goes; the summary quotes a concrete measured runtime; no new module under `src/`. This
@@ -209,6 +229,14 @@ asked. Three or four per case. Two are shared:
 The rest are per case: whether the measurement was taken at a size where the claimed effect is
 visible, whether the run resisted rewriting LOW findings to look busy, whether it told the user
 their hypothesis was wrong.
+
+**Execution metrics** ride alongside the score in `grading.json` and are deliberately *not*
+assertions: `tool_calls`, `edits`, `measurements`, `checker_calls`, `bench_calls`, `stashes`, and
+`swept_sizes` (the sizes named on a `perf_bench.py --sizes` flag — the only place in the call log
+they appear unambiguously; scraped out of a hand-rolled harness they come back as scratch-path
+digits). `bench_calls` is how a round reads adoption of the v1.2 benchmark driver. Scoring it would
+inflate the arm gap the way round 2's `setdefault`-only index check did — only an arm carrying the
+skill can know the script exists.
 
 ## When you change the skill
 

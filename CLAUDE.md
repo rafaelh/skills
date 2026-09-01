@@ -22,7 +22,7 @@ Script-bearing skills — held to the contracts below:
 | `create-agents-for-repo` | Python | Fit `.claude/agents/*.md` subagents to a *target* repo, wire their call sites |
 | `obsidian-metabind` | Python | Meta Bind syntax in a vault: read, author, validate, refactor |
 | `az` | Python | Orient an Azure session, look up `az` command syntax |
-| `python-performance` | Python | Slow Python: self-explaining static checks + cProfile |
+| `python-performance` | Python | Slow Python: static checks, cProfile, benchmark driver |
 
 The rest (`architecture`, `plan`, `refactor`, `tdd`) are prose-only — no `scripts/`, so the
 agent-tool contract does not apply. `create-agents-for-repo` operates on a *consuming* repo rather

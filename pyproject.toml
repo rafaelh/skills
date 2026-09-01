@@ -109,9 +109,14 @@ ignore = [
     "N802",    # visit_* method names are required by ast.NodeVisitor API
     "TRY300",  # return before except is intentional — matches skill-audit pattern
 ]
+"skills/python-performance/scripts/perf_bench.py" = [
+    "S603",    # subprocess argv is sys.executable, the sibling checker, and a fixed git call
+    "S607",    # `git` comes from PATH by design — the baseline uses whatever git the repo uses
+]
 "skills/python-performance/tests/*.py" = [
     "S101",    # assert is correct in tests
     "S603",    # subprocess calls in tests use controlled, trusted input
+    "S607",    # `git init` is resolved from PATH, matching the tool under test
 ]
 "skills/agent-tool-builder/scripts/perf_check.py" = [
     "ERA001",  # noqa comments are intentional
