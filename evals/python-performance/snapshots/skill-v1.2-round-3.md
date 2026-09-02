@@ -15,7 +15,7 @@ compatibility: >
   `scripts/perf_bench.py` imports and runs the bench module you give it, and its `--baseline`
   shells out to `git worktree`, so that flag needs a git repository.
 metadata:
-  version: "1.3"
+  version: "1.2"
 ---
 
 # Python performance
@@ -87,16 +87,12 @@ n, `run(data)` calls the code under test and returns its result. Only `run` is t
 the workload never lands in the measurement. `--help` carries a worked example. The script sweeps
 the sizes, fits the growth curve, and hashes each result.
 
-A slope near 1 means the cost tracks the input; near 2 means it grows with the square of it.
-Constant factors dominate at small sizes, so the same quadratic function can read *linear* at 8k
-items and *quadratic* at 80k — if the slope comes back near 1 on code the user says falls over, go
-up an order of magnitude before believing it.
-
-Put the size the user named at the top of the sweep, and find out whether it finishes there before
-assuming it won't. A measured number at their scale needs no caveat and settles the question; a
-projection to it always invites the follow-up. Sweep the smaller sizes first — they cost seconds
-and tell you the slope — then let the largest one run. If it is still going after a minute or two,
-kill it and use the largest size that did finish, which is what `--project` is for.
+A slope near 1 means the cost tracks the input; near 2 means it grows with the square of it, and
+the size the user quoted will be far worse than the size you tried. Sizes matter more than
+repetitions, and more than you expect: the same quadratic function can read *linear* at 8k items
+and *quadratic* at 80k, because the constant factors still dominate at the smaller size. If the
+slope comes back near 1 on code the user says falls over, go up an order of magnitude before
+believing it.
 
 ## 3. Prove the fix
 
@@ -114,10 +110,6 @@ wrong answer surfaces as `OUTPUT DIFFERS` instead of as a win. `--recheck` re-ru
 files you changed, in that same call, so you can say which findings cleared without spending
 another one.
 
-This call re-times both sides, so it replaces the step-2 sweep rather than adding to it. There is
-no reason to measure the current code again before running it: a run that sweeps, edits, sweeps
-and then baselines has paid for the same numbers twice.
-
 Never `git stash` to get a baseline. The user's uncommitted work is not yours to move, and a stash
 that fails to pop takes it with them.
 
@@ -129,10 +121,9 @@ Time it, don't profile it. cProfile's per-call overhead inflates call-heavy code
 so profile totals are comparable only to other profile totals — the before and after you quote
 are wall-clock.
 
-When the old version is too slow to run at the size that hurts — which is the usual reason the
-named scale drops off the sweep — shrink the input until it finishes and time both versions there.
-Two measured numbers at 5k rows, plus the shape of the growth, tell the user more than one measured
-number and a guess at 400k.
+When the old version is too slow to run at the size that hurts, shrink the input until it
+finishes and time both versions there. Two measured numbers at 5k rows, plus the shape of the
+growth, tell the user more than one measured number and a guess at 400k.
 
 **Every number in the write-up is either measured or marked as not.** Write the projection as part
 of the sentence — *"0.28s at 80k events, down to 0.02s; at the 400k you quoted that projects to
@@ -142,7 +133,6 @@ common way an otherwise honest summary misleads. The same goes for a change you 
 it is untimed, or time it. "Also a bit faster" with nothing behind it is the claim to cut.
 
 A faster wrong answer is not a fix. `--baseline` hashes what the code returned on each side and
-tells you whether they match; say in the summary how you checked. A green test suite means the
-tests still pass, which is a weaker claim than it looks: the behaviour most at risk from a
-performance rewrite is the part nobody wrote a test for — tie-break order, which duplicate wins,
-what an empty input returns.
+tells you whether they match; say in the summary how you checked. A green test suite means the tests still pass, which is a
+weaker claim than it looks: the behaviour most at risk from a performance rewrite is the part
+nobody wrote a test for — tie-break order, which duplicate wins, what an empty input returns.

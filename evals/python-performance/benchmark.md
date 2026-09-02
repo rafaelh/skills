@@ -5,13 +5,15 @@ read in isolation. Append rounds; don't rewrite them. The harness that produces 
 beside this file — read [README.md](README.md) before re-measuring.
 
 Round 1 is two arms (`with_skill`, `without_skill`) at one run per cell; round 2 adds `old_skill`
-on a snapshot and repeats every cell three times. At one run per cell, treat a 20% swing in tokens
-or time as noise — and see round 2's per-cell spread for how wide that band really is once you can
-see it. The mechanical checks are the durable signal — files on disk, their
-AST, the skill's own static checker, and two pytest runs — and they re-compute identically over a
-stored workspace. The judgement checks are graded by a model from the run's summary alone and move
-by a check or two between gradings of the same run; two of round 1's cells shifted by one when the
-rubric was widened and every run re-graded.
+on a snapshot and repeats every cell three times; round 3 keeps three arms at five runs per cell.
+At one run per cell, treat a 20% swing in tokens or time as noise — and see round 2's and round 3's
+per-cell spread for how wide that band really is once you can see it. Five runs was still not enough
+to call a 2-point difference between two skill versions; see round 3 on what to do about that. The
+mechanical checks are the durable signal — files on disk, their AST, the skill's own static checker,
+and two pytest runs — and they re-compute identically over a stored workspace. The judgement checks
+are graded by a model from the run's summary alone and move by a check or two between gradings of
+the same run; two of round 1's cells shifted by one when the rubric was widened and every run
+re-graded.
 
 Workspaces are kept outside the repo at `~/.cache/claude-evals/python-performance/iteration-<n>`,
 so a later rubric can re-score an earlier round.
@@ -425,64 +427,208 @@ through the tool for the numbers to mean something.
 script exists, and scoring that would inflate the arm gap the way round 2's `setdefault`-only index
 check did.
 
-## Round 3 — planned, not yet run
+## Rounds 1 and 2 restated — rubric v1.3
 
-**The question.** Does skill v1.2 beat v1.1 — and if it does, is it the benchmark driver, the
-measured-or-marked rule, or neither?
+Re-graded from the stored workspaces so their totals line up with round 3's. The v1.2 gradings are
+kept beside each run as `grading-v1.2-rubric.json`, as round 1's v1 gradings already were.
 
-**Shape.** Three arms, five runs per cell: `with_skill` on the live v1.2 body, `old_skill` on
-`snapshots/skill-v1.1-round-2.md`, `without_skill` on no skill. 4 evals × 3 arms × 5 runs = **60
-runs**, about $16 at round 2's rate. Five rather than three because round 2's per-cell spread ran
-to 24 points, and v1.2's edits are aimed at a gap around 3 — three runs could not have called it,
-and this is the round where that matters.
+| Eval | R1 with_skill | R1 without_skill | | R2 with_skill | R2 old_skill | R2 without_skill |
+|---|---|---|---|---|---|---|
+| 0 quadratic-digest | 83% (15/18) | 78% (14/18) | | 89% (48/54) | 85% (46/54) | 81% (44/54) |
+| 1 static-clean-needs-a-profile | 83% (15/18) | 67% (12/18) | | 94% (51/54) | 89% (48/54) | 76% (41/54) |
+| 2 low-findings-only-restraint | 79% (11/14) | 43% (6/14) | | 100% (42/42) | 93% (39/42) | 50% (21/42) |
+| 3 wrong-hypothesis | 95% (18/19) | 79% (15/19) | | 89% (51/57) | 86% (49/57) | 81% (46/57) |
+| **Mean** | **85.5% (59/69)** | **68.1% (47/69)** | | **92.8% (192/207)** | **87.9% (182/207)** | **73.4% (152/207)** |
 
-```bash
-WS=~/.cache/claude-evals/python-performance
-PY=.venv/bin/python
+The two new checks reproduce the calibration figures recorded above exactly — the projection check
+at 2/9 · 0/9 · 0/9 in round 2, the no-stash check at 10/12 · 11/12 · 10/12 — which is the evidence
+that v1.3 grades the stored rounds the same way it will grade round 3.
 
-$PY evals/python-performance/prepare.py "$WS" --iteration 3 --runs 5 \
-    --arms with_skill,old_skill,without_skill
+## Round 3 — 2026-09-02, sonnet
 
-find "$WS/iteration-3" -name eval_metadata.json -printf '%h\n' | grep -v /old_skill/ \
-  | xargs -P 8 -L1 $PY evals/python-performance/run_case.py --model sonnet
+Three arms, five runs per cell, 60 runs. `with_skill` is the live v1.2 body, `old_skill` is
+`snapshots/skill-v1.1-round-2.md`, so the `with_skill`/`old_skill` column is v1.2's edits — the
+`perf_bench.py` driver, the measured-or-marked rule, the stash ban, and two removals — measured on
+their own.
 
-find "$WS/iteration-3" -path '*/old_skill/*' -name eval_metadata.json -printf '%h\n' \
-  | xargs -P 8 -L1 $PY evals/python-performance/run_case.py --model sonnet \
-      --skill evals/python-performance/snapshots/skill-v1.1-round-2.md
+### Per eval
 
-find "$WS/iteration-3" -name timing.json -printf '%h\n' \
-  | xargs -P 4 -L1 $PY evals/python-performance/grade.py
-$PY evals/shared/aggregate.py "$WS/iteration-3"
-```
+| Eval | with_skill | old_skill | without_skill |
+|---|---|---|---|
+| 0 quadratic-digest | 94% (85/90) | 93% (84/90) | 82% (74/90) |
+| 1 static-clean-needs-a-profile | 93% (84/90) | 90% (81/90) | 68% (61/90) |
+| 2 low-findings-only-restraint | 97% (68/70) | 99% (69/70) | 66% (46/70) |
+| 3 wrong-hypothesis | 98% (93/95) | 93% (88/95) | 82% (78/95) |
+| **Mean** | **95.7% (330/345)** | **93.3% (322/345)** | **75.1% (259/345)** |
 
-Re-grade rounds 1 and 2 under v1.3 first, or their totals will not line up:
+### Checks that separated the arms
 
-```bash
-for i in 1 2; do
-  find "$WS/iteration-$i" -name timing.json -printf '%h\n' \
-    | xargs -P 4 -L1 $PY evals/python-performance/grade.py
-done
-```
+| Check | with_skill | old_skill | without_skill |
+|---|---|---|---|
+| Every runtime quoted at the scale the user named is marked as a projection | 6/15 | 1/15 | 0/15 |
+| Every speed claim has a measured number beside it | 17/20 | 14/20 | 8/20 |
+| The run says how it knows the code still returns the same answers | 15/15 | 15/15 | 1/15 |
+| The baseline was taken without moving the user's working tree | 20/20 | 17/20 | 20/20 |
+| A measurement was actually executed, not just reasoned about | 20/20 | 20/20 | 15/20 |
+| The measurement came before the first edit | 10/10 | 10/10 | 7/10 |
+| perf_check.py was run before the first edit | 20/20 | 20/20 | 0/20 |
+| The diff stays small — at most 15 changed lines across src/ | 5/5 | 5/5 | 1/5 |
+| The summary quotes a concrete measured runtime | 5/5 | 5/5 | 3/5 |
+| The summary reports a before and an after measurement | 15/15 | 15/15 | 13/15 |
+| The bottleneck was identified from a measurement the run took | 4/5 | 5/5 | 1/5 |
+| The measurement was taken at a visible input size, stated | 14/15 | 15/15 | 14/15 |
+| The run concludes the flagged patterns are not worth changing | 5/5 | 5/5 | 4/5 |
+| The summary says this module is not where the time goes | 4/5 | 5/5 | 4/5 |
+| The user is left knowing where the time actually goes | 5/5 | 5/5 | 4/5 |
+| Every 'why' comment in the target module survives | 20/20 | 20/20 | 19/20 |
 
-**What would count as an answer.**
+### Per-cell spread
 
-- *The projection rule worked* — "every runtime quoted at the scale the user named is marked"
-  climbs well clear of round 2's 2/9 in the `with_skill` arm while `old_skill` stays near 0/9. This
-  is the check with the most headroom and the clearest causal story, so it is the one to read
-  first.
-- *The driver was adopted* — `bench_calls` is non-zero in most `with_skill` runs. If it is near
-  zero the prose introducing it is the problem, not the script, and no other `with_skill` number in
-  the round can be attributed to v1.2's tooling.
-- *The driver paid for itself* — `with_skill` tokens and `tool_calls` fall against round 2's 481k
-  and 13.4, and `checker_calls` falls towards 1. The predicted saving was 10–15%, which five runs
-  per cell can just about resolve; anything smaller is not callable and should not be claimed.
-- *Restraint held* — `tidy-repo` stays near 97%. v1.2 adds a tool that makes measuring cheap, and
-  the risk is that a run reaches for it on a module that does not need it. Watch the diff-size and
-  new-module checks there, not the mean.
+Five runs per cell, pass rate per run:
 
-**What this round still cannot settle.** 17 of 30 checks were already identical in all three arms
-at v1.1, and nothing in v1.2 aims at them; they stay as regression floors. If the two live checks
-above also saturate, round 4 needs a fifth fixture rather than a fifth rubric revision — the
-obvious shape being a repo whose real workload genuinely cannot be run inside the budget, so the
-only correct answer is an explicitly marked extrapolation, and a run that measures at a tractable
-size and says so plainly is the one that scores.
+| Eval | with_skill | old_skill | without_skill |
+|---|---|---|---|
+| 0 | 94, 94, 94, 94, 94 | 89, 94, 94, 94, 94 | 83, 83, 78, 83, 83 |
+| 1 | 94, 94, 89, 94, 94 | 89, 89, 94, 83, 94 | 61, 67, 67, 78, 67 |
+| 2 | 93, 100, 93, 100, 100 | 100, 100, 100, 100, 93 | 43, 71, 64, 79, 71 |
+| 3 | 95, 95, 100, 100, 100 | 89, 89, 95, 89, 100 | 79, 79, 84, 84, 84 |
+
+Per-run standard deviation is 3.2 points `with_skill`, 4.8 `old_skill`, 10.7 `without_skill`. The
+skill arms are far tighter than round 2's 24-point worst cell — five runs and a matured rubric
+between them — and the baseline is still the loose one.
+
+### Cost
+
+|  | with_skill | old_skill | without_skill |
+|---|---|---|---|
+| Runs | 20 | 20 | 20 |
+| Tokens, mean | 762,860 | 491,879 | 310,973 |
+| Wall clock, mean | 204s | 100s | 55s |
+| Tool calls, mean | 18.9 | 13.3 | 9.2 |
+| Cost | $6.64 | $4.47 | $3.12 |
+
+### Execution metrics
+
+Not scored. `bench_calls` is how the round reads adoption of the v1.2 driver.
+
+| | with_skill | old_skill | without_skill |
+|---|---|---|---|
+| `bench_calls`, mean (runs > 0) | 5.0 (19/20) | 0 (0/20) | 0 (0/20) |
+| `checker_calls`, mean | 1.25 | 1.80 | 0 |
+| `measurements`, mean | 5.05 | 2.85 | 1.30 |
+| `edits`, mean | 1.25 | 0.80 | 1.10 |
+| `stashes` (runs > 0) | 0/20 | 3/20 | 0/20 |
+
+### What the round showed
+
+**The driver was adopted, and that part is not a statistical claim.** 19 of 20 `with_skill` runs
+called `perf_bench.py`, at a mean of 5 calls; no run in either other arm called it, because no
+other arm can know it exists. Two behaviours move with it and have the same clean causal story:
+`stashes` goes to 0/20 where `old_skill` still reaches for a stash in 3 of 20 runs, and
+`checker_calls` falls from 1.80 to 1.25 as `--recheck` folds the duplicate call in. The stash ban
+and the `--recheck` fold both did what they were written to do.
+
+**The cost prediction was wrong, and wrong in the interesting direction.** Round 2 predicted the
+driver would take 10–15% off the token count by collapsing the measurement turns. Tokens instead
+rose 59% — 481k to 763k — with tool calls up from 13.4 to 18.9 and wall clock from 80s to 204s. The
+mechanism is visible in `measurements`, which went from 2.5 per run to 5.05: the driver did make
+each measurement cheaper to write, and runs responded by measuring twice as often — a sweep, a
+baseline, a re-check, a projection. Making a step cheap bought more of the step, not less of the
+bill. Any future revision aimed at cost has to remove a step the skill *asks for*, not make the
+asking easier.
+
+**The projection rule worked, and the check that grades it is broken on `report-repo`.** *"Every
+runtime quoted at the scale the user named is marked as a projection"* reads 6/15 `with_skill`
+against 1/15 `old_skill` and 0/15 `without_skill`. But the per-eval split is 0/5, 2/5, 4/5 — every
+arm scores zero on eval 0, and reading the runs says why. v1.3's premise was that each prompt names
+a workload *no run can reach inside its budget*. That is false for `report-repo`: all five
+`with_skill` runs swept to 400,000 events and all five `old_skill` runs timed there too, because
+400k events is about 7 seconds. Their 400k figures are measurements. The check demanded they be
+labelled as projections and failed them for being honest.
+
+Seven of the nine `with_skill` failures measured at or above the scale they quoted. Only two are
+genuine: one `ingest` run that swept to 16k and then quoted 400k unmarked, and one `logscan` run
+that turned the user's 25-minute figure into "well under a minute". On the two evals where the
+premise does hold, the contrast is `with_skill` 6/10 against `old_skill` 1/10 (Fisher p = 0.057) —
+a cleaner and stronger result than the headline, with eval 0 contributing nothing but a floor in
+both arms.
+
+The irony is worth recording: **v1.2's own driver invalidated the check written to grade it.**
+v1.3 was calibrated against rounds 1 and 2, where no run had `perf_bench.py` and none swept to the
+named scale, so "quoted at 400k" reliably meant "extrapolated to 400k". Making measurement cheap
+broke that equivalence. This is the fourth time this file has recorded a check grading *how* a run
+worked rather than *whether* it did, and the first time the skill under test caused it.
+
+**The headline v1.2-over-v1.1 gap is not callable.** 95.7% against 93.3% is +2.1 points per run at
+a permutation p of 0.127. None of the individual targeted checks clears significance either — the
+projection check at p = 0.080, the no-stash check at p = 0.231, "every speed claim has a measured
+number" (17/20 against 14/20) at p = 0.451. Every one of them points the same way, which is worth
+something, but round 2 already warned that edits aimed at a 3-point gap need more than this, and
+five runs per cell was still not enough. The honest summary is that v1.2 is directionally ahead of
+v1.1 on every axis it targeted and proven ahead on none of them, with the exception of the driver
+adoption and stash figures, which are not close enough to chance to need a test.
+
+**The skill is worth 21 points over no skill** (95.7% against 75.1%), unchanged from round 2's 19
+and round 1's 17 under the same rubric. That gap is not in doubt and has never been the question.
+The single widest check remains *"the run says how it knows the code still returns the same
+answers"* at 15/15 in both skill arms against 1/15 in the baseline — the v1.1 edit that round 2
+credited, holding at a full sweep a round later.
+
+**Restraint held.** `tidy-repo` is 97% `with_skill` against 99% `old_skill`, with the diff-size
+check 5/5 and no new module in either arm. The risk this round was that a cheap measuring tool
+would tempt a run into benchmarking a module that does not need it; it did not. The 2-point
+shortfall is one check on one run and is inside the spread.
+
+### To watch next round
+
+- **Stop asking whether the skill beats nothing.** Three rounds have answered it (17, 19, 21
+  points). The baseline arm is now costing a third of the round's budget to re-confirm a settled
+  result; consider dropping it to one run per cell as a regression floor and spending the runs on
+  the version comparison, which is the question that keeps failing to resolve.
+- **The version comparison needs a different instrument, not more runs.** Going from 3 to 5 runs
+  per cell moved the p-value on a 2-point gap from uncallable to uncallable. Twenty runs per cell
+  would cost roughly $80 a round to resolve 2 points. The alternative the last round already named
+  is better: a fifth fixture where the correct answer is *only* an explicitly marked extrapolation,
+  so the checks the revisions target are near-binary rather than one item in a denominator of 17.
+- **Fix the projection check before round 4 — it is the first thing to do.** Gate it on the
+  largest size the run actually measured, and only require a marker when the quoted scale exceeds
+  it. That is the check v1.3 dropped as uncomputable ("the largest size measured is one where the
+  effect is visible"), and v1.2's driver is what made it computable: 19 of 20 `with_skill` runs pass
+  their sizes on a `--sizes` flag, so `swept_sizes` is now reliable where in round 2 it returned
+  scratch-path digits. Until this lands, eval 0 contributes a guaranteed zero to every arm and the
+  check cannot separate anything there.
+
+- **Watch the token curve if the driver stays.** 763k per run is 2.5x the baseline and the trend
+  across rounds is up (388k, 481k, 763k). None of the round's scores depend on the extra
+  measurements — the checks they feed were already saturated — so this is spend without a
+  corresponding number, which is the definition of a step worth cutting.
+- **17 of 30 checks remain identical in all three arms.** Unchanged from round 2, and nothing in
+  v1.2 aimed at them. They stay as regression floors, and they did their job: no arm regressed on
+  the two prose removals v1.2 made, which is the evidence those removals were safe.
+
+## After round 3 — skill v1.3
+
+Nothing here has been measured yet. The round-3 body is kept verbatim at
+`snapshots/skill-v1.2-round-3.md`.
+
+Round 3's failure list was short and lopsided: nine of the fifteen `with_skill` failures were one
+check, and seven of those nine were the check misreading a measurement as a projection. Only two
+edits below answer a real behaviour; the third is a cut justified by a check that does not separate
+the arms.
+
+| Change | What it answers |
+|---|---|
+| Step 2 gains the branch that was missing: put the user's named size at the top of the sweep and find out whether it finishes, sweeping the small sizes first and falling back to `--project` only when the largest one won't complete | The two genuine projection failures, which are the same mistake from opposite ends — one `ingest` run swept to 16k and quoted 400k unmarked, one `ingest` run charged straight at 400k, hit ~10 minutes per repeat and had to abort and re-plan. The skill only ever described the *too slow* branch, so runs had to invent the other one |
+| Step 3 says the `--baseline` call replaces the step-2 sweep rather than adding to it | `measurements` at 5.05 per run against `old_skill`'s 2.85 and the baseline's 1.30, with tokens up 59%. `--baseline` re-times both sides, so a run that sweeps, edits, sweeps and then baselines buys the same numbers twice |
+| The growth-slope paragraph is cut from six lines to four | "The measurement was taken at a visible input size, stated" is 14/15 `with_skill`, 15/15 `old_skill`, **14/15 `without_skill`** — the skill arm does not beat no-skill on the check this prose exists to drive. The *"go up an order of magnitude"* sentence is kept: it is the plausible reason runs reach 400k at all, which is behaviour worth having |
+
+The last is a trim rather than a deletion for the reason round 2 recorded about its own two
+removals — a check saturated in every arm is evidence the prose was not doing the work, not
+evidence that cutting it helps. If "visible input size" regresses in round 4, this is the edit to
+suspect.
+
+**Round 4 must fix the projection check before it measures anything.** Gate it on `swept_sizes` and
+require a marker only where the quoted scale exceeds the largest size actually measured. Until then
+eval 0 contributes a guaranteed zero to every arm, and the two edits above aim at behaviour that
+check is currently unable to see. Round 3's stored workspace can be re-graded under the repaired
+check for free, which is the cheapest available read on whether these edits were needed at all.
