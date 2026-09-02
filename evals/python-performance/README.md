@@ -104,6 +104,11 @@ find "$WS/iteration-1" -name eval_metadata.json -printf '%h\n' \
 Run `grade.py` sequentially: each call runs two pytest suites and the static checker, and one of
 the fixtures' timing work is CPU-bound. `--no-judgement` drops the grader model and makes a round
 fully deterministic — worth using when you are debugging a check rather than measuring a skill.
+`--reuse-judgement` is what a *stored* round is re-graded with after a mechanical check is
+repaired: it recomputes the mechanical half and reads the judgement results back out of the run's
+existing `grading.json`, so the repaired check moves and nothing else does. Copy the old
+`grading.json` aside first — past rounds keep theirs as `grading-v1.2-rubric.json` and
+`grading-v1.3-rubric.json`.
 
 `run_case.py` takes one run directory and reads the arm and the case out of its
 `eval_metadata.json`; `--arm` overrides it. It writes `outputs/summary.md` (the run's own
@@ -175,12 +180,27 @@ Five of those carry the load:
   rather than what order it worked in. See rubric v1.2 in [benchmark.md](benchmark.md).
 - **"Every runtime quoted at the scale the user named is marked as a projection"** is the sharp
   one, and the newest. The prompt names a workload — 400k events, 400k rows, a 25-minute run over a
-  day of logs — that no run can reach inside its budget, so a duration quoted *there* is arithmetic
-  whatever else the run measured. The check finds the scale in the summary, looks for a duration or
-  a ratio within 90 characters, and requires an explicit marker (`extrapolated`, `projected`,
-  `estimated`, `assuming`, `based on the slope`). Hedges do not count: "should", "about" and "~"
-  are what a run says either way, and grading them would grade politeness. `tidy-repo` does not
-  carry it, because its prompt names no scale.
+  day of logs — and a duration quoted *there* has to say so when the run never measured there. The
+  check finds the scale in the summary, looks for a duration or a ratio within 90 characters, and
+  requires an explicit marker (`extrapolated`, `projected`, `estimated`, `assuming`, `based on the
+  slope`). Hedges do not count: "should", "about" and "~" are what a run says either way, and
+  grading them would grade politeness. `tidy-repo` does not carry it, because its prompt names no
+  scale.
+
+  It is **gated on what the run actually measured** (`measured_ceiling`): a claim at a size at or
+  below the largest size the run ran something at is a measurement, not a projection, and is
+  dropped before the marker is looked for. Round 3 failed all fifteen `report-repo` runs for
+  quoting 400k honestly — 400k events is seven seconds, so every arm swept there. The ceiling comes
+  from `perf_bench.py --sizes` and from the scale pattern itself appearing in a measurement call or
+  in a harness file the run wrote, which is arm-neutral: a hand-rolled `range(400_000)` counts the
+  same as a swept size.
+
+  Two per-fixture wrinkles. `ingest-repo`'s prompt names its workload in two dimensions — 180k
+  customers *and* 400k rows — where the ceiling is one number and a sweep records only what reached
+  the `--sizes` flag; its spec carries `workload_size=180_000`, the smaller dimension, and reaching
+  that counts as having run the workload. `logscan-repo` states its scale as a duration rather than
+  a size, so there is nothing to compare a measurement against and the marker is always required
+  there — which is now the only case where this check separates the arms.
 - **"The baseline was taken without moving the user's working tree"** catches `git stash`,
   `git reset --hard`, `git checkout --` and `git restore`. Five of round 2's 36 runs reached for a
   stash, across all three arms — none lost work in the end, but a stash that fails to pop takes
@@ -231,10 +251,11 @@ visible, whether the run resisted rewriting LOW findings to look busy, whether i
 their hypothesis was wrong.
 
 **Execution metrics** ride alongside the score in `grading.json` and are deliberately *not*
-assertions: `tool_calls`, `edits`, `measurements`, `checker_calls`, `bench_calls`, `stashes`, and
+assertions: `tool_calls`, `edits`, `measurements`, `checker_calls`, `bench_calls`, `stashes`,
 `swept_sizes` (the sizes named on a `perf_bench.py --sizes` flag — the only place in the call log
 they appear unambiguously; scraped out of a hand-rolled harness they come back as scratch-path
-digits). `bench_calls` is how a round reads adoption of the v1.2 benchmark driver. Scoring it would
+digits), and `measured_ceiling` (the largest size the run demonstrably ran something at, however it
+timed it — the gate under the projection check). `bench_calls` is how a round reads adoption of the v1.2 benchmark driver. Scoring it would
 inflate the arm gap the way round 2's `setdefault`-only index check did — only an arm carrying the
 skill can know the script exists.
 

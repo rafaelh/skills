@@ -344,10 +344,10 @@ def _build_parser() -> argparse.ArgumentParser:
                   return report.build_report(data)
 
             examples:
-              perf_bench.py bench.py --sizes 5000,20000,40000     # before you edit
-              perf_bench.py bench.py --sizes 5000,20000 --project 400000
-              perf_bench.py bench.py --baseline git:HEAD          # after you edit
+              perf_bench.py bench.py --baseline git:HEAD          # before, after and the speed-up
               perf_bench.py bench.py --baseline git:HEAD --recheck src/nightly/report.py
+              perf_bench.py bench.py --sizes 5000,20000,40000     # growth curve, nothing to compare
+              perf_bench.py bench.py --sizes 5000,20000 --project 400000
               perf_bench.py bench.py --format json                # machine-readable output
         """),
         formatter_class=argparse.RawDescriptionHelpFormatter,

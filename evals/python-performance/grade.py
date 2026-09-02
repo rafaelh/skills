@@ -144,10 +144,17 @@ class Spec(NamedTuple):
     target: str
     frozen: tuple[str, ...]
     why: tuple[str, ...]
-    # How the prompt names the workload the user actually runs at — the scale a run cannot
-    # reach inside its time budget, so any runtime quoted there is arithmetic, not a
-    # measurement. None where the prompt names no scale.
+    # How the prompt names the workload the user actually runs at. A runtime quoted there
+    # is arithmetic unless the run measured there — see `measured_ceiling`. None where the
+    # prompt names no scale.
     scale: re.Pattern[str] | None = None
+    # The size that counts as having run the whole workload, where the prompt names it in
+    # more than one dimension. `ingest` says 180k customers *and* 400k rows: one sweep
+    # generates both, and `measured_ceiling` records whichever number reached the --sizes
+    # flag, so a run that measured the full workload records 180,000 and its honest "at
+    # 180k/400k" reads as a claim above the ceiling. None where one number is the whole
+    # scale and the comparison needs no help.
+    workload_size: int | None = None
 
 
 SPECS = {
@@ -167,6 +174,7 @@ SPECS = {
         frozen=("src/ingest/textutil.py", "CLAUDE.md"),
         why=("first match wins", "superseded"),
         scale=re.compile(r"400\s*[,._]?\s*000|400\s*k|180\s*[,._]?\s*000|180\s*k", re.IGNORECASE),
+        workload_size=180_000,
     ),
     "tidy-repo": Spec(
         target="src/checkout/summarize.py",
@@ -491,17 +499,77 @@ def check_no_stash(tools: list[str]) -> Json:
     )
 
 
-def scale_claims(summary: str, spec: Spec) -> list[tuple[str, bool, str]]:
-    """Every runtime quoted at the user's full scale, and whether it is marked as a projection.
+def scale_number(token: str) -> int | None:
+    """The count a scale token names — `400,000`, `400_000` and `400k` all read as 400000.
 
-    The scale in the prompt is the size a run cannot reach inside its budget, so a duration
-    quoted there is arithmetic. Three of round 2's four failures of the judgement check about
-    measured numbers were exactly this and nothing else.
+    None where the prompt states its scale as a duration rather than a size (`logscan`'s
+    25-minute day of logs): there is no number to compare a measurement against, so the
+    claim is arithmetic whatever the run swept to.
+    """
+    match = re.match(r"(\d[\d,._\s]*?)\s*([kKmM])?$", token.strip())
+    if not match:
+        return None
+    digits = re.sub(r"[^\d]", "", match.group(1))
+    if not digits:
+        return None
+    return (
+        int(digits)
+        * {None: 1, "k": 1_000, "m": 1_000_000}[match.group(2).lower() if match.group(2) else None]
+    )
+
+
+def measured_ceiling(tools: list[str], repo: Path, fixture: Path, spec: Spec) -> int:
+    """The largest input size the run demonstrably ran something at.
+
+    Two sources, both arm-neutral. `perf_bench.py --sizes` names them outright, which is
+    what round 3 recorded as `swept_sizes`; a hand-rolled harness names them inside the
+    call itself (`range(400_000)`) or inside the file the call runs, and the scale pattern
+    finds them there without scraping every integer in the line — which is what made this
+    uncomputable in round 3.
+    """
+    sizes = {
+        int(n)
+        for line in tools
+        for flag in SIZES_FLAG.finditer(line)
+        for n in flag.group(1).split(",")
+        if n.strip().isdigit()
+    }
+    if spec.scale is not None:
+        corpus = [line for _, line in measurement_calls(tools, repo, fixture)]
+        shipped = set(file_digests(fixture))
+        corpus += [
+            read(path)
+            for path in (repo / n for n in file_digests(repo) if n not in shipped)
+            if path.suffix == ".py"
+        ]
+        sizes |= {
+            n
+            for text in corpus
+            for match in spec.scale.finditer(text)
+            if (n := scale_number(match.group(0))) is not None
+        }
+    return max(sizes, default=0)
+
+
+def scale_claims(summary: str, spec: Spec, ceiling: int) -> list[tuple[str, bool, str]]:
+    """Every runtime quoted at the user's full scale that the run did not measure there.
+
+    A duration quoted at a size the run never reached is arithmetic and has to say so.
+    A duration quoted at a size the run *did* reach is a measurement, and round 3 failed
+    five runs of every arm on eval 0 for reporting one honestly — 400k events is seven
+    seconds, so every arm swept there. Claims at or below the largest size the run
+    measured are dropped before the marker is looked for, and where the prompt names the
+    workload in two dimensions it is `workload_size` — the smaller of them — that has to be
+    reached, because one sweep generates both and only one number reaches the flag.
     """
     if spec.scale is None:
         return []
     claims: list[tuple[str, bool, str]] = []
     for match in spec.scale.finditer(summary):
+        quoted = scale_number(match.group(0))
+        reached = min(quoted, spec.workload_size) if quoted and spec.workload_size else quoted
+        if reached is not None and reached <= ceiling:
+            continue
         window = summary[max(0, match.start() - SUBJECT_NEAR) : match.end() + SUBJECT_NEAR]
         if DURATION.search(window) or RATIO.search(window):
             marked = bool(PROJECTION_MARKED.search(window))
@@ -509,15 +577,17 @@ def scale_claims(summary: str, spec: Spec) -> list[tuple[str, bool, str]]:
     return claims
 
 
-def check_scale_claims_marked(summary: str, spec: Spec) -> Json:
-    claims = scale_claims(summary, spec)
+def check_scale_claims_marked(summary: str, spec: Spec, ceiling: int) -> Json:
+    claims = scale_claims(summary, spec, ceiling)
     unmarked = [c for c in claims if not c[1]]
+    reached = f"measured up to {ceiling:,}; " if ceiling else ""
     if not claims:
-        evidence = "no runtime quoted at the scale the prompt names"
+        evidence = f"{reached}no unmeasured runtime quoted at the scale the prompt names"
     elif unmarked:
-        evidence = f"{len(unmarked)} of {len(claims)} unmarked, first: {unmarked[0][2][:180]}"
+        first = unmarked[0][2][:180]
+        evidence = f"{reached}{len(unmarked)} of {len(claims)} unmarked, first: {first}"
     else:
-        evidence = f"all {len(claims)} marked, first: {claims[0][2][:180]}"
+        evidence = f"{reached}all {len(claims)} marked, first: {claims[0][2][:180]}"
     return expectation(
         "Every runtime quoted at the scale the user named is marked as a projection",
         not unmarked,
@@ -726,7 +796,28 @@ def judgement(case: Json, summary: str, model: str, cwd: Path) -> list[Json]:
 # --- assembly ----------------------------------------------------------------------
 
 
-def grade(run_dir: Path, *, with_judgement: bool, grader_model: str) -> Json:
+def stored_judgement(run_dir: Path, case: Json) -> list[Json]:
+    """The judgement half of a previous grading of this run, read back off disk.
+
+    Re-grading a stored round after a *mechanical* check is repaired should move that
+    check and nothing else; sending the write-ups back to the grader would move a check
+    or two of its own and make the two rounds no more comparable than before.
+    """
+    stored = run_dir / "grading.json"
+    if not stored.is_file():
+        raise FileNotFoundError(f"no grading.json to reuse judgement from in {run_dir}")
+    graded = cast("Json", json.loads(stored.read_text(encoding="utf-8")))
+    by_text = {str(e["text"]): e for e in cast("list[Json]", graded["expectations"])}
+    statements = [str(s) for s in cast("list[object]", case.get("judgement", []))]
+    missing = [s for s in statements if s not in by_text]
+    if missing:
+        raise KeyError("stored grading has no judgement for: " + "; ".join(missing))
+    return [by_text[s] for s in statements]
+
+
+def grade(
+    run_dir: Path, *, with_judgement: bool, grader_model: str, reuse_judgement: bool = False
+) -> Json:
     metadata = read_eval_metadata(run_dir)
     _, cases = load_cases(HERE / "evals.json")
     case = find_case(cases, str(metadata["eval_name"]))
@@ -740,6 +831,7 @@ def grade(run_dir: Path, *, with_judgement: bool, grader_model: str) -> Json:
     original = read(fixture / spec.target)
     summary = read(run_dir / "outputs" / "summary.md")
     tools = tool_calls(run_dir)
+    ceiling = measured_ceiling(tools, repo, fixture, spec)
 
     shared = (
         check_tests(repo),
@@ -752,7 +844,7 @@ def grade(run_dir: Path, *, with_judgement: bool, grader_model: str) -> Json:
         check_why_comments(source, spec),
         check_target_changed(source, original),
         check_no_stash(tools),
-        check_scale_claims_marked(summary, spec),
+        check_scale_claims_marked(summary, spec, ceiling),
     )
     # Keyed by the assertion's own text, so a case takes the checks it names in
     # evals.json and a rubric that has drifted from the code fails loudly below rather
@@ -773,7 +865,9 @@ def grade(run_dir: Path, *, with_judgement: bool, grader_model: str) -> Json:
             "no check computes: " + "; ".join(unknown) + " — evals.json and grade.py have drifted"
         )
     expectations = [computed[text] for text in wanted]
-    if with_judgement:
+    if reuse_judgement:
+        expectations += stored_judgement(run_dir, case)
+    elif with_judgement:
         expectations += judgement(case, summary, grader_model, run_dir)
 
     metrics: Json = {
@@ -786,6 +880,9 @@ def grade(run_dir: Path, *, with_judgement: bool, grader_model: str) -> Json:
         # the setdefault-only index check did in round 2.
         "bench_calls": sum(1 for line in tools if "perf_bench" in line),
         "stashes": sum(1 for line in tools if STASHED.search(line)),
+        # The largest size the run ran something at, however it timed it — the gate under
+        # the projection check. `swept_sizes` below is the perf_bench half of it alone.
+        "measured_ceiling": ceiling,
         # Reliable only when a run sweeps through perf_bench; sizes scraped from a hand-rolled
         # harness pick up scratch-path digits and timestamps instead.
         "swept_sizes": sorted(
@@ -809,6 +906,11 @@ def main() -> int:
         action="store_true",
         help="Mechanical checks only — no grader model, fully deterministic.",
     )
+    parser.add_argument(
+        "--reuse-judgement",
+        action="store_true",
+        help="Re-grade the mechanical half, keeping the judgement results already on disk.",
+    )
     parser.add_argument("--grader-model", default="sonnet", help="Grader (default: sonnet).")
     args = parser.parse_args()
 
@@ -817,6 +919,7 @@ def main() -> int:
             args.run_dir,
             with_judgement=not args.no_judgement,
             grader_model=str(args.grader_model),
+            reuse_judgement=bool(args.reuse_judgement),
         )
     except FileNotFoundError as exc:
         emit_error("grade.run.missing", str(exc), "point at a run directory from run_case.py")
