@@ -15,7 +15,7 @@ What a run leaves behind decides how it is graded, and nothing else about the su
 
 | Kind | The run leaves | Graded from | Here |
 |---|---|---|---|
-| **Artifact** | Files in a staged repo | Diffs and file contents | `create-agents-for-repo/`, `refactor/`, `python-performance/` |
+| **Artifact** | Files in a staged repo, or a report | Diffs, file contents, the report | `create-agents-for-repo/`, `refactor/`, `python-performance/`, `review-repo-agents/` |
 | **Conversation** | A transcript | Turns, questions, what was read | `plan/` |
 | **Call log** | A record of every tool invocation | Which commands were chosen, and the answer | `az/` |
 | **Trigger** | Nothing | Whether the skill activated at all | none currently |
@@ -40,7 +40,7 @@ evals/<skill>/
   personas/        briefs for a simulated user (conversation suites)
   prepare.py       stages a workspace (artifact and call-log suites)
   drive_*.py       runs the case to completion and records it (conversation suites)
-  run_case.py      drives one staged run to completion (suites whose runs need write tools)
+  run_case.py      drives one staged run to completion (suites that do not farm out their arms)
   grade.py         scores one run directory, writes grading.json
 ```
 

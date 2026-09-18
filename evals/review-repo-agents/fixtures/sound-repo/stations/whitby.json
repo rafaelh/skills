@@ -1,0 +1,10 @@
+{
+  "station": "Whitby",
+  "datum_m": 2.91,
+  "constituents": [
+    {"name": "M2", "amplitude": 1.72, "phase_deg": 158.4, "speed_deg_per_hour": 28.9841042},
+    {"name": "S2", "amplitude": 0.58, "phase_deg": 203.1, "speed_deg_per_hour": 30.0},
+    {"name": "N2", "amplitude": 0.33, "phase_deg": 138.7, "speed_deg_per_hour": 28.4397295},
+    {"name": "K1", "amplitude": 0.14, "phase_deg": 172.0, "speed_deg_per_hour": 15.0410686}
+  ]
+}

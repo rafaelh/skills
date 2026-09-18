@@ -1,0 +1,76 @@
+{
+  "skill_name": "review-repo-agents",
+  "evals": [
+    {
+      "id": 0,
+      "name": "defective-agent-set",
+      "fixture": "overbuilt-repo",
+      "word_budget": null,
+      "prompt": "we've picked up a pile of these agent files over the last few months and honestly i don't know if any of them are earning their keep any more. can you go through them and tell me what to do with each one?",
+      "expected_output": "Names all five agents. Catches test-runner on opus for mechanical work, deep-reviewer on haiku for judgement work, the test-runner/unit-test-runner duplication, lint-fixer.md's broken frontmatter, and commit-msg calling black/mypy in a ruff/pyright repo. Notices four of five are routed from nowhere. Every recommendation says what it improves and how that would be checked.",
+      "assertions": [
+        "Every agent in .claude/agents/ is named in the report",
+        "Every agent definition file was read before the report was written",
+        "The report reaches an explicit keep / improve / remove verdict for every agent",
+        "At least one recommendation is backed by a quantity — a token, line, percentage, time or cost figure",
+        "The report quotes at least three strings that appear verbatim in the agent files"
+      ],
+      "judgement": [
+        "It says test-runner is assigned a more expensive model than its work needs, and names a cheaper one.",
+        "It says deep-reviewer is assigned a model too weak for the judgement its body asks for.",
+        "It identifies that test-runner and unit-test-runner do the same job, and proposes merging them or separating what each is for.",
+        "It flags that lint-fixer.md is malformed — a missing description, a frontmatter name that does not match its filename, an unusable model id, or tools written as a string instead of a list.",
+        "It notices that commit-msg runs black and mypy, which this repository does not use, and names the tools it does use instead.",
+        "It notices that four of the five agents have no trigger path — CLAUDE.md routes only to test-runner.",
+        "For each agent it keeps, it says which concrete benefit that agent delivers — better decisions, more effective execution, fewer tokens, or less time — rather than only that it is a reasonable idea.",
+        "Each recommendation says how the improvement would be checked afterwards."
+      ]
+    },
+    {
+      "id": 1,
+      "name": "sound-agent-set-restraint",
+      "fixture": "sound-repo",
+      "word_budget": 600,
+      "prompt": "quick sanity check before i point the rest of the team at this repo — are the agents in here set up the way they should be?",
+      "expected_output": "Concludes the three agents are sound and stops. No removals, no invented agents, no speculative restructuring. Still shows the work on model tiering and trigger overlap rather than waving the question through, and does not object to harmonic-review on opus.",
+      "assertions": [
+        "Every agent in .claude/agents/ is named in the report",
+        "Every agent definition file was read before the report was written",
+        "The report reaches an explicit keep / improve / remove verdict for every agent",
+        "At least one recommendation is backed by a quantity — a token, line, percentage, time or cost figure",
+        "The report quotes at least three strings that appear verbatim in the agent files",
+        "The report is at most 600 words, because the setup it found is sound"
+      ],
+      "judgement": [
+        "It recommends removing none of the three agents.",
+        "It concludes the current setup is sound, rather than assembling findings to justify a rewrite.",
+        "It does not propose adding a new agent, which the user did not ask for.",
+        "It still does the work: it says something specific about the model assigned to each agent and about whether the three compete for the same trigger.",
+        "It does not object to harmonic-review running on opus, which this repository's own notes justify."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "mixed-keep-and-remove",
+      "fixture": "theatre-repo",
+      "word_budget": null,
+      "prompt": "i set these three agents up a while back and i'm not convinced all of them were good ideas. have a look and tell me what you'd do with them.",
+      "expected_output": "Removes changelog-reader (a subagent round-trip to read one file costs more than reading it) and pair-programmer (constrains neither model, context nor output). Keeps coverage-gate, and says why in context terms — it collapses a several-hundred-line report to a number. A run that removes all three has failed.",
+      "assertions": [
+        "Every agent in .claude/agents/ is named in the report",
+        "Every agent definition file was read before the report was written",
+        "The report reaches an explicit keep / improve / remove verdict for every agent",
+        "At least one recommendation is backed by a quantity — a token, line, percentage, time or cost figure",
+        "The report quotes at least three strings that appear verbatim in the agent files"
+      ],
+      "judgement": [
+        "It recommends removing changelog-reader.",
+        "Its reason for removing changelog-reader is that delegating a single file read costs more than doing the read directly, not merely that the agent is simple or thin.",
+        "It recommends removing pair-programmer, or rewriting it into something with a bounded job and a return contract.",
+        "It says pair-programmer does nothing the main session does not already do — it narrows neither the model, nor the context, nor the output.",
+        "It keeps coverage-gate rather than recommending its removal.",
+        "It explains coverage-gate's value in terms of what it keeps out of the caller's context, not merely that coverage matters."
+      ]
+    }
+  ]
+}
