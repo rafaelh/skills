@@ -1,1 +1,0 @@
-/home/rafael/.dotfiles/claude/skills/tdd/interface-design.md

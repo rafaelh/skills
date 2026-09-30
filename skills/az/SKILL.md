@@ -60,4 +60,3 @@ to confirm it. Re-read one only when the projection is missing a field you actua
 
 Say what will change and to which resource, and get confirmation, before any write. Never add
 `--yes` on your own initiative.
-

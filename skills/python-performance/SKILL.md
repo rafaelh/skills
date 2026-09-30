@@ -12,8 +12,10 @@ description: >
 compatibility: >
   Python 3.14+, standard library only. `scripts/perf_check.py` parses with `ast` and never
   imports the code it analyses; `--profile` deliberately executes the target script in-process.
+  `scripts/perf_bench.py` imports and runs the bench module you give it, and its `--baseline`
+  shells out to `git worktree`, so that flag needs a git repository.
 metadata:
-  version: "1.1"
+  version: "1.4"
 ---
 
 # Python performance
@@ -39,12 +41,9 @@ the output.
   something.
 - `--format json` when you want to filter or count findings programmatically.
 
-Severity is about the shape of the cost, not about how sure the tool is. HIGH means the cost
-grows faster than the input and will get worse with real data — plus process spawning, the one
-constant factor big enough to dominate a loop on its own; LOW means idiom, where the win is
-readability. Don't spend the user's time on LOW findings in code that isn't the bottleneck —
-but deciding to leave code alone is a claim about what it costs, and needs a number behind it
-exactly as a rewrite does.
+Don't spend the user's time on LOW findings in code that isn't the bottleneck — but deciding to
+leave code alone is a claim about what it costs, and needs a number behind it exactly as a
+rewrite does.
 
 ## 2. If nothing above LOW is flagged, measure
 
@@ -75,25 +74,67 @@ Read the profile for *cumulative* time first to find which subtree is expensive,
 to find where inside it the work actually is. A function with high cumulative and near-zero
 tottime is a caller, not a culprit.
 
+A profile answers "where does the time go". The other question — *how does the cost grow with the
+input*, the one behind *it was fine on 1k rows and dies on a million* — is answered by the bench
+module and the single call in step 3, which times the code in front of you whether or not you are
+about to change it.
+
 ## 3. Prove the fix
 
-A change that "should be faster" is not a result. Time before and after on input large enough for
-the effect to appear — quadratic fixes are invisible on ten items and dramatic on ten thousand,
-so input size matters more than repetition count — and tell the user the actual numbers. If the
-measurement doesn't move, revert it: unmeasured optimizations are how code gets harder to read
-for nothing.
+A change that "should be faster" is not a result. One call measures both sides of it:
+
+```bash
+python3 "${SKILL_DIR}/scripts/perf_bench.py" bench.py --sizes 20000,40000,80000 \
+    --baseline git:HEAD --recheck src/nightly/report.py
+```
+
+`bench.py` is yours, and is the only part that knows this repo: `setup(n)` builds an input of size
+n, `run(data)` calls the code under test and returns its result. Only `run` is timed, so building
+the workload never lands in the measurement. `--help` carries a worked example.
+
+`--baseline` runs the same bench against the committed tree in a throwaway detached worktree and
+prints before, after and the speed-up at each size. It compares the result hashes too, so a faster
+wrong answer surfaces as `OUTPUT DIFFERS` instead of as a win. `--recheck` re-runs step 1 over the
+files you changed, in that same call, so you can say which findings cleared without spending
+another one.
+
+This is the only bench call a fix needs — it times the old tree and the new one — and when there
+is nothing to compare against, because the code turns out not to be the bottleneck and the answer
+is a number rather than a change, drop `--baseline` and the same call gives the growth curve alone.
+
+A slope near 1 means the cost tracks the input; near 2 means it grows with the square of it.
+Constant factors dominate at small sizes, so the same quadratic function can read *linear* at 8k
+items and *quadratic* at 80k — if the slope comes back near 1 on code the user says falls over, go
+up an order of magnitude before believing it.
+
+Put the size the user named at the top of the sweep and find out whether it finishes there before
+assuming it won't: a measured number at their scale needs no caveat and settles the question, and a
+projection to it always invites the follow-up. Sweep the smaller sizes first — they cost seconds
+and tell you the slope — then let the largest one run. If it is still going after a minute or two,
+kill it and time both versions at the largest size that did finish, which is what `--project`
+extrapolates from. Two measured numbers at 5k rows, plus the shape of the growth, tell the user
+more than one measured number and a guess at 400k.
+
+Never `git stash` to get a baseline. The user's uncommitted work is not yours to move, and a stash
+that fails to pop takes it with them.
+
+Time before and after on input large enough for the effect to appear, and tell the user the
+actual numbers. If the measurement doesn't move, revert it: unmeasured optimizations are how
+code gets harder to read for nothing.
 
 Time it, don't profile it. cProfile's per-call overhead inflates call-heavy code several-fold,
 so profile totals are comparable only to other profile totals — the before and after you quote
 are wall-clock.
 
-When the old version is too slow to run at the size that hurts, shrink the input until it
-finishes and time both versions there. Two measured numbers at 5k rows, plus the shape of the
-growth, tell the user more than one measured number and a guess at 400k — and where you do
-extrapolate, say that you did, so they can tell your evidence from your arithmetic.
+**Every number in the write-up is either measured or marked as not.** Write the projection as part
+of the sentence — *"0.28s at 80k events, down to 0.02s; at the 400k you quoted that projects to
+about 6s, extrapolated"* — which is the line `--project 400000` prints for you, already labelled.
+An unmarked projection reads as a measurement, and quietly presenting one as the other is the most
+common way an otherwise honest summary misleads. The same goes for a change you never timed: say
+it is untimed, or time it. "Also a bit faster" with nothing behind it is the claim to cut.
 
-A faster wrong answer is not a fix. The timing harness already has the inputs in front of it, so
-capture what the code returns on each side of the change and compare it; where the output is
-large, hash it. Say how you checked. A green test suite means the tests still pass, which is a
-weaker claim than it looks: the behaviour most at risk from a performance rewrite is the part
-nobody wrote a test for — tie-break order, which duplicate wins, what an empty input returns.
+A faster wrong answer is not a fix. `--baseline` hashes what the code returned on each side and
+tells you whether they match; say in the summary how you checked. A green test suite means the
+tests still pass, which is a weaker claim than it looks: the behaviour most at risk from a
+performance rewrite is the part nobody wrote a test for — tie-break order, which duplicate wins,
+what an empty input returns.

@@ -16,7 +16,7 @@ dev = [
     "jmespath>=1.0",
     "pyright>=1.1.411",
     "pytest>=9",
-    # obsidian-metabind parses vault frontmatter with it
+    # the vendored skill-creator parses SKILL.md frontmatter with it
     "pyyaml>=6",
     "ruff>=0.15",
 ]
@@ -109,9 +109,14 @@ ignore = [
     "N802",    # visit_* method names are required by ast.NodeVisitor API
     "TRY300",  # return before except is intentional — matches skill-audit pattern
 ]
+"skills/python-performance/scripts/perf_bench.py" = [
+    "S603",    # subprocess argv is sys.executable, the sibling checker, and a fixed git call
+    "S607",    # `git` comes from PATH by design — the baseline uses whatever git the repo uses
+]
 "skills/python-performance/tests/*.py" = [
     "S101",    # assert is correct in tests
     "S603",    # subprocess calls in tests use controlled, trusted input
+    "S607",    # `git init` is resolved from PATH, matching the tool under test
 ]
 "skills/agent-tool-builder/scripts/perf_check.py" = [
     "ERA001",  # noqa comments are intentional
@@ -156,10 +161,6 @@ ignore = [
     "S101",    # assert is correct in tests
     "S603",    # subprocess calls in tests use controlled, trusted input
 ]
-"skills/obsidian-metabind/scripts/tests/*.py" = [
-    "S101",    # assert is correct in tests
-    "S603",    # subprocess calls in tests use controlled, trusted input
-]
 "skills/az/scripts/_common.py" = [
     "S603",    # subprocess invokes the `az` CLI with an argv built from tool flags, never a shell
 ]
@@ -169,11 +170,6 @@ ignore = [
 "skills/az/tests/*.py" = [
     "S101",    # assert is correct in tests
     "S603",    # subprocess calls in tests use controlled, trusted input
-]
-"skills/obsidian-metabind/scripts/refresh_docs.py" = [
-    "PLC0415", # urllib is imported inside http_get() so the fetch machinery is only
-               # paid for by callers that actually fetch — every test injects a fetcher
-               # instead, and perf_check flags the module-level import otherwise
 ]
 
 [tool.ruff.lint.isort]
