@@ -77,16 +77,16 @@ exit 0 and you read the payload. `detect_skill_overlap.py` accepts it too.
 > **4b. Per-script contract compliance:**
 > ```bash
 > for s in <skill-dir>/scripts/*.py; do
->   python3 "${SKILL_DIR}/../agent-tool-builder/scripts/validate_agent_tool.py" "$s" --json
+>   python3 "${SKILL_DIR}/scripts/validate_agent_tool.py" "$s" --json
 > done
 > ```
 >
 > **4c. Implementation quality:**
 > ```bash
-> python3 "${SKILL_DIR}/../agent-tool-builder/scripts/perf_check.py" <skill-dir>/scripts/ --json
+> python3 "${SKILL_DIR}/scripts/perf_check.py" <skill-dir>/scripts/ --json
 > ```
 >
-> If a finding references a perf pattern, read [agent-tool-builder/references/perf-findings.md](../agent-tool-builder/references/perf-findings.md) and include the recommended fix in your summary. Return results grouped by file.
+> If a finding references a perf pattern, read [references/perf-findings.md](references/perf-findings.md) and include the recommended fix in your summary. Return results grouped by file.
 
 5. **Security audit (OWASP Agentic Skills Top 10).** Delegate to a subagent when combined with steps 1 and 4.
 

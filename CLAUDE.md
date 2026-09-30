@@ -16,9 +16,8 @@ Script-bearing skills — held to the contracts below:
 
 | Skill | Language | Role |
 |---|---|---|
-| `skill-audit` | Python | Audit / eval SKILL.md files whose bundled scripts are Python |
+| `skill-audit` | Python | Audit / eval SKILL.md files whose bundled scripts are Python; hosts the agent-tool validator |
 | `skill-audit-ts` | TypeScript | Same workflow, for skills whose scripts are TypeScript |
-| `agent-tool-builder` | Python | Build & audit Python scripts that agents call as tools |
 | `create-agents-for-repo` | Python | Fit `.claude/agents/*.md` subagents to a *target* repo, wire their call sites |
 | `az` | Python | Orient an Azure session, look up `az` command syntax |
 | `python-performance` | Python | Slow Python: static checks, cProfile, benchmark driver |
@@ -78,9 +77,8 @@ Skills version independently.
 
 ### Scripts are agent tools and are validated as such
 
-Every bundled script is subject to the interface contract in
-[interface-contract.md](skills/agent-tool-builder/references/interface-contract.md), machine-checked
-by `validate_agent_tool.py`:
+Every bundled script is subject to the agent-tool interface contract, machine-checked by
+`skills/skill-audit/scripts/validate_agent_tool.py`:
 
 - `--format json|text`, `--json` as shorthand, `--quiet` to suppress informational stderr.
 - Exit codes: `0` success, `1` user error, `2` system error, `3` not-found/empty. Never make the
@@ -95,12 +93,12 @@ the spec for new scripts: run `validate_agent_tool.py` and `perf_check.py` on th
 
 ### Cross-skill dependency
 
-`skill-audit`'s SKILL.md invokes `../agent-tool-builder/scripts/validate_agent_tool.py` and
-`perf_check.py` by relative path and links to `agent-tool-builder/references/perf-findings.md`;
-moving those breaks the Python audit workflow. `skill-audit-ts` deliberately has **no** such
-dependency — it folds in its own equivalents so it runs on machines without Python.
+`skill-audit` owns `validate_agent_tool.py`, `perf_check.py` and `references/perf-findings.md`;
+other skills (`az`, `python-performance`) are held to that validator but don't call it.
+`skill-audit-ts` deliberately does not share them — it folds in its own equivalents so it runs on
+machines without Python.
 
-`python-performance` deliberately forks `agent-tool-builder`'s `perf_check.py`, folding
+`python-performance` deliberately forks `skill-audit`'s `perf_check.py`, folding
 `perf-findings.md` into the script so findings explain themselves and scoring severity by cost
 growth, not per-call agent overhead. Don't mirror changes — `skill-audit` calls the original.
 
@@ -115,8 +113,8 @@ checks (`pickle`/`shell=True` vs `eval()`/`{shell: true}`), pinning (PEP 723 vs 
 
 Python scripts import siblings flatly (`from skill_lib import ...`) because they run as
 `python3 path/to/script.py`; each `tests/conftest.py` bootstraps `sys.path`. Test placement differs
-per skill — `skill-audit` in `scripts/tests/`, `agent-tool-builder` in a top-level `tests/`,
-TypeScript co-located `*.test.ts`. Python tests are black-box: invoke the script under
+per skill — `skill-audit` in `scripts/tests/`, most others in a top-level `tests/`, TypeScript
+co-located `*.test.ts`. Python tests are black-box: invoke the script under
 `subprocess`, assert on JSON stdout + exit code.
 
 ### Descriptions are tuned artifacts

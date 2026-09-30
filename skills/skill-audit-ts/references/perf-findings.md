@@ -22,7 +22,7 @@ Agent tools are called many times per session — per-call overhead compounds in
 
 ## Static analysis only
 
-`perf_check.ts` is a static AST scan (via the TypeScript compiler API) — there is no runtime profiler bundled with this skill, unlike the Python `agent-tool-builder` skill's `perf_check.py --profile`. If static analysis comes back clean but a script still feels slow, profile it with Node's built-in tools directly:
+`perf_check.ts` is a static AST scan (via the TypeScript compiler API) — there is no runtime profiler bundled with this skill, unlike the Python `skill-audit` skill's `perf_check.py --profile`. If static analysis comes back clean but a script still feels slow, profile it with Node's built-in tools directly:
 
 ```bash
 node --prof scripts/<name>.ts

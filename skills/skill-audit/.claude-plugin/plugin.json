@@ -1,6 +1,6 @@
 {
   "name": "skill-audit",
   "description": "Audit, optimize, validate, scaffold, and trigger-eval Claude Agent Skills (SKILL.md files) whose bundled scripts are Python",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "author": { "name": "Rafe Hart" }
 }

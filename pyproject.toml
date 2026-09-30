@@ -84,6 +84,7 @@ ignore = [
     "ERA001",  # noqa comments are intentional
     "RUF001",  # × in user-facing messages is intentional (multiplication sign)
     "N802",    # visit_* method names are required by ast.NodeVisitor API
+    "TRY300",  # return before except is intentional — matches the sibling scripts
 ]
 "skills/skill-audit/scripts/skill_lib.py" = [
     "PLE2502", # intentional BiDi chars — this IS the blocklist being defined
@@ -118,12 +119,6 @@ ignore = [
     "S603",    # subprocess calls in tests use controlled, trusted input
     "S607",    # `git init` is resolved from PATH, matching the tool under test
 ]
-"skills/agent-tool-builder/scripts/perf_check.py" = [
-    "ERA001",  # noqa comments are intentional
-    "RUF001",  # × in user-facing messages is intentional (multiplication sign)
-    "N802",    # visit_* method names are required by ast.NodeVisitor API
-    "TRY300",  # return before except is intentional — matches skill-audit pattern
-]
 # Harness scripts are run by path (`python3 evals/plan/grade.py …`), so each one puts
 # evals/shared on sys.path before it can import from it — an import that cannot come first.
 "evals/*/*.py" = [
@@ -156,10 +151,6 @@ ignore = [
     "S101",    # assert is correct in tests
     "S603",    # subprocess calls in tests use controlled, trusted input
     "S607",    # `git init` is resolved from PATH, matching the tool under test
-]
-"skills/agent-tool-builder/tests/*.py" = [
-    "S101",    # assert is correct in tests
-    "S603",    # subprocess calls in tests use controlled, trusted input
 ]
 "skills/az/scripts/_common.py" = [
     "S603",    # subprocess invokes the `az` CLI with an argv built from tool flags, never a shell

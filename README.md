@@ -38,32 +38,6 @@ A typescript version of the same skill.
 ---
 
 <details>
-  <summary>agent-tool-builder</summary>
-
-### agent-tool-builder
-
-Don't use this for now - it need refinement. Builds and reviews **Python** scripts intended to be
-called by AI agents as tools. Enforces a standard interface contract — structured JSON output,
-predictable exit codes, `--format`, `--quiet`, `--dry-run` — and catches performance anti-patterns
-before they cost agent round-trips.
-
-- Runs a decision-forcing design interview — data model, operations, flag set, JSON output shape,
-failure modes — before a line of code gets written
-- Validates the contract: mandatory and conditional flags, exit code conventions, stderr discipline,
-and output that's parseable JSON by default so agents never parse prose
-- Scaffolds new tools from a PEP 723 template with argparse, `--format json/text/csv`, structured
-error output and stub tests
-- Detects O(n²) string concatenation, recompiled regexes and list-membership anti-patterns via AST
-analysis + optional cProfile profiling
-
-> Python only. Agent tools in TypeScript, Bash or another language need a separate contract enforcer
-> for that language's conventions — `skill-audit-ts` carries one for TypeScript.
-
-</details>
-
----
-
-<details>
   <summary>create-agents-for-repo</summary>
 
 ### create-agents-for-repo
@@ -166,7 +140,6 @@ This repo is a Claude Code plugin marketplace. From inside Claude Code, add the 
 /plugin marketplace add rafaelh/skills
 /plugin install skill-audit@rafaelh
 /plugin install skill-audit-ts@rafaelh
-/plugin install agent-tool-builder@rafaelh
 /plugin install create-agents-for-repo@rafaelh
 /plugin install architecture@rafaelh
 /plugin install plan@rafaelh

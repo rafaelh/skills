@@ -2,7 +2,7 @@
 """Shared helpers for the `az` skill's agent tools.
 
 Importable by every script in this directory. Exit codes and stdout/stderr
-discipline follow the agent-tool-builder contract:
+discipline follow the agent-tool contract (skill-audit's validate_agent_tool.py):
 
 Exit codes:
     0  success - data returned or operation completed

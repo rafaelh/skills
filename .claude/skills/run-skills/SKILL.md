@@ -1,6 +1,6 @@
 ---
 name: run-skills
-description: Build, run, smoke-test, and drive the skills marketplace and its bundled agent tools. Use when asked to run this repo, start or exercise the skill-audit / agent-tool-builder scripts, verify a change to a bundled script or SKILL.md actually works, check Python/TypeScript parity, run the tests, lint, typecheck, or confirm the marketplace manifests still line up.
+description: Build, run, smoke-test, and drive the skills marketplace and its bundled agent tools. Use when asked to run this repo, start or exercise the skill-audit / skill-audit-ts scripts, verify a change to a bundled script or SKILL.md actually works, check Python/TypeScript parity, run the tests, lint, typecheck, or confirm the marketplace manifests still line up.
 ---
 
 # Run the skills marketplace
@@ -85,8 +85,8 @@ Both print the same payload:
 Changed a script? Check it against the contract this repo enforces:
 
 ```bash
-uv run python3 skills/agent-tool-builder/scripts/validate_agent_tool.py <script.py>
-uv run python3 skills/agent-tool-builder/scripts/perf_check.py <script.py>
+uv run python3 skills/skill-audit/scripts/validate_agent_tool.py <script.py>
+uv run python3 skills/skill-audit/scripts/perf_check.py <script.py>
 ```
 
 To see a validator actually fire, point it at a deliberately broken skill — a `Name_Like_This`

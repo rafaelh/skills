@@ -4,7 +4,7 @@
 Scans SKILL.md for procedures the agent would re-derive on every run (long
 shell blocks) and recommends extracting them into `scripts/`. Per-script
 quality checks (argparse, --format, --quiet, exit codes, PEP 723) are
-delegated to the agent-tool-builder skill's `validate_agent_tool.py`.
+delegated to the sibling `validate_agent_tool.py`.
 
 Kinds:
 
@@ -92,7 +92,7 @@ def _scan_bash_blocks(body: str, skill_md: Path, opps: list[Opportunity]) -> Non
                 suggestion=(
                     "Extract into scripts/<name>.py with argparse, --format, and --quiet. "
                     "Replace the block in SKILL.md with a one-line invocation. "
-                    "Then run agent-tool-builder/scripts/validate_agent_tool.py on the new script."
+                    "Then run scripts/validate_agent_tool.py on the new script."
                 ),
                 severity="info",
             )
@@ -130,7 +130,7 @@ def main(argv: list[str] | None = None) -> int:
         "  recommend_scripts.py path/to/my-skill\n"
         "  recommend_scripts.py ./skill --json\n"
         "\nFor per-script quality checks, use:\n"
-        "  agent-tool-builder/scripts/validate_agent_tool.py <script-path>\n",
+        "  validate_agent_tool.py <script-path>\n",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("skill_dir", help="Path to the skill directory")
