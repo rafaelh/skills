@@ -58,6 +58,12 @@
       "description": "Find and fix Python performance problems — static analysis of cost-growth patterns, plus runtime profiling",
       "source": "./skills/python-performance",
       "category": "development"
+    },
+    {
+      "name": "session",
+      "description": "Status line showing context window fill against the model's max, plan rate-limit usage, and session cost",
+      "source": "./plugins/session",
+      "category": "productivity"
     }
   ]
 }

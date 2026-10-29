@@ -1,0 +1,8 @@
+{
+  "name": "session",
+  "description": "Status line showing context window fill against the model's max, plan rate-limit usage, and session cost",
+  "version": "0.1.0",
+  "author": {
+    "name": "Rafe Hart"
+  }
+}

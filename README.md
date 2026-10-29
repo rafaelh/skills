@@ -103,6 +103,26 @@ scripts don't get a match for one of the known slow patterns.
 ---
 
 <details>
+  <summary>session (status line)</summary>
+
+### session
+
+Not a skill: a Claude Code mod (a hooks module) that pins a status line under the prompt, in the
+terminal and the VS Code extension alike:
+
+```
+▰▰▱▱▱▱▱▱▱▱ 45k/200k 23%  │  5h 12% ↻2h10m  │  7d 30% ↻3d20h  │  $1.24 session
+```
+
+Context window fill against the model's max (⚠ past 80%), the plan's rate-limit windows with time
+to reset (subscriptions only), an org spend cap if one applies, and the session's estimated cost.
+It updates after each turn. Install with `/plugin install session@rafaelh`.
+
+</details>
+
+---
+
+<details>
   <summary>architecture, plan, tdd, refactor</summary>
 
 ## These skills are designed to be used together
@@ -147,6 +167,7 @@ This repo is a Claude Code plugin marketplace. From inside Claude Code, add the 
 /plugin install refactor@rafaelh
 /plugin install az@rafaelh
 /plugin install python-performance@rafaelh
+/plugin install session@rafaelh
 /reload-plugins
 ```
 

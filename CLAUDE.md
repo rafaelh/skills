@@ -10,7 +10,8 @@ scripts run in place by path, nothing publishes to PyPI or npm.
 `.claude-plugin/marketplace.json`. `.claude/skills/` symlinks the subset active while working *in*
 this repo. `.gitignore` excludes `.claude/*` but re-includes `.claude/skills/`, so the symlinks are
 tracked and local settings are not. The one non-symlink is `run-skills/`, the repo's
-own smoke driver — deliberately not a published plugin.
+own smoke driver — deliberately not a published plugin. `plugins/` holds Claude Code mods (a
+TypeScript hooks module, no SKILL.md): listed in the marketplace, outside the skill contracts.
 
 Script-bearing skills — held to the contracts below:
 
