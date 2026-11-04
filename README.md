@@ -29,6 +29,10 @@ Audits Claude Agent Skills to the https://agentskills.io spec and OWASP guidelin
 this skill when adjusting your other agent skills, in between rounds of evals with Anthropic's
 `skill-creator`.
 
+Its scripts also hold a skill's bundled Python to an agent-tool interface contract (structured
+output, predictable exit codes, `--format`, `--quiet`) and flag performance anti-patterns before
+they cost an agent round-trip.
+
 ### skill-audit-ts
 
 A typescript version of the same skill.
@@ -68,6 +72,47 @@ Opus agents — those buy context isolation but no cost saving.
 
 Don't run `/create-agents-for-repo` in this repo. The skills here are meant to travel between repos;
 the subagents it writes hardcode the local toolchain and deliberately don't.
+
+</details>
+
+---
+
+<details>
+  <summary>review-repo-agents</summary>
+
+### review-repo-agents
+
+Reviews the custom agents in a repo as a skeptical principal engineer: is each one correct, does it
+measurably improve how the repo operates, and do the agents work well together. It separates an
+agent built on a good idea that falls short in practice from one that provably earns its place.
+
+</details>
+
+---
+
+<details>
+  <summary>ai-sdlc</summary>
+
+### ai-sdlc
+
+A spec-driven workflow for a significant change. It is one plugin that bundles four skills and two
+adversarial critic agents, so you install it in one step and run the stages in order:
+
+1. `/ai-sdlc:spec-define` agrees the goal and desired behaviours and writes them to
+   `docs/specs/`. The `critic-specification` agent reviews the draft first.
+2. `/ai-sdlc:spec-design` interviews you until every technical decision is resolved.
+   The `critic-architecture` agent challenges the plan.
+3. `/ai-sdlc:spec-develop` writes the tests, watches them fail, then writes the code.
+4. `/ai-sdlc:spec-verify` checks that each behaviour was implemented.
+
+```
+/plugin install ai-sdlc@rafaelh
+```
+
+It is installed only as a whole. Installing individual `spec-*` skills (for example with
+`gh skill install`) is unsupported: the skills hand off to each other and launch the critics by
+their plugin-namespaced names. If your repo defines its own `critic-specification` or
+`critic-architecture` agent, the skills use that one instead.
 
 </details>
 
@@ -150,7 +195,7 @@ The cycle for use should be:
 
 ### Option 1
 
-Use a recent version of the **GitHub CLI** and run `gh skill install rafaelh/skills <skillname>`. This will copy the skill into your target repo, or global directory (you'll be prompted for your choice). At a later date running `gh skill update rafaelh/skills <skillname>` will pull an updated version of this skill.
+Use a recent version of the **GitHub CLI** and run `gh skill install rafaelh/skills <skillname>` (not for `ai-sdlc`, which is installed as a whole with Option 2). This will copy the skill into your target repo, or global directory (you'll be prompted for your choice). At a later date running `gh skill update rafaelh/skills <skillname>` will pull an updated version of this skill.
 
 ### Option 2
 
@@ -161,6 +206,7 @@ This repo is a Claude Code plugin marketplace. From inside Claude Code, add the 
 /plugin install skill-audit@rafaelh
 /plugin install skill-audit-ts@rafaelh
 /plugin install create-agents-for-repo@rafaelh
+/plugin install review-repo-agents@rafaelh
 /plugin install architecture@rafaelh
 /plugin install plan@rafaelh
 /plugin install tdd@rafaelh
@@ -168,6 +214,7 @@ This repo is a Claude Code plugin marketplace. From inside Claude Code, add the 
 /plugin install az@rafaelh
 /plugin install python-performance@rafaelh
 /plugin install session@rafaelh
+/plugin install ai-sdlc@rafaelh
 /reload-plugins
 ```
 

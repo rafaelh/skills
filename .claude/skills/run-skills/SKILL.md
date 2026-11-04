@@ -1,15 +1,16 @@
 ---
 name: run-skills
-description: Build, run, smoke-test, and drive the skills marketplace and its bundled agent tools. Use when asked to run this repo, start or exercise the skill-audit / skill-audit-ts scripts, verify a change to a bundled script or SKILL.md actually works, check Python/TypeScript parity, run the tests, lint, typecheck, or confirm the marketplace manifests still line up.
+description: Build, run, smoke-test, and drive the skills marketplace and its bundled agent tools. Use when asked to run this repo, start or exercise the skill-audit scripts, verify a change to a bundled script or SKILL.md actually works, check Python/TypeScript parity, run the tests, lint, typecheck, or confirm the marketplace manifests and the ai-sdlc bundle still line up.
 ---
 
 # Run the skills marketplace
 
-There is no server and no UI here. The "app" is the **19 agent-tool CLI scripts** under
-`skills/*/scripts/` — 11 Python, 8 TypeScript. You drive them with
+There is no server and no UI here. The "app" is the **24 agent-tool CLI scripts** under
+`skills/*/scripts/` — 16 Python, 8 TypeScript. You drive them with
 `.claude/skills/run-skills/smoke.py`, which launches every one of them for real, asserts the
-interface contract holds, dogfoods the repo's own validators against its own skills, and checks
-that the two manifests still agree with what is on disk.
+interface contract holds, dogfoods the repo's own validators against every published skill
+(`skills/*/` and the skills inside `plugins/*/`), checks that the manifests still agree with what
+is on disk, and holds the `ai-sdlc` bundle to its contents, references, overlap and version rules.
 
 All paths below are relative to the repo root (`/home/rafael/git/skills`).
 
@@ -35,28 +36,34 @@ cd skills/skill-audit-ts && npm ci    # tsx, vitest, eslint, prettier
 uv run python3 .claude/skills/run-skills/smoke.py
 ```
 
-59 checks in ~5.5s. Add `--tests` for 61 checks in ~14.4s. Tail of a green run:
+97 checks in ~8.5s. Add `--tests` for 100 checks in ~65s. Tail of a green run:
 
 ```
-  [PASS] manifests/plugin-json/tdd  name='tdd'
-  [PASS] tests/pytest  162 passed in 3.20s
-  [PASS] tests/vitest  Tests  170 passed (170)
+  [PASS] bundle/ai-sdlc/version  version is current
+  [PASS] tests/pytest  357 passed in 41.90s
+  [PASS] tests/vitest  Tests  185 passed (185)
 
-61/61 checks passed in 14.7s
+99/99 checks passed in 64.7s
 ```
 
 | flag | what it does |
 |---|---|
-| `--only python` | `--help` + JSON-on-stdout + self-audit for the 11 Python tools |
+| `--only python` | `--help` + JSON-on-stdout for the 16 Python tools, self-audit of every published skill |
 | `--only ts` | same for the 8 TypeScript tools, run through the vendored `tsx` |
-| `--only parity` | runs both `validate_skill` twins on all 7 skills and diffs their summaries |
-| `--only manifests` | `marketplace.json` ↔ `skills/` ↔ each `plugin.json` name |
+| `--only parity` | runs both `validate_skill` twins on every published skill and diffs their summaries |
+| `--only manifests` | `marketplace.json` ↔ `skills/` and `plugins/` ↔ each `plugin.json` name |
+| `--only bundle` | per `plugins/<p>/`: exact contents, `claude plugin validate --strict`, agent definitions, slash-command and agent references, overlap with every other skill, version bump |
+| `--repo PATH` | check another checkout (a fixture); the validators still come from this one |
 | `--tests` | also runs pytest and vitest |
 | `--json` / `--format json` | machine-readable; honoured on every exit path |
 | `--quiet` | suppress the `repo: <path>` line on stderr |
 
+Each group asks only for the toolchain it needs: `uv` always, `node`/`tsx` for `ts` and `parity`,
+`claude` and `git` for `bundle` (only when `plugins/` holds a bundle, unless `--only bundle`),
+`node`/`npm`/`tsx` for `--tests`.
+
 Exit codes (all four exercised): `0` all passed, `1` at least one check failed, `2` toolchain
-incomplete, `3` no tools found on disk. Non-zero exits also emit
+incomplete, `3` no tools, bundles or repo found on disk. Non-zero exits also emit
 `{"error":…,"code":…,"hint":…}` on stderr.
 
 The parity check has real signal — a skill with one broken reference link makes both twins
@@ -95,15 +102,15 @@ that mismatches its directory plus a dead `references/` link yields 2 fails and 
 ## Test, lint, typecheck
 
 ```bash
-uv run pytest -q                                    # 162 passed in ~3.2s
+uv run pytest -q                                    # 357 passed in ~42s
 uv run ruff check . --fix && uv run ruff format .
-uv run pyright                                      # strict, 24 files, 0 errors
+uv run pyright                                      # strict, 0 errors
 uv run pre-commit run --all-files                   # 10 hooks, all pass
 ```
 
 ```bash
 cd skills/skill-audit-ts
-npm test          # 170 passed (9 files) in ~5.7s
+npm test          # 185 passed in ~6s
 npm run typecheck
 npm run lint
 ```
@@ -140,9 +147,8 @@ npm run lint
 - **Distinguish exit 2 from exit 3.** A missing input path is exit **2** (`file missing` is a
   system error under the contract): `validate_skill.py skills/nope` → `validate.input.not-found`.
   Exit **3** means the run succeeded and found nothing — `detect_skill_overlap.py <empty-dir>`.
-- **`perf_check.py` reports 3 MEDIUM findings on the driver itself** (one `sorted()[:4]` over a
-  4-key dict, two `except KeyError` inside loops). Both are deliberate — defensive JSON parsing on
-  a cold path — and were left rather than contorted to silence the linter.
+- **`perf_check.py` reports 1 MEDIUM finding on the driver itself**: a `sorted()[:4]` over a 4-key
+  dict, kept because it is a display preview on a cold path.
 - **`eval_triggers.py` and `optimize_description.py` are not exercised** by the driver beyond
   `--help`; they shell out to an agent CLI and cost tokens per run.
 
@@ -157,7 +163,9 @@ npm run lint
   `uv sync` pins 3.14; check with `uv run python3 --version`.
 - **`toolchain/tsx  missing …/node_modules/.bin/tsx`** (driver exits 2): run
   `cd skills/skill-audit-ts && npm ci`.
-- **Driver reports `manifests/marketplace-covers-disk … only-on-disk=['<name>']`**: a skill
-  directory exists without a `marketplace.json` entry. Adding a skill means editing **two**
+- **Driver reports `manifests/marketplace-covers-disk … only-on-disk=['<name>']`**: a skill or
+  plugin directory exists without a `marketplace.json` entry. Adding a skill means editing **two**
   manifests — the root `.claude-plugin/marketplace.json` and the skill's own
-  `.claude-plugin/plugin.json`.
+  `.claude-plugin/plugin.json`. A skill inside `plugins/ai-sdlc/` needs neither.
+- **`bundle/ai-sdlc/version` fails after you edit a bundle skill or agent**: the bundle's content
+  changed since its `plugin.json` version last changed. Raise the version.

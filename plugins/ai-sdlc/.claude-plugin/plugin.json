@@ -1,0 +1,6 @@
+{
+  "name": "ai-sdlc",
+  "description": "Spec-driven workflow: define, design, develop and verify a change, with adversarial critics for the specification and the design",
+  "version": "0.1.0",
+  "author": { "name": "Rafe Hart" }
+}

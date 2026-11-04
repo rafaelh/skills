@@ -24,6 +24,12 @@
       "category": "development"
     },
     {
+      "name": "review-repo-agents",
+      "description": "Review how well a repo's subagents fit its purpose and goals",
+      "source": "./skills/review-repo-agents",
+      "category": "development"
+    },
+    {
       "name": "architecture",
       "description": "Audit code against ADRs and layer separation, find deepening opportunities, write ADRs and CONTEXT.md domain docs, and design module interfaces",
       "source": "./skills/architecture",
@@ -64,6 +70,12 @@
       "description": "Status line showing context window fill against the model's max, plan rate-limit usage, and session cost",
       "source": "./plugins/session",
       "category": "productivity"
+    },
+    {
+      "name": "ai-sdlc",
+      "description": "Spec-driven workflow: define, design, develop and verify a change, with adversarial critics for the specification and the design",
+      "source": "./plugins/ai-sdlc",
+      "category": "development"
     }
   ]
 }

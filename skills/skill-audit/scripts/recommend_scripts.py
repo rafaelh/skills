@@ -92,7 +92,7 @@ def _scan_bash_blocks(body: str, skill_md: Path, opps: list[Opportunity]) -> Non
                 suggestion=(
                     "Extract into scripts/<name>.py with argparse, --format, and --quiet. "
                     "Replace the block in SKILL.md with a one-line invocation. "
-                    "Then run scripts/validate_agent_tool.py on the new script."
+                    "Then run skill-audit's validate_agent_tool.py on the new script."
                 ),
                 severity="info",
             )

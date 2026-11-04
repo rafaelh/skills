@@ -79,6 +79,7 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 ".claude/skills/run-skills/smoke.py" = [
     "S603",    # subprocess argv is built from repo-relative paths, never user input
+    "S607",    # `git` and `claude` come from PATH by design — the sweep checks the dev's own toolchain
 ]
 "skills/skill-audit/scripts/perf_check.py" = [
     "ERA001",  # noqa comments are intentional
@@ -152,6 +153,11 @@ ignore = [
     "S603",    # subprocess calls in tests use controlled, trusted input
     "S607",    # `git init` is resolved from PATH, matching the tool under test
 ]
+"tests/*.py" = [
+    "S101",    # assert is correct in tests
+    "S603",    # subprocess calls in tests use controlled, trusted input
+    "S607",    # `git` is resolved from PATH, matching the self-check under test
+]
 "skills/az/scripts/_common.py" = [
     "S603",    # subprocess invokes the `az` CLI with an argv built from tool flags, never a shell
 ]
@@ -184,7 +190,7 @@ norecursedirs = [
 [tool.pyright]
 pythonVersion = "3.14"
 typeCheckingMode = "strict"
-include = ["skills", ".claude/skills", "evals"]
+include = ["skills", ".claude/skills", "evals", "tests"]
 # Harness scripts import evals/shared flatly, the way skill scripts import their siblings.
 extraPaths = ["evals/shared"]
 exclude = [

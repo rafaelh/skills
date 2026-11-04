@@ -74,7 +74,7 @@ exit 0 and you read the payload. `detect_skill_overlap.py` accepts it too.
 > python3 "${SKILL_DIR}/scripts/recommend_scripts.py" <skill-dir> --json
 > ```
 >
-> **4b. Per-script contract compliance:**
+> **4b. Per-script contract compliance** (the contract is [references/interface-contract.md](references/interface-contract.md)):
 > ```bash
 > for s in <skill-dir>/scripts/*.py; do
 >   python3 "${SKILL_DIR}/scripts/validate_agent_tool.py" "$s" --json
