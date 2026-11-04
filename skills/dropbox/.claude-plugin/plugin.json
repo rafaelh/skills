@@ -1,0 +1,6 @@
+{
+  "name": "dropbox",
+  "description": "List, search, download, upload, move, or share files in Dropbox via the dbxcli CLI",
+  "version": "0.1.0",
+  "author": { "name": "Rafe Hart" }
+}

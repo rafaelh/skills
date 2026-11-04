@@ -148,6 +148,31 @@ scripts don't get a match for one of the known slow patterns.
 ---
 
 <details>
+  <summary>dropbox</summary>
+
+### dropbox
+
+Drives Dropbox through the `dbxcli` CLI: list, search, download, upload, move and share files. It
+always asks for JSON output, branches on error codes rather than messages, and reads a command's
+manifest before first use to check whether it is destructive or may prompt.
+
+</details>
+
+---
+
+<details>
+  <summary>virustotal</summary>
+
+### virustotal
+
+Checks file hashes, URLs, domains and IP addresses against VirusTotal with the `vt` CLI, returning
+detection verdicts and reputation, and submits files or URLs for scanning.
+
+</details>
+
+---
+
+<details>
   <summary>session (status line)</summary>
 
 ### session
@@ -213,6 +238,8 @@ This repo is a Claude Code plugin marketplace. From inside Claude Code, add the 
 /plugin install refactor@rafaelh
 /plugin install az@rafaelh
 /plugin install python-performance@rafaelh
+/plugin install dropbox@rafaelh
+/plugin install virustotal@rafaelh
 /plugin install session@rafaelh
 /plugin install ai-sdlc@rafaelh
 /reload-plugins

@@ -29,10 +29,10 @@ Script-bearing skills — held to the contracts below:
 | `az` | Python | Orient an Azure session, look up `az` command syntax |
 | `python-performance` | Python | Slow Python: static checks, cProfile, benchmark driver |
 
-The rest (`architecture`, `plan`, `refactor`, `review-repo-agents`, `tdd`, `ai-sdlc`) are prose-only
-— no `scripts/`, so the agent-tool contract does not apply. `create-agents-for-repo` writes
-subagents into a *consuming* repo and deliberately hardcodes its toolchain; skills travel, those
-don't.
+The rest (`architecture`, `plan`, `refactor`, `review-repo-agents`, `tdd`, `dropbox`,
+`virustotal`, `ai-sdlc`) have no `scripts/`, so the agent-tool contract doesn't apply.
+`create-agents-for-repo` writes subagents into a *consuming* repo and deliberately hardcodes its
+toolchain; skills travel, those don't.
 
 Eval harnesses live in `evals/<skill>/`, outside the shipped plugin, following
 [eval-approach.md](evals/eval-approach.md) — read it before touching one. Four shapes by what a run

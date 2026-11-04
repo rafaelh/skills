@@ -66,6 +66,18 @@
       "category": "development"
     },
     {
+      "name": "dropbox",
+      "description": "List, search, download, upload, move, or share files in Dropbox via the dbxcli CLI",
+      "source": "./skills/dropbox",
+      "category": "productivity"
+    },
+    {
+      "name": "virustotal",
+      "description": "Look up file hashes, URLs, domains, and IPs on VirusTotal via the vt CLI, and submit files or URLs for scanning",
+      "source": "./skills/virustotal",
+      "category": "development"
+    },
+    {
       "name": "session",
       "description": "Status line showing context window fill against the model's max, plan rate-limit usage, and session cost",
       "source": "./plugins/session",

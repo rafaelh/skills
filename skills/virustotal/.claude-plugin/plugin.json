@@ -1,0 +1,6 @@
+{
+  "name": "virustotal",
+  "description": "Look up file hashes, URLs, domains, and IPs on VirusTotal via the vt CLI, and submit files or URLs for scanning",
+  "version": "0.1.0",
+  "author": { "name": "Rafe Hart" }
+}
